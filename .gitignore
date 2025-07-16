@@ -1,0 +1,22 @@
+.*
+!.gitignore
+!.gitattributes
+
+# build and output directories
+bin/
+obj/
+out/
+publish/
+
+# user-specific files
+*.user
+
+# VS folders
+.vscode/
+.vs/
+
+# environment
+.env
+
+appsettings.*.json
+!appsettings.Template.json
