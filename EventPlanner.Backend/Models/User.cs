@@ -4,10 +4,9 @@ namespace EventPlanner.Backend.Models
     public class User
     {
         public Guid Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
-        public Role Role { get; set; }
-        public Guid RoleId { get; set; }
+        public required string Name { get; set; }
+        public required string Email { get; set; }
+        public required string PasswordHash { get; set; }
+        public Role? Role { get; set; }
     }
 }

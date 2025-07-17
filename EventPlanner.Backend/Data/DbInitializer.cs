@@ -1,24 +1,37 @@
 using EventPlanner.Backend.Models;
 using EventPlanner.Backend.Database;
+using Microsoft.EntityFrameworkCore;
 namespace EventPlanner.Backend.Data
 {
     public static class DbInitializer
     {
         public static async Task InitializeAsync(AppDbContext context)
         {
-            // if roles exists, we do not create seed
-            if (context.Roles.Any())
-                return;
+            await context.Database.MigrateAsync();
 
-            var roles = new List<Role>
-        {
-            new Role { Id = Guid.NewGuid(), Name = "Admin" },
-            new Role { Id = Guid.NewGuid(), Name = "Organizator" },  // event organizator
-            new Role { Id = Guid.NewGuid(), Name = "User" }
-        };
+            if (!context.Roles.Any())  // create roles
+            {
+                context.Roles.AddRange(
+                    new Role { Name = Roles.Admin },
+                    new Role { Name = Roles.Organizator },
+                    new Role { Name = Roles.User }
+                );
+                await context.SaveChangesAsync();
+            }
+            /// for now hardcoded in the code, later probably should be in some config file as variables !!!!!!!!!!!!!!!!!!!!!
+            if (!context.Users.Any(u => u.Name == "admin"))
+            {
+                var admin = new User
+                {
+                    Name = "admin",
+                    Email = "admin@example.com",
+                    Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123") 
+                };
 
-            context.Roles.AddRange(roles);
-            await context.SaveChangesAsync();
+                context.Users.Add(admin);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

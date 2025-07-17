@@ -27,14 +27,14 @@ namespace EventPlanner.Backend.Controllers
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                 return BadRequest("User already exists");
 
-            var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
+            Role? role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "User");
             var user = new User
             {
                 Id = Guid.NewGuid(),
                 Email = request.Email,
                 Name = request.Email.Split('@')[0],
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                RoleId = role.Id
+                Role = role
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -43,7 +43,7 @@ namespace EventPlanner.Backend.Controllers
             {
                 Token = _tokenService.CreateToken(user),
                 Name = user.Name,
-                Role = role.Name
+                Role = role?.Name
             };
         }
 
@@ -58,7 +58,7 @@ namespace EventPlanner.Backend.Controllers
             {
                 Token = _tokenService.CreateToken(user),
                 Name = user.Name,
-                Role = user.Role.Name
+                Role = user.Role?.Name
             };
         }
     }
