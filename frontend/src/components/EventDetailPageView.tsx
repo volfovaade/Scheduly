@@ -1,0 +1,74 @@
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+interface Option {
+    id: string;
+    placeName: string;
+    location: string;
+    timeFrom: string;
+    timeTo: string;
+}
+interface NewOption {
+    placeName: string;
+    location: string;
+    timeFrom: Date;
+    timeTo: Date;
+}
+
+interface Props {
+    options: Option[];
+    newOption: NewOption;
+    myVotes: string[];
+    setMyVotes: (votes: string[]) => void;
+    setNewOption: (opt: NewOption) => void;
+    handleVote: () => void;
+    handleAddOption: () => void;
+}
+
+export default function EventDetailPageView({options, newOption, myVotes, setMyVotes, setNewOption, handleVote, handleAddOption} : Props) {
+    return (
+        <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Event detail</h2>
+
+            <div className="mb-6">
+                <h3 className="text-lg font-semibold">Voting options</h3>
+                <ul className="mb-4">
+                    {options.map((o: any) => (
+                        <li key={o.id}>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    value={o.id}
+                                    checked={myVotes.includes(o.id)}
+                                    onChange={e => {
+                                        if (e.target.checked)
+                                            setMyVotes([...myVotes, o.id]);
+                                        else
+                                            setMyVotes(myVotes.filter(id => id !== o.id));
+                                    }}
+                                />
+                                {o.placeName} | {new Date(o.timeFrom).toLocaleString()} - {new Date(o.timeTo).toLocaleString()}
+                            </label>
+                        </li>
+                    ))}
+                </ul>
+                <button className="bg-blue-600 text-white px-4 py-2" onClick={handleVote}>Odeslat hlasy</button>
+            </div>
+
+            <div className="border-t pt-4">
+                <h3 className="text-lg font-semibold mb-2">Add your preference</h3>
+                <input placeholder="Name of the place" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, placeName: e.target.value})} />
+                <input placeholder="Location (address)" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, location: e.target.value})} />
+                <div className="flex items-center gap-4 my-2">
+                    <div>
+                        From: <DatePicker selected={newOption.timeFrom} onChange={date => setNewOption({...newOption, timeFrom: date!})} showTimeSelect dateFormat="Pp" />
+                    </div>
+                    <div>
+                        To: <DatePicker selected={newOption.timeTo} onChange={date => setNewOption({...newOption, timeTo: date!})} showTimeSelect dateFormat="Pp" />
+                    </div>
+                </div>
+                <button onClick={handleAddOption} className="bg-green-600 text-white px-4 py-2">Přidat možnost</button>
+            </div>
+        </div>
+    );
+}
