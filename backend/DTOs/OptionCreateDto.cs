@@ -1,4 +1,4 @@
-namespace EventPlanner.Backend.DTOs
+namespace backend.DTOs
 {
     public class OptionCreateDto
     {

@@ -15,4 +15,4 @@ COPY --from=build /app/publish .
 
 EXPOSE 80
 
-ENTRYPOINT ["dotnet", "EventPlanner.Backend.dll"]
+ENTRYPOINT ["dotnet", "backend.dll"]

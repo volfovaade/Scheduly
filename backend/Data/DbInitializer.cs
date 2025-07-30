@@ -1,7 +1,7 @@
-using EventPlanner.Backend.Models;
-using EventPlanner.Backend.Database;
+using backend.Models;
+using backend.Database;
 using Microsoft.EntityFrameworkCore;
-namespace EventPlanner.Backend.Data
+namespace backend.Data
 {
     public static class DbInitializer
     {
@@ -13,8 +13,9 @@ namespace EventPlanner.Backend.Data
             {
                 context.Roles.AddRange(
                     new Role { Name = Roles.Admin },
-                    new Role { Name = Roles.Organizator },
-                    new Role { Name = Roles.User }
+                    new Role { Name = Roles.User },
+                    new Role { Name = EventRoles.Organizator },
+                    new Role { Name = EventRoles.Participant }
                 );
                 await context.SaveChangesAsync();
             }

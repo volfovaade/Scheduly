@@ -1,6 +1,12 @@
 
 version: "3.9"
 services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
   db:
     image: postgres:15
     healthcheck:
@@ -18,7 +24,7 @@ services:
       - "5432:5432"
 
   backend:
-    build: ./EventPlanner.Backend
+    build: ./backend
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:

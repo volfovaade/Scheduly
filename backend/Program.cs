@@ -3,8 +3,8 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using EventPlanner.Backend.Data;
-using EventPlanner.Backend.Database;
+using backend.Data;
+using backend.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
