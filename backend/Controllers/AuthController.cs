@@ -43,7 +43,8 @@ namespace backend.Controllers
             {
                 Token = _tokenService.CreateToken(user),
                 Name = user.Name,
-                Role = role?.Name
+                Role = role?.Name,
+                UserId = user.Id
             };
         }
 
@@ -58,7 +59,8 @@ namespace backend.Controllers
             {
                 Token = _tokenService.CreateToken(user),
                 Name = user.Name,
-                Role = user.Role?.Name
+                Role = user.Role?.Name,
+                UserId = user.Id
             };
         }
     }
