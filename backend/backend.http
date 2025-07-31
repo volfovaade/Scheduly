@@ -1,6 +1,6 @@
 @EventPlanner.Backend_HostAddress = http://localhost:5225
 
-GET {{EventPlanner.Backend_HostAddress}}/weatherforecast/
+GET {{EventPlanner.Backend_HostAddress}}/api/events
 Accept: application/json
 
 ###

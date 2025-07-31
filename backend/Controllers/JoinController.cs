@@ -19,16 +19,18 @@ namespace backend.Controllers
         {
             _context = context;
         }
-        [HttpPost("{token}")]
-        public async Task<IActionResult> JoinEvent(string token)
+        [HttpPost("{code}")]
+        public async Task<IActionResult> JoinEvent(string code)
         {
-            var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id.ToString().StartsWith(token));
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                return Unauthorized();
+
+            var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id.ToString("N").StartsWith(code));
             if (ev == null)
             {
                 return NotFound("Event not found");
             }
-            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-                return Unauthorized();
+
             bool alreadyJoined = await _context.EventParticipants
                 .AnyAsync(p => p.EventId == ev.Id && p.UserId == userId);
             if (!alreadyJoined)
@@ -41,7 +43,7 @@ namespace backend.Controllers
                 });
                 await _context.SaveChangesAsync();
             }
-            return Ok("Joined successfully");
+            return Ok(ev.Id);
         }
     }
 }

@@ -1,10 +1,11 @@
-using System;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using backend.Data;
 using backend.Database;
+using backend.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,13 +13,22 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //builder.Services.AddScoped<IUserRepository, UserRepository>();
 //builder.Services.AddScoped<IEventRepository, EventRepository>();
 //builder.Services.AddScoped<IVoteRepository, VoteRepository>();
-//builder.Services.AddScoped<IEventService, EventService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => {
@@ -30,6 +40,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false
         };
     });
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEventService, EventService>();
 
 builder.Services.AddAuthorization();
 
@@ -41,6 +53,7 @@ using (var scope = app.Services.CreateScope())
     context.Database.Migrate();
     await DbInitializer.InitializeAsync(context);
 }
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
