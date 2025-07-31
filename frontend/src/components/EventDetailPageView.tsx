@@ -23,12 +23,35 @@ interface Props {
     setNewOption: (opt: NewOption) => void;
     handleVote: () => void;
     handleAddOption: () => void;
+    eventCode: string;
 }
 
-export default function EventDetailPageView({options, newOption, myVotes, setMyVotes, setNewOption, handleVote, handleAddOption} : Props) {
+export default function EventDetailPageView({
+    options, 
+    newOption,
+    myVotes, 
+    setMyVotes, 
+    setNewOption, 
+    handleVote, 
+    handleAddOption, 
+    eventCode
+    } : Props) {
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">Event detail</h2>
+
+            <div className="mb-4">
+                <strong>Event code:</strong> <code>{eventCode}</code>
+                <button
+                onClick={() => {
+                    navigator.clipboard.writeText(eventCode);
+                    alert("Copied!");
+                }}
+                className="ml-2 px-2 py-1 text-sm bg-gray-200 rounded"
+                >
+                Copy
+                </button>
+            </div>
 
             <div className="mb-6">
                 <h3 className="text-lg font-semibold">Voting options</h3>
@@ -47,12 +70,15 @@ export default function EventDetailPageView({options, newOption, myVotes, setMyV
                                             setMyVotes(myVotes.filter(id => id !== o.id));
                                     }}
                                 />
-                                {o.placeName} | {new Date(o.timeFrom).toLocaleString()} - {new Date(o.timeTo).toLocaleString()}
+                                <strong>{o.placeName}</strong>{" "}
+                                <span className="text-sm text-gray-600">
+                                    {new Date(o.timeFrom).toLocaleString()} - {new Date(o.timeTo).toLocaleString()}
+                                </span>
                             </label>
                         </li>
                     ))}
                 </ul>
-                <button className="bg-blue-600 text-white px-4 py-2" onClick={handleVote}>Odeslat hlasy</button>
+                <button className="bg-blue-600 text-white px-4 py-2" onClick={handleVote}>Send votes</button>
             </div>
 
             <div className="border-t pt-4">
@@ -67,7 +93,7 @@ export default function EventDetailPageView({options, newOption, myVotes, setMyV
                         To: <DatePicker selected={newOption.timeTo} onChange={date => setNewOption({...newOption, timeTo: date!})} showTimeSelect dateFormat="Pp" />
                     </div>
                 </div>
-                <button onClick={handleAddOption} className="bg-green-600 text-white px-4 py-2">Přidat možnost</button>
+                <button onClick={handleAddOption} className="bg-green-600 text-white px-4 py-2">Add option</button>
             </div>
         </div>
     );

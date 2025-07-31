@@ -4,29 +4,28 @@ import axios from "../api/axios";
 import MainPageView from "../components/MainPageView";
 
 export default function MainPage(){
-    const [token, setToken] = useState("");
+    const [code, setCode] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const token = sessionStorage.getItem("token");
         setIsAuthenticated(token ? true : false);
     }, []);
 
     const handleJoinEvent = async () => {
         try {
-            await axios.post(`/api/join/${token}`, {}, {
-                headers: {Authorization: "Bearer "+ localStorage.getItem("token")}
-            });
-            navigate(`/events/${token}`);
+            const res = await axios.post(`/join/${code}`, {});
+            navigate(`/events/${res.data}`);
         } catch (err) {
-            alert ("Failed to connect.");
+            alert("Invalid or expired code");
+            console.error(err);
         }
     };
     return (
         <MainPageView
-            token={token}
-            setToken={setToken}
+            code={code}
+            setCode={setCode}
             isAuthenticated={isAuthenticated}
             onJoin={handleJoinEvent}
             onLogin={() => navigate("/login")}

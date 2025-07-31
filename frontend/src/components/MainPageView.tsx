@@ -1,6 +1,6 @@
 type Props = {
-    token: string;
-    setToken: (v: string) => void;
+    code: string;
+    setCode: (v: string) => void;
     isAuthenticated: boolean;
     onJoin: () => void;
     onLogin: () => void;
@@ -8,17 +8,17 @@ type Props = {
     onGoToDashboard: () => void;
 };
 
-export default function MainPageView({token, setToken, isAuthenticated, onJoin, onLogin, onRegister, onGoToDashboard} : Props){
+export default function MainPageView({code, setCode, isAuthenticated, onJoin, onLogin, onRegister, onGoToDashboard} : Props){
     return (
         <div className="container mx-auto p-6">
-            <h1 className="text-3xl font-bold mb-6">Easy Plan</h1>
+            <h1 className="text-3xl font-bold mb-6">Scheduly</h1>
 
             <div className="mb-6">
                 <label className="block mb-2">Enter the event code (token):</label>
                 <input
                     className="border p-2 w-full max-w-md"
-                    value={token}
-                    onChange={(e) => setToken(e.target.value)}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
                 />
                 <button onClick={onJoin} className="bg-blue-600 text-white px-4 py-2 mt-2">
                     Join

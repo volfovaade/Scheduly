@@ -27,6 +27,7 @@ services:
     build: ./backend
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
     ports:
       - "8081:80"
     depends_on:

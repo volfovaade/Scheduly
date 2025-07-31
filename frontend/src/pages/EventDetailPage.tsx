@@ -7,6 +7,7 @@ import EventDetailPageView from "../components/EventDetailPageView";
 
 export default function EventDetailPage() {
     const { eventId } = useParams();
+    const [event, setEvent] = useState<{ title: string; description: string; code: string } | null>(null);
     const [options, setOptions] = useState([]);
     const [newOption, setNewOption] = useState({
         placeName: "",
@@ -15,16 +16,20 @@ export default function EventDetailPage() {
         timeTo: new Date(),
     });
     const [myVotes, setMyVotes] = useState<string[]>([]);
+    useEffect(() => {
+        const loadEvent = async () => {
+            const res = await axios.get(`/events/${eventId}`);
+            setEvent(res.data);
+        };
+        loadEvent();
+    }, [eventId]);
+
     const loadOptions = async () => {
-        const res = await axios.get(`/events/${eventId}/options`, {
-            headers: { Authorization: `Bearer: ${localStorage.getItem("token")}`}
-        });
+        const res = await axios.get(`/events/${eventId}/options`);
         setOptions(res.data);
     }
     const loadVotes = async () => {
-        const res = await axios.get(`/events/${eventId}/votes/summary`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
+        const res = await axios.get(`/events/${eventId}/votes/summary`);
         setOptions(res.data);
     }
 
@@ -34,15 +39,11 @@ export default function EventDetailPage() {
     }, [eventId]);
 
     const handleVote = async () => {
-        await axios.post(`/events/${eventId}/votes`, {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
-        });
+        await axios.post(`/events/${eventId}/votes`);
         alert("Vote saved.");
     };
     const handleAddOption = async () => {
-        await axios.post(`/events/${eventId}/options`, newOption, {
-            headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
-        });
+        await axios.post(`/events/${eventId}/options`, newOption);
         await loadOptions();
     }
 
@@ -55,6 +56,7 @@ export default function EventDetailPage() {
             setMyVotes={setMyVotes}
             handleVote={handleVote}
             handleAddOption={handleAddOption}
+            eventCode={event?.code ?? ""}
         />
     )
 }

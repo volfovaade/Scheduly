@@ -13,11 +13,7 @@ export default function EventsPage () {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const res = await axios.get("/events", {
-                    headers: {
-                        Authorization: "Bearer " + localStorage.getItem("token")
-                    }
-                });
+                const res = await axios.get("/events");
                 setEvents(res.data);
             } catch (err) {
                 console.error("Error loading events", err);
