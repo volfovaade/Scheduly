@@ -20,20 +20,20 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetAll()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetAll()
         {
             return Ok(await _eventService.GetAllAsync());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Event>> GetById(Guid id)
+        public async Task<ActionResult<DetailedEventDto>> GetById(Guid id)
         {
             var ev = await _eventService.GetByIdAsync(id);
             return ev == null ? NotFound() : Ok(ev);
         }
 
         [HttpGet("my")]
-        public async Task<ActionResult<IEnumerable<Event>>> GetMyEvents()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetMyEvents()
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -43,8 +43,7 @@ namespace backend.Controllers
         }
 
         [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<Event>> Create(EventCreateDto dto)
+        public async Task<ActionResult<EventDto>> Create(EventCreateDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {

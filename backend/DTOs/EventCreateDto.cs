@@ -1,8 +1,8 @@
-namespace backend.DTOs
-{
-    public class EventCreateDto
+    namespace backend.DTOs
     {
-        public required string Title { get; set; }
-        public string Description { get; set; } = string.Empty;
+        public class EventCreateDto
+        {
+            public required string Title { get; set; }
+            public string Description { get; set; } = string.Empty;
+        }
     }
-}
