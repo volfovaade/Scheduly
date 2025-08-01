@@ -20,17 +20,21 @@ namespace backend.Controllers
             _context = context;
         }
         [HttpPost("{code}")]
-        public async Task<IActionResult> JoinEvent(string code)
+        public async Task<IActionResult> JoinEvent(string code) 
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id.ToString("N").StartsWith(code));
+            var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id.ToString().StartsWith(code));
             if (ev == null)
             {
                 return NotFound("Event not found");
             }
-
+            if (ev.OwnerId == userId)
+            {
+                return BadRequest("You are already the owner of this event");
+            }
+                
             bool alreadyJoined = await _context.EventParticipants
                 .AnyAsync(p => p.EventId == ev.Id && p.UserId == userId);
             if (!alreadyJoined)

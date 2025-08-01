@@ -74,7 +74,6 @@ namespace backend.Services
                 Description = ev.Description,
                 OwnerId = ev.OwnerId,
                 CreatedAt = ev.CreatedAt,
-                Code = ev.Code,
                 Participants = ev.Participants.Select(ToParticipantDto).ToList()
             };
         }
@@ -95,8 +94,7 @@ namespace backend.Services
             Title = e.Title,
             Description = e.Description,
             CreatedAt = e.CreatedAt,
-            OwnerId = e.OwnerId,
-            Code = e.Code
+            OwnerId = e.OwnerId
         };
         private static UserDto ToUserDto(User user) => new UserDto
         {
