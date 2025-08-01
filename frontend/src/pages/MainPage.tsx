@@ -2,16 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import MainPageView from "../components/MainPageView";
+import { useAuth } from "../context/AuthContext"; 
 
 export default function MainPage(){
     const [code, setCode] = useState("");
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const token = sessionStorage.getItem("token");
-        setIsAuthenticated(token ? true : false);
-    }, []);
 
     const handleJoinEvent = async () => {
         try {

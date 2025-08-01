@@ -39,7 +39,9 @@ export default function EventDetailPage() {
     }, [eventId]);
 
     const handleVote = async () => {
-        await axios.post(`/events/${eventId}/votes`);
+        await axios.post(`/events/${eventId}/votes`, { optionIds: myVotes }, {
+            headers: {"Content-Type": "application/json" }
+        });
         alert("Vote saved.");
     };
     const handleAddOption = async () => {
