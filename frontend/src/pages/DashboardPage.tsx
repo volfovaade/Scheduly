@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import CreateEventDialog from "../components/CreateEventDialog";
 import { useAuth } from "../context/AuthContext";
-import { Trash2, LogOut } from "lucide-react";
+import EventCard from "../components/EventCard";
 
 type Event = {
     id: string;
@@ -40,6 +40,7 @@ export default function DashboardPage() {
         try {
             const res = await axios.post("events", data);
             setOrganized((prev) => [...prev, res.data]);
+            navigate(`/events/${res.data.id}?showPreferenceForm=true`); // navigate to placePreference form
         } catch (err) {
             alert("Event creation failed.");
             console.error(err);
@@ -66,23 +67,15 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-semibold mb-4">Participating</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {participating.map((e: any) => (
-                    <div
-                        key={e.id}
-                        className="relative p-4 border rounded shadow hover:shadow-md cursor-pointer transition"
-                        onClick={() => handleGoToDetail(e.id)}
-                    >
-                        <h4 className="font-bold text-lg">{e.title}</h4>
-                        <p className="text-sm text-gray-600">Code: {e.id.slice(0, 6)}</p>
-                        <button
-                            onClick={() => {
-                                e.stopPropagation();  // to prevent from showing detail on click
-                                handleLeaveEvent(e.id);
-                            }}
-                            className="absolute top-2 right-2 text-gray-600 hover:text-red-500"
-                        >
-                            <LogOut size={18} />
-                        </button>
-                    </div>
+                        <EventCard
+                            key={e.id}
+                            id={e.id}
+                            title={e.title}
+                            code={e.id.slice(0, 6)}
+                            onClick={() => handleGoToDetail(e.id)}
+                            onAction={() => handleLeaveEvent(e.id)}
+                            icon="leave"
+                        />
                     ))}
                 </div>
                 </div>
@@ -92,23 +85,15 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-semibold mb-4">Organizing</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {organized.map((e: any) => (
-                    <div
-                        key={e.id}
-                        className="relative p-4 border rounded shadow hover:shadow-md cursor-pointer transition"
-                        onClick={() => handleGoToDetail(e.id)}
-                    >
-                        <h4 className="font-bold text-lg">{e.title}</h4>
-                        <p className="text-sm text-gray-600">Code: {e.id.slice(0, 6)}</p>
-                        <button
-                            onClick={() => {
-                                e.stopPropagation();
-                                handleDeleteEvent(e.id);
-                            }}
-                            className="absolute top-2 right-2 text-gray-600 hover:text-red-600"
-                        >
-                            <Trash2 size={18} />
-                        </button>
-                    </div>
+                        <EventCard
+                            key={e.id}
+                            id={e.id}
+                            title={e.title}
+                            code={e.id.slice(0, 6)}
+                            onClick={() => handleGoToDetail(e.id)}
+                            onAction={() => handleDeleteEvent(e.id)}
+                            icon="delete"
+                        />
                     ))}
                 </div>
                 </div>

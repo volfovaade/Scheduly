@@ -1,5 +1,7 @@
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import PlacePreferenceForm from "../components/PlacePreferenceForm";
+import { BarChart, XAxis, YAxis, Tooltip, Bar, ResponsiveContainer } from "recharts";
 
 interface Option {
     id: string;
@@ -24,6 +26,12 @@ interface Props {
     handleVote: () => void;
     handleAddOption: () => void;
     eventCode: string;
+    showPreferences: boolean;
+    setShowPreferences: (showPreferences: boolean) => void;
+    preferenceSummary: any[];
+    submittedUsers: any[],
+    eventId: string | undefined;
+    loadPreferencesSummary: () => void;
 }
 
 export default function EventDetailPageView({
@@ -34,8 +42,18 @@ export default function EventDetailPageView({
     setNewOption, 
     handleVote, 
     handleAddOption, 
-    eventCode
+    eventCode,
+    showPreferences,
+    setShowPreferences,
+    preferenceSummary,
+    submittedUsers,
+    eventId,
+    loadPreferencesSummary
     } : Props) {
+    const barData = preferenceSummary.map((item) => ({
+        Label: `${item.day} ${item.hour}:00`,
+        Count: item.count
+    }));
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">Event detail</h2>
@@ -51,6 +69,30 @@ export default function EventDetailPageView({
                 >
                 Copy
                 </button>
+            </div>
+            
+            <button onClick={() => setShowPreferences(true)} className="bg-purple-600 text-white px-4 py-2 mt-4">Edit Preferences</button>
+            {showPreferences && <PlacePreferenceForm eventId={eventId!} onClose={() => setShowPreferences(false)} loadPreferencesSummary={loadPreferencesSummary}/>}
+
+            <div className="mt-6">
+                <h3 className="text-lg font-semibold">Participants who submitted preferences</h3>
+                <ul className="list-disc ml-6">
+                    {submittedUsers.map((user: any) => (
+                        <li key={user.id}>{user.name} ({user.role})</li>
+                    ))}
+                </ul>
+            </div>
+
+            <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Most preferred times</h3>
+                <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={barData}>
+                        <XAxis dataKey="Label" label={{ value: "Time", position: "insideBottom", offset: -5 }}/>
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="Count" fill="#38bdf8" />
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
 
             <div className="mb-6">
