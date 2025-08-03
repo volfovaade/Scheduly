@@ -11,12 +11,17 @@ namespace backend.Database
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<PlacePreference> PlacePreferences { get; set; }
+        public DbSet<TimeInterval> TimeIntervals { get; set; }
         public DbSet<EventOption> EventOptions { get; set; }
         public DbSet<Vote> Votes { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<TimeInterval>()
+                .HasOne<PlacePreference>()
+                .WithMany(p => p.TimeIntervals)
+                .HasForeignKey(t => t.PlacePreferenceId);
 
             // composed primary key
             modelBuilder.Entity<EventParticipant>()
@@ -33,6 +38,8 @@ namespace backend.Database
                 .HasOne(ep => ep.Event)
                 .WithMany(e => e.Participants)
                 .HasForeignKey(ep => ep.EventId);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
