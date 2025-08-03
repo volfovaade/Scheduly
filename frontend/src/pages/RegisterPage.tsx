@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 
 export default function RegisterPage (){
@@ -14,7 +14,7 @@ export default function RegisterPage (){
     const register = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await axios.post("/register", form); 
+            const res = await axios.post("/auth/register", form); 
             await login(res.data.token, res.data.userId); // login after registration
             navigate("/dashboard");
         } catch (err) {

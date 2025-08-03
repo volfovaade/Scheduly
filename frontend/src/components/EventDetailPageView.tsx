@@ -77,8 +77,8 @@ export default function EventDetailPageView({
             <div className="mt-6">
                 <h3 className="text-lg font-semibold">Participants who submitted preferences</h3>
                 <ul className="list-disc ml-6">
-                    {submittedUsers.map((user: any) => (
-                        <li key={user.id}>{user.name} ({user.role})</li>
+                    {submittedUsers.map((user: any, index) => (
+                        <li key={index}>{user.name} ({user.role})</li>
                     ))}
                 </ul>
             </div>
