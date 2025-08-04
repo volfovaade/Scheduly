@@ -12,7 +12,7 @@ export default function MainPage(){
     const handleJoinEvent = async () => {
         try {
             const res = await axios.post(`/join/${code}`, {});
-            navigate(`/events/${res.data}?showPreferenceForm=true`);
+            navigate(`/events/${res.data.mode}/${res.data.id}?showPreferenceForm=true`);
         } catch (err) {
             alert("Invalid or expired code");
             console.error(err);

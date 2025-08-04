@@ -7,11 +7,12 @@ type Props = {
     onClick: () => void;
     onAction?: () => void;
     icon?: "delete" | "leave";
+    mode: "Open" | "Fixed";
 };
-export default function EventCard({id, title, code, onClick, onAction, icon}: Props){
+export default function EventCard({id, title, code, onClick, onAction, icon, mode}: Props){
     return (
         <div
-            className="relative p-4 border rounded shadow hover:shadow-md cursor-pointer transition"
+            className={`relative p-4 border rounded shadow ${mode === "Open" ? "bg-blue-50" : "bg-gray-50"} hover:shadow-md cursor-pointer transition`}
             onClick={onClick}
         >
             <h4 className="font-bold text-lg">{title}</h4>

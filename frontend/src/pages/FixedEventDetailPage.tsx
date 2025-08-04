@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../api/axios";
-import EventDetailPageView from "../components/EventDetailPageView";
 import { useLocation } from "react-router-dom";
+import FixedEventDetailPage from "../components/FixedEventDetailPage";
 
 export default function EventDetailPage() {
     const { eventId } = useParams();
-    const [event, setEvent] = useState<{ title: string; description: string; code: string } | null>(null);
+        const [event, setEvent] = useState<{ 
+        title: string; 
+        description: string; 
+        code: string;
+        mode: "Open" | "Fixed";
+        timeRangeFrom: Date | null;
+        timeRangeTo: Date | null;
+    } | null>(null);
+
     const [options, setOptions] = useState([]);
     const [newOption, setNewOption] = useState({
         placeName: "",
@@ -15,34 +23,16 @@ export default function EventDetailPage() {
         timeTo: new Date(),
     });
     const [myVotes, setMyVotes] = useState<string[]>([]);
-    const [preferenceSummary, setPreferenceSummary] = useState([]);
-    const [submittedUsers, setSubmittedUsers] = useState([]);
+    const [participants, setParticipants] = useState([]);
 
     const location = useLocation();
     const showPreferenceFormInitially = new URLSearchParams(location.search).get("showPreferenceForm") === "true";
     const [showPreferences, setShowPreferences] = useState(showPreferenceFormInitially);
 
-    useEffect(() => {
-        const loadEvent = async () => {
-            const res = await axios.get(`/events/${eventId}`);
-            setEvent(res.data);
-        };
-        loadEvent();
-        loadPreferencesSummary();
-    }, [eventId]);
-
-    const loadPreferencesSummary = async () => {
-        const [summaryRes, usersRes ] = await Promise.all([
-            axios.get(`/events/${eventId}/preferences/summary`),
-            axios.get(`/events/${eventId}/participants`)
-        ]);
-        setPreferenceSummary(summaryRes.data);  // [{ Day, Hour, Count }]
-        setSubmittedUsers(usersRes.data);
+    const loadParticipants = async () => {
+        const usersRes = await axios.get(`/events/${eventId}/participants`);
+        setParticipants(usersRes.data);
     };
-
-    useEffect(() => {
-        console.log("Preference summary", preferenceSummary);
-    }, [preferenceSummary]);
 
     const loadOptions = async () => {
         const res = await axios.get(`/events/${eventId}/options`);
@@ -54,8 +44,14 @@ export default function EventDetailPage() {
     }
 
     useEffect(() => {
+        const loadEvent = async () => {
+            const res = await axios.get(`/events/${eventId}`);
+            setEvent(res.data);
+        };
+        loadEvent();
         loadOptions();
         loadVotes();
+        loadParticipants();
     }, [eventId]);
 
     const handleVote = async () => {
@@ -69,8 +65,9 @@ export default function EventDetailPage() {
         await loadOptions();
     }
 
-    return (
-        <EventDetailPageView
+    return event ? (
+        <FixedEventDetailPage
+            event={event}
             options={options}
             newOption={newOption}
             setNewOption={setNewOption}
@@ -78,13 +75,9 @@ export default function EventDetailPage() {
             setMyVotes={setMyVotes}
             handleVote={handleVote}
             handleAddOption={handleAddOption}
-            eventCode={event?.code ?? ""}
-            showPreferences={showPreferences}
-            setShowPreferences={setShowPreferences}
-            preferenceSummary={preferenceSummary}
-            submittedUsers={submittedUsers}
-            eventId={eventId}
-            loadPreferencesSummary={loadPreferencesSummary}
+            submittedUsers={participants}
         />
-    )
+    ) : (
+    <div className="p-6 text-gray-500">Loading event...</div>
+    );
 }

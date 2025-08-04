@@ -36,11 +36,27 @@ export default function DashboardPage() {
         load();
     }, [isAuthenticated, user, navigate]); 
 
-    const handleAddEvent = async (data: { title: string; description: string }) => {
+    const handleAddEvent = async (data: { 
+        title: string; 
+        description: string;
+        mode: "Open" | "Fixed";
+        timeRangeFrom?: Date | null;
+        timeRangeTo?: Date | null;
+    }) => {
         try {
-            const res = await axios.post("events", data);
+            const res = await axios.post("events", {
+            title: data.title,
+            description: data.description,
+            mode: data.mode,
+            timeRangeFrom: data.timeRangeFrom,
+            timeRangeTo: data.timeRangeTo,
+        });
             setOrganized((prev) => [...prev, res.data]);
-            navigate(`/events/${res.data.id}?showPreferenceForm=true`); // navigate to placePreference form
+            if (data.mode === "Open"){
+                navigate(`/events/open/${res.data.id}?showPreferenceForm=true`); // navigate to placePreference form
+            } else {
+                navigate(`/events/fixed/${res.data.id}?showPreferenceForm=true`); // navigate to placePreference form
+            }
         } catch (err) {
             alert("Event creation failed.");
             console.error(err);
@@ -54,8 +70,12 @@ export default function DashboardPage() {
     const handleLeaveEvent = async (eventId: string) => {
         await axios.delete(`events/${eventId}/participants/leave`);
     };
-    const handleGoToDetail = (id: string) => {
-        navigate(`/events/${id}`);
+    const handleGoToDetail = (id: string, mode: string) => {
+        if (mode === "Open"){
+            navigate(`/events/open/${id}`);
+        } else {
+            navigate(`/events/fixed/${id}`);
+        }
     };
     return (
         <div className="p-6">
@@ -72,9 +92,10 @@ export default function DashboardPage() {
                             id={e.id}
                             title={e.title}
                             code={e.id.slice(0, 6)}
-                            onClick={() => handleGoToDetail(e.id)}
+                            onClick={() => handleGoToDetail(e.id, e.mode)}
                             onAction={() => handleLeaveEvent(e.id)}
                             icon="leave"
+                            mode={e.mode}
                         />
                     ))}
                 </div>
@@ -90,9 +111,10 @@ export default function DashboardPage() {
                             id={e.id}
                             title={e.title}
                             code={e.id.slice(0, 6)}
-                            onClick={() => handleGoToDetail(e.id)}
+                            onClick={() => handleGoToDetail(e.id, e.mode)}
                             onAction={() => handleDeleteEvent(e.id)}
                             icon="delete"
+                            mode={e.mode}
                         />
                     ))}
                 </div>
