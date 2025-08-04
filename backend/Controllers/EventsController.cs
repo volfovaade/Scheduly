@@ -1,8 +1,10 @@
+using backend.Database;
 using backend.DTOs;
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace backend.Controllers
@@ -13,10 +15,12 @@ namespace backend.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
+        private readonly AppDbContext _context;
 
-        public EventsController(IEventService eventService)
+        public EventsController(IEventService eventService, AppDbContext context)
         {
             _eventService = eventService;
+            _context = context;
         }
 
         [HttpGet]
@@ -28,7 +32,11 @@ namespace backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<DetailedEventDto>> GetById(Guid id)
         {
-            var ev = await _eventService.GetByIdAsync(id);
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentUserId))
+            {
+                return Unauthorized();
+            }
+            var ev = await _eventService.GetByIdAsync(id, currentUserId);
             return ev == null ? NotFound() : Ok(ev);
         }
 
@@ -42,13 +50,45 @@ namespace backend.Controllers
             return Ok(myEvents);
         }
 
-        [HttpPost]
-        public async Task<ActionResult<EventDto>> Create(EventCreateDto dto)
+        [HttpPost("{eventId}/finalize")]
+        public async Task<IActionResult> FinalizeProposal(Guid eventId)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
                 return Unauthorized();
             }
+            var ev = await _context.Events
+                .Include(e => e.Participants)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+            if (ev == null)
+            {
+                return NotFound();
+            }
+            var isOrganizer = ev.Participants.Any(p => p.UserId == userId && p.Role == EventRoles.Organizator);
+            if (!isOrganizer)
+            {
+                return Forbid();
+            }
+            // calling algorithm for top options
+            var selectedOptions = await _eventService.FinalizeProposalPhase(eventId);
+
+            // mark the event phase as "FinalVoting"
+            ev.Phase = EventPhase.FinalVoting;
+            await _context.SaveChangesAsync();
+
+            return Ok(selectedOptions);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<EventDto>> Create([FromBody] EventCreateDto dto)
+        {
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized();
+            }
+            if (dto.Mode == EventMode.Open && (dto.TimeRangeFrom == null || dto.TimeRangeTo == null))
+                return BadRequest("Open event requires range.");
+
             var created = await _eventService.CreateAsync(userId, dto);
             return CreatedAtAction(nameof(GetAll), new { id = created.Id }, created);
         }

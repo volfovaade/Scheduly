@@ -47,7 +47,7 @@ namespace backend.Controllers
                 });
                 await _context.SaveChangesAsync();
             }
-            return Ok(ev.Id);
+            return Ok(new { id=ev.Id, mode=ev.Mode });
         }
     }
 }

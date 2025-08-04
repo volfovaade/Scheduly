@@ -16,6 +16,7 @@ namespace backend.Database
         public DbSet<EventOption> EventOptions { get; set; }
         public DbSet<Vote> Votes { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
+        public DbSet<GeneratedPlaceOption> GeneratedPlaceOptions { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TimeInterval>()
