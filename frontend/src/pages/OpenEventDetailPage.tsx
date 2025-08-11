@@ -22,6 +22,9 @@ export default function EventDetailPage() {
     const showPreferenceFormInitially = new URLSearchParams(location.search).get("showPreferenceForm") === "true";
     const [showPreferences, setShowPreferences] = useState(showPreferenceFormInitially);
 
+    const [radius, setRadius] = useState(2);  // in km (change to meters in backend)
+    const [duration, setDuration] = useState(2);
+
     useEffect(() => {
         const loadEvent = async () => {
             const res = await axios.get(`/events/${eventId}`);
@@ -45,13 +48,27 @@ export default function EventDetailPage() {
         if (!confirm) return;
 
         try {
-            const res = await axios.post(`/events/${eventId}/finalize`);
+            await axios.post(`/events/${eventId}/finalize`, null, {
+                params: { radius, duration }
+            });
             window.location.reload();  // to do: navigate to new form
         } catch (err) {
             console.error(err);
             alert("Failed to finalize proposals.");
         }
     };
+
+    const handleCloseEvent = async () => {
+        if (!window.confirm("Are you sure you want to close the event?")) return;
+
+        try {
+            await axios.post(`/events/${eventId}/close`);
+            window.location.reload();
+        } catch (err) {
+            console.error(err);
+            alert("Failed to close event.");
+        }
+    }
 
     return event ? (
         <OpenEventDetailPage 
@@ -62,6 +79,11 @@ export default function EventDetailPage() {
             preferenceSummary={preferenceSummary}
             submittedUsers={submittedUsers}
             handleFinalize={handleFinalize}
+            radius={radius}
+            setRadius={setRadius}
+            duration={duration}
+            setDuration={setDuration}
+            handleCloseEvent={handleCloseEvent}
         />
     ) : (
     <div className="p-6 text-gray-500">Loading event...</div>

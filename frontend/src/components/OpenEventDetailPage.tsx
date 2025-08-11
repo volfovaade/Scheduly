@@ -10,6 +10,11 @@ interface Props {
     preferenceSummary: any[];
     submittedUsers: any[];
     handleFinalize: () => void;
+    radius: number;
+    setRadius: (val: number) => void;
+    duration: number;
+    setDuration: (val: number) => void;
+    handleCloseEvent: () => void;
 }
 
 export default function OpenEventDetailPage({
@@ -19,7 +24,12 @@ export default function OpenEventDetailPage({
     loadPreferencesSummary,
     preferenceSummary,
     submittedUsers,
-    handleFinalize
+    handleFinalize,
+    radius,
+    setRadius,
+    duration,
+    setDuration,
+    handleCloseEvent
 }: Props) {
     const barData = preferenceSummary.map((item) => ({
             Label: `${item.day} ${item.hour}:00`,
@@ -45,18 +55,6 @@ export default function OpenEventDetailPage({
                 Copy
                 </button>
             </div>
-            {event.currentUserIsOrganizer && event.phase === "Proposal" && (
-                <button 
-                    className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
-                    onClick={handleFinalize}
-                >
-                    Finalize Proposals
-                </button>
-            )}
-
-            {event.phase === "FinalVoting" && (
-                <FinalVotingForm eventId={event.id} />
-            )}
 
             {event.phase === "Proposal" && (
                 <>
@@ -84,6 +82,70 @@ export default function OpenEventDetailPage({
                         </ResponsiveContainer>
                     </div>
                 </>
+            )}
+
+            {event.currentUserIsOrganizer && event.phase === "Proposal" && (
+                <>
+                    <div className="mt-4 mb-4">
+                        <label className="block font-medium">Search radius (km): {radius}</label>
+                        <input
+                            type="range"
+                            min={3}
+                            max={30}
+                            step={1}
+                            value={radius}
+                            onChange={(e) => setRadius(Number(e.target.value))}
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block font-medium">Duration (hours): {duration}</label>
+                        <input
+                            type="range"
+                            min={1}
+                            max={24}
+                            step={1}
+                            value={duration}
+                            onChange={(e) => setDuration(Number(e.target.value))}
+                            className="w-full"
+                        />
+                    </div>
+
+                    <button 
+                        className="bg-red-600 text-white px-4 py-2 rounded"
+                        onClick={handleFinalize}
+                    >
+                        Finalize Proposals
+                    </button>
+                </>
+            )}
+
+            {event.currentUserIsOrganizer && event.phase === "FinalVoting" && (
+                <button
+                    className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+                    onClick={handleCloseEvent}
+                >
+                    Close Event
+                </button>
+            )}
+
+            {event.phase === "FinalVoting" && (
+                <FinalVotingForm eventId={event.id} />
+            )}
+
+            {event.phase === "Closed" && (
+                <div className="mt-6 p-4 border rounded bg-green-50">
+                    <h3 className="text-xl font-bold mb-2">Final Decision</h3>
+                    <p>
+                        <strong>Place:</strong> {event.finalPlaceName}<br/>
+                        <strong>Address:</strong> {event.finalAddress}<br/>
+                        <strong>Time:</strong> {new Date(event.finalTimeFrom).toLocaleString()} – {new Date(event.finalTimeTo).toLocaleString()}
+                    </p>
+                    <p className="mt-4 text-green-700">
+                        Note the date to your calendar! Excited to see you all there!!
+                    </p>
+                </div>
             )}
         </div>
     );
