@@ -46,5 +46,12 @@ namespace backend.Controllers
             var options = await _context.EventOptions.Where(o => o.EventId == eventId).ToListAsync();
             return Ok(options);
         }
+
+        [HttpGet("final")]
+        public async Task<IActionResult> GetFinalOptions(Guid eventId)
+        {
+            var options = await _context.GeneratedPlaceOptions.Where(o => o.EventId == eventId).ToListAsync();
+            return Ok(options);
+        }
     }
 }

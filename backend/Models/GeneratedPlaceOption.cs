@@ -5,7 +5,8 @@ namespace backend.Models
         public Guid Id { get; set; }
         public Guid EventId { get; set; }
         public string PlaceName { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty; // address
+        public string Adress { get; set; } = string.Empty; // address
+        public Location Location { get; set; } = new();
         public DateTime TimeFrom { get; set; }
         public DateTime TimeTo { get; set; }
     }

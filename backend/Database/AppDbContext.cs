@@ -17,6 +17,7 @@ namespace backend.Database
         public DbSet<Vote> Votes { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
         public DbSet<GeneratedPlaceOption> GeneratedPlaceOptions { get; set; }
+        public DbSet<FinalVote> FinalVotes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TimeInterval>()
@@ -39,6 +40,35 @@ namespace backend.Database
                 .HasOne(ep => ep.Event)
                 .WithMany(e => e.Participants)
                 .HasForeignKey(ep => ep.EventId);
+
+            // Location jako "owned type"
+            modelBuilder.Entity<GeneratedPlaceOption>()
+                .OwnsOne(g => g.Location);
+
+            // conversion for timestamp, dates should have specified type (to UTC)
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entityType.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTime))
+                    {
+                        modelBuilder.Entity(entityType.ClrType)
+                            .Property<DateTime>(property.Name)
+                            .HasConversion(
+                                v => v.ToUniversalTime(),
+                                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+                    }
+                    else if (property.ClrType == typeof(DateTime?))
+                    {
+                        modelBuilder.Entity(entityType.ClrType)
+                            .Property<DateTime?>(property.Name)
+                            .HasConversion(
+                                v => v.HasValue ? v.Value.ToUniversalTime() : v,
+                                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+                    }
+                }
+            }
+
 
             base.OnModelCreating(modelBuilder);
         }

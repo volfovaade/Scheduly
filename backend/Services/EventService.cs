@@ -15,13 +15,16 @@ namespace backend.Services
         Task<IEnumerable<EventDto>> GetUserEventsAsync(Guid userId);
         Task<EventDto> CreateAsync(Guid userId, EventCreateDto dto);
         Task<bool> DeleteAsync(Guid id, Guid userId);
+        Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int radius, int duration);
     }
     public class EventService : IEventService
     {
         private readonly AppDbContext _context;
-        public EventService(AppDbContext context)
+        private readonly GooglePlacesService _googlePlacesService;
+        public EventService(AppDbContext context, GooglePlacesService googlePlacesService)
         {
             _context = context;
+            _googlePlacesService = googlePlacesService;
         }
         public async Task<EventDto> CreateAsync(Guid userId, EventCreateDto dto)
         {
@@ -98,16 +101,23 @@ namespace backend.Services
             return userEvents;
         }
 
-        public async Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId)
+        public async Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int radius, int durationInHours)
         {     
             var preferences = await _context.PlacePreferences
                 .Include(p => p.TimeIntervals)
                 .Where(p => p.EventId == eventId).ToListAsync();
 
+            if (preferences.Count == 0)
+                throw new Exception("No preferences to analyze");
+
             // most preffered type of place
             var topType = preferences.GroupBy(p => p.Type)
                 .OrderByDescending(g => g.Count())
-                .FirstOrDefault()?.Key;
+                .First().Key;
+
+            //  average location
+            var avgLat = preferences.Average(p => p.Latitude);
+            var avgLng = preferences.Average(p => p.Longitude);
 
             // most convenient time
             var timeCounts = new Dictionary<DateTime, int>();
@@ -127,20 +137,33 @@ namespace backend.Services
                 }
             }
             var bestDate = timeCounts.OrderByDescending(kvp => kvp.Value).First().Key;
-             
+            var fromTime = bestDate.AddHours(-durationInHours / 2);
+            var toTime = bestDate.AddHours(durationInHours / 2);
             // generate 3 places... TO DO: using Google Places API... GooglePlacesService
-            var generated = Enumerable.Range(1, 3).Select(i => new GeneratedPlaceOption
+            // 3000=3km
+
+            var generated = await _googlePlacesService.SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, radius, eventId, fromTime, toTime);
+            foreach (var option in generated)
             {
-                Id = Guid.NewGuid(),
-                PlaceName = $"Option {i} - {topType}",
-                Location = "Auto-generated",
-                TimeFrom = bestDate,
-                TimeTo = bestDate.AddHours(2)
-            }).ToList();
+                option.EventId = eventId;
+                option.TimeFrom = fromTime;
+                option.TimeTo = toTime;
+            }
             _context.GeneratedPlaceOptions.AddRange(generated);
             await _context.SaveChangesAsync();
 
             return generated;
+        }
+
+        private string ConvertPlaceTypeToString(PlaceType type)
+        {
+            return type switch
+            {
+                PlaceType.Cafe => "cafe",
+                PlaceType.Restaurant => "restaurant",
+                PlaceType.Parc => "park",
+                _ => "other"
+            };
         }
 
         // safely transfer event data without circular reference 

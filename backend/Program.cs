@@ -48,6 +48,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEventService, EventService>();
 
+builder.Services.AddHttpClient<GooglePlacesService>();
+builder.Services.AddScoped<GooglePlacesService>();
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();

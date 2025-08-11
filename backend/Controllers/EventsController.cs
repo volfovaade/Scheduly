@@ -51,7 +51,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("{eventId}/finalize")]
-        public async Task<IActionResult> FinalizeProposal(Guid eventId)
+        public async Task<IActionResult> FinalizeProposal(Guid eventId, [FromQuery] int radius, [FromQuery] int duration)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
@@ -70,13 +70,69 @@ namespace backend.Controllers
                 return Forbid();
             }
             // calling algorithm for top options
-            var selectedOptions = await _eventService.FinalizeProposalPhase(eventId);
+            try {
+                //// musim zastavit generovani je nekonecen nebo hodne dlouhe nejak omezit jen na tri odpovedi!!!!!!!!
+                var selectedOptions = await _eventService.FinalizeProposalPhase(eventId, radius*1000, duration);
 
-            // mark the event phase as "FinalVoting"
-            ev.Phase = EventPhase.FinalVoting;
+                // mark the event phase as "FinalVoting"
+                ev.Phase = EventPhase.FinalVoting;
+                await _context.SaveChangesAsync();
+                return Ok(selectedOptions);
+
+            } catch (Exception err) {
+                return BadRequest(err.Message);
+            }
+        }
+
+        [HttpPost("{eventId}/close")]
+        public async Task<IActionResult> CloseEvent(Guid eventId)
+        {
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized();
+            }
+            var ev = await _context.Events
+                .Include(e => e.Participants)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+
+            if (ev == null)
+            {
+                return NotFound();
+            }
+
+            var isOrganizer = ev.Participants.Any(p => p.UserId == userId && p.Role == EventRoles.Organizator);
+            if (!isOrganizer)
+            {
+                return Forbid();
+            }
+
+            // find the most preffered option
+            var winningOption = await _context.FinalVotes
+                .Where(v => v.EventId == eventId)
+                .GroupBy(v => v.OptionId)
+                .Select(g => new { OptionId = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .Join(_context.GeneratedPlaceOptions,
+                    g => g.OptionId,
+                    o => o.Id,
+                    (g, o) => o)
+                .FirstOrDefaultAsync();
+
+            if (winningOption  == null)
+            {
+                return BadRequest("No votes were cast");
+            }
+
+            // save final choice of the event
+            ev.Phase = EventPhase.Closed;
+            ev.FinalPlaceName = winningOption.PlaceName;
+            ev.FinalAddress = winningOption.Adress;
+            ev.FinalTimeFrom = winningOption.TimeFrom;
+            ev.FinalTimeTo = winningOption.TimeTo;
+
             await _context.SaveChangesAsync();
 
-            return Ok(selectedOptions);
+            return Ok(winningOption);
         }
 
         [HttpPost]

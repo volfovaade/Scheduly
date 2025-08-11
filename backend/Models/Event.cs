@@ -27,5 +27,11 @@ namespace backend.Models
         public string Code => Id.ToString("N")[..6]; // auto-generated based on GUID, first 6 chars
         public List<EventOption> Options { get; set; } = new List<EventOption>();
         public List<EventParticipant> Participants { get; set; } = new();
+
+        // the results
+        public string? FinalPlaceName { get; set; }
+        public string? FinalAddress { get; set; }
+        public DateTime? FinalTimeFrom { get; set; }
+        public DateTime? FinalTimeTo { get; set; }
     }
 }

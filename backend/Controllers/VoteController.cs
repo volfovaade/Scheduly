@@ -49,6 +49,32 @@ namespace backend.Controllers
             return Ok("Votes submitted");
         }
 
+        [HttpPost("final")]
+        public async Task<IActionResult> VoteFinal(Guid eventId, [FromBody] Guid optionId)
+        {
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized();
+            }
+            // removing previous if exists
+            var existingVote = await _context.FinalVotes
+                .FirstOrDefaultAsync(v => v.Id == eventId &&  v.UserId == userId);
+            if (existingVote != null) _context.FinalVotes.Remove(existingVote);
+
+            // save new vote
+            var vote = new FinalVote
+            {
+                Id = Guid.NewGuid(),
+                EventId = eventId,
+                UserId = userId,
+                OptionId = optionId
+            };
+            _context.FinalVotes.Add(vote);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
         [HttpGet("summary")]
         public async Task<IActionResult> GetVoteSummary(Guid eventId)
         {
