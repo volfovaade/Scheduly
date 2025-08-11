@@ -17,8 +17,8 @@ services:
 
   backend:
     build: 
-      context: ./backend
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: backend/Dockerfile.dev
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
@@ -26,9 +26,11 @@ services:
     ports:
       - "8081:80"
     volumes:
-      - ./backend:/app
-      - /app/bin
-      - /app/obj
+      - .:/app
+      - /app/backend/bin
+      - /app/backend/obj
+      - /app/backend.Tests/bin
+      - /app/backend.Tests/obj
     depends_on:
       db:
         condition: service_healthy
