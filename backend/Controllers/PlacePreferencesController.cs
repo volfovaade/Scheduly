@@ -20,6 +20,9 @@ namespace backend.Controllers
         {
             _context = context;
         }
+
+        // GET: api/events/{eventId}/preferences/my
+        // Retrieves the logged-in user's submitted place/time preferences for the event.
         [HttpGet("my")]
         public async Task<IActionResult> GetMyPreferences(Guid eventId)
         {
@@ -46,6 +49,8 @@ namespace backend.Controllers
             });
         }
 
+        // POST: api/events/{eventId}/preferences
+        // Submits or updates the user's place/time preferences for the event.
         [HttpPost]
         public async Task<IActionResult> Submit (Guid eventId, [FromBody] PlacePreferenceDto dto)
         {
@@ -86,6 +91,8 @@ namespace backend.Controllers
             return Ok();
         }
 
+        // GET: api/events/{eventId}/preferences/summary
+        // Returns aggregated summary of all participants’ preferred times.
         [HttpGet("summary")]
         public async Task<IActionResult> GetPreferenceSummary(Guid eventId){
             var preferences = await _context.PlacePreferences

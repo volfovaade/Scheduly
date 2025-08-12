@@ -20,6 +20,8 @@ namespace backend.Controllers
             _context = context;
         }
 
+        // POST: api/events/{eventId}/votes
+        // Submits a list of votes for event options.
         [HttpPost]
         public async Task<IActionResult> SubmitVotes(Guid eventId, VoteRequestDto voteDto)
         {
@@ -49,6 +51,9 @@ namespace backend.Controllers
             return Ok("Votes submitted");
         }
 
+        // POST: api/events/{eventId}/votes/final
+        // Used for open events in final stage
+        // Submits a final vote for a single generated place option.
         [HttpPost("final")]
         public async Task<IActionResult> VoteFinal(Guid eventId, [FromBody] Guid optionId)
         {
@@ -75,6 +80,8 @@ namespace backend.Controllers
             return Ok();
         }
 
+        // GET: api/events/{eventId}/votes/summary
+        // Returns a summary of votes and scores for each event option.
         [HttpGet("summary")]
         public async Task<IActionResult> GetVoteSummary(Guid eventId)
         {

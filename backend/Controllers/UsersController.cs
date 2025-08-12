@@ -18,7 +18,9 @@ namespace backend.Controllers
         {
             _context = context;
         }
-        
+
+        // GET: api/users/{userId}
+        // Retrieves user profile information by ID.
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {

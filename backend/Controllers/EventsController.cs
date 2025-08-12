@@ -23,12 +23,16 @@ namespace backend.Controllers
             _context = context;
         }
 
+        // GET: api/events
+        // Returns a list of all events.
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetAll()
         {
             return Ok(await _eventService.GetAllAsync());
         }
 
+        // GET: api/events/{id}
+        // Returns full details of a specific event, checking current user's access.
         [HttpGet("{id}")]
         public async Task<ActionResult<DetailedEventDto>> GetById(Guid id)
         {
@@ -40,6 +44,8 @@ namespace backend.Controllers
             return ev == null ? NotFound() : Ok(ev);
         }
 
+        // GET: api/events/my
+        // Returns all events that the current user is a participant of (or organizator).
         [HttpGet("my")]
         public async Task<ActionResult<IEnumerable<EventDto>>> GetMyEvents()
         {
@@ -50,6 +56,8 @@ namespace backend.Controllers
             return Ok(myEvents);
         }
 
+        // POST: api/events/{eventId}/finalize
+        // Organizer finalizes proposal phase — generates top place/time options for voting.
         [HttpPost("{eventId}/finalize")]
         public async Task<IActionResult> FinalizeProposal(Guid eventId, [FromQuery] int radius, [FromQuery] int duration)
         {
@@ -71,7 +79,6 @@ namespace backend.Controllers
             }
             // calling algorithm for top options
             try {
-                //// musim zastavit generovani je nekonecen nebo hodne dlouhe nejak omezit jen na tri odpovedi!!!!!!!!
                 var selectedOptions = await _eventService.FinalizeProposalPhase(eventId, radius*1000, duration);
 
                 // mark the event phase as "FinalVoting"
@@ -84,6 +91,8 @@ namespace backend.Controllers
             }
         }
 
+        // POST: api/events/{eventId}/close
+        // Organizer closes the event — sets final place/time based on votes.
         [HttpPost("{eventId}/close")]
         public async Task<IActionResult> CloseEvent(Guid eventId)
         {
@@ -135,6 +144,8 @@ namespace backend.Controllers
             return Ok(winningOption);
         }
 
+        // POST: api/events
+        // Creates a new event owned by the current user.
         [HttpPost]
         public async Task<ActionResult<EventDto>> Create([FromBody] EventCreateDto dto)
         {
@@ -149,6 +160,8 @@ namespace backend.Controllers
             return CreatedAtAction(nameof(GetAll), new { id = created.Id }, created);
         }
 
+        // DELETE: api/events/{id}
+        // Deletes the event if the current user is the owner.
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {

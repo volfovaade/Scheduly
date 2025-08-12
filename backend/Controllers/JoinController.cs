@@ -19,6 +19,9 @@ namespace backend.Controllers
         {
             _context = context;
         }
+
+        // POST: api/join/{code}
+        // Allows a user to join an event using a short code (prefix of event GUID).
         [HttpPost("{code}")]
         public async Task<IActionResult> JoinEvent(string code) 
         {

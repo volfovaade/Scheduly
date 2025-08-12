@@ -18,7 +18,9 @@ namespace backend.Controllers
         {
             _context = context;
         }
-        
+
+        // POST: api/events/{eventId}/options
+        // Adds a new event option (place + time) to a given event.
         [HttpPost]
         public async Task<IActionResult> AddOption(Guid eventId, OptionCreateDto dto)
         {
@@ -40,6 +42,8 @@ namespace backend.Controllers
             return Ok(option);
         }
 
+        // GET: api/events/{eventId}/options
+        // Retrieves all proposed options for the event.
         [HttpGet]
         public async Task<IActionResult> GetOptions(Guid eventId)
         {
@@ -47,6 +51,9 @@ namespace backend.Controllers
             return Ok(options);
         }
 
+        // GET: api/events/{eventId}/options/final
+        // Retrieves generated place options after finalization phase
+        // For open events
         [HttpGet("final")]
         public async Task<IActionResult> GetFinalOptions(Guid eventId)
         {

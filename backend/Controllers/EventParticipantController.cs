@@ -17,7 +17,9 @@ namespace backend.Controllers
         {
             _context = context;
         }
-        // GET: Get list of all participants for the event
+
+        // GET: api/events/{eventId}/participants
+        // Returns all participants of a given event with their roles.
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetParticipants(Guid eventId)
         {
@@ -33,7 +35,8 @@ namespace backend.Controllers
             return Ok(participants);
         }
 
-        // POST: Join event as a participant
+        // POST: api/events/{eventId}/participants/join
+        // Allows the logged-in user to join the event as a participant.
         [HttpPost("join")]
         public async Task<IActionResult> JoinEvent(Guid eventId)
         {
@@ -58,7 +61,8 @@ namespace backend.Controllers
             return Ok("Successfully joined event");
         }
 
-        // DELETE: Leave an event
+        // DELETE: api/events/{eventId}/participants/leave
+        // Allows the logged-in user to leave the event.
         [HttpDelete("leave")]
         public async Task<IActionResult> LeaveEvent (Guid eventId)
         {
