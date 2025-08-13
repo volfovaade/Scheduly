@@ -103,6 +103,10 @@ namespace backend.Services
                 OwnerId = ev.OwnerId,
                 CreatedAt = ev.CreatedAt,
                 Phase = ev.Phase,
+                FinalPlaceName = ev.FinalPlaceName,
+                FinalAddress = ev.FinalAddress,
+                FinalTimeFrom = ev.FinalTimeFrom,
+                FinalTimeTo = ev.FinalTimeTo,
                 Participants = ev.Participants.Select(ToParticipantDto).ToList(),
                 CurrentUserIsOrganizer = ev.Participants.Any(p => p.UserId == currentUserId && p.Role == EventRoles.Organizator),
             };

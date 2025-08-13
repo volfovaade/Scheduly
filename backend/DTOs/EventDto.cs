@@ -19,5 +19,9 @@ namespace backend.DTOs
         public EventPhase Phase { get; set; }
         public bool CurrentUserIsOrganizer { get; set; }
         public List<EventParticipantDto> Participants { get; set; } = new();
+        public string? FinalPlaceName { get; set; }
+        public string? FinalAddress { get; set; }
+        public DateTime? FinalTimeFrom { get; set; }
+        public DateTime? FinalTimeTo { get; set; }
     }
 }

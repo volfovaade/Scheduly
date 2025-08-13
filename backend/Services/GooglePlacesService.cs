@@ -62,7 +62,7 @@ namespace backend.Services {
                     Id = Guid.NewGuid(),
                     EventId = eventId,
                     PlaceName = r.Name,
-                    Adress = r.Vicinity,
+                    Address = r.Vicinity,
                     Location = r.Geometry.Location,
                     TimeFrom = fromTime,
                     TimeTo = toTime

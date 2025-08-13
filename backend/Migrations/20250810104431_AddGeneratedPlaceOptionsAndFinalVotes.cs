@@ -56,7 +56,7 @@ namespace backend.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     EventId = table.Column<Guid>(type: "uuid", nullable: false),
                     PlaceName = table.Column<string>(type: "text", nullable: false),
-                    Adress = table.Column<string>(type: "text", nullable: false),
+                    Address = table.Column<string>(type: "text", nullable: false),
                     Location_Lat = table.Column<double>(type: "double precision", nullable: false),
                     Location_Lng = table.Column<double>(type: "double precision", nullable: false),
                     TimeFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),

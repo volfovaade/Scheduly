@@ -9,7 +9,7 @@ namespace backend.Models
         public Guid Id { get; set; }
         public Guid EventId { get; set; }
         public string PlaceName { get; set; } = string.Empty;
-        public string Adress { get; set; } = string.Empty; // address
+        public string Address { get; set; } = string.Empty; 
         public Location Location { get; set; } = new(); // GPS coordinates
         public DateTime TimeFrom { get; set; }
         public DateTime TimeTo { get; set; }

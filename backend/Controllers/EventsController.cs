@@ -91,10 +91,10 @@ namespace backend.Controllers
             }
         }
 
-        // POST: api/events/{eventId}/close
+        // POST: api/events/{eventId}/closeOpen
         // Organizer closes the event — sets final place/time based on votes.
-        [HttpPost("{eventId}/close")]
-        public async Task<IActionResult> CloseEvent(Guid eventId)
+        [HttpPost("{eventId}/closeOpen")]
+        public async Task<IActionResult> CloseOpenEvent(Guid eventId)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
@@ -135,7 +135,66 @@ namespace backend.Controllers
             // save final choice of the event
             ev.Phase = EventPhase.Closed;
             ev.FinalPlaceName = winningOption.PlaceName;
-            ev.FinalAddress = winningOption.Adress;
+            ev.FinalAddress = winningOption.Address;
+            ev.FinalTimeFrom = winningOption.TimeFrom;
+            ev.FinalTimeTo = winningOption.TimeTo;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(winningOption);
+        }
+
+        // POST: api/events/{eventId}/closeFixed
+        // Organizer closes the event — sets final place/time based on votes.
+        [HttpPost("{eventId}/closeFixed")]
+        public async Task<IActionResult> CloseFixedEvent(Guid eventId)
+        {
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Unauthorized();
+            }
+            var ev = await _context.Events
+                .Include(e => e.Participants)
+                .FirstOrDefaultAsync(e => e.Id == eventId);
+
+            if (ev == null)
+            {
+                return NotFound();
+            }
+
+            var isOrganizer = ev.Participants.Any(p => p.UserId == userId && p.Role == EventRoles.Organizator);
+            if (!isOrganizer)
+            {
+                return Forbid();
+            }
+
+            // find the most preffered option
+            var votesCount = await _context.Votes
+                .Where(v => v.Option.EventId == eventId)
+                .GroupBy(v => v.OptionId)
+                .Select(g => new { OptionId = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .ToListAsync();
+
+            var winningVoteGroup = votesCount.FirstOrDefault();
+            if (winningVoteGroup == null)
+            {
+                return BadRequest("No votes were cast");
+            }
+            var winningOptionId = winningVoteGroup.OptionId;
+
+            // load details of the most preffered option
+            var winningOption = await _context.EventOptions
+                .FirstOrDefaultAsync(o => o.Id == winningOptionId);
+            if (winningOption == null)
+            {
+                return BadRequest("No winning option could be selected.");
+            }
+
+            // save final choice of the event
+            ev.Phase = EventPhase.Closed;
+            ev.FinalPlaceName = winningOption.PlaceName;
+            ev.FinalAddress = winningOption.Location ?? "No location was given";
             ev.FinalTimeFrom = winningOption.TimeFrom;
             ev.FinalTimeTo = winningOption.TimeTo;
 
