@@ -74,7 +74,7 @@ namespace backend.Tests
                 Assert.Equal(fromTime, r.TimeFrom);
                 Assert.Equal(toTime, r.TimeTo);
                 Assert.False(string.IsNullOrEmpty(r.PlaceName));
-                Assert.False(string.IsNullOrEmpty(r.Adress));
+                Assert.False(string.IsNullOrEmpty(r.Address));
                 Assert.NotNull(r.Location);
             });
             Assert.Equal("Place 1", result[0].PlaceName);
