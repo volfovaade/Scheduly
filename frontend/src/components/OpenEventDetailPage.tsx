@@ -59,7 +59,13 @@ export default function OpenEventDetailPage({
             {event.phase === "Proposal" && (
                 <>
                     <button onClick={() => setShowPreferences(true)} className="bg-purple-600 text-white px-4 py-2 mt-4">Edit Preferences</button>
-                    {showPreferences && <PlacePreferenceForm eventId={event.id} onClose={() => setShowPreferences(false)} loadPreferencesSummary={loadPreferencesSummary}/>}
+                    {showPreferences && <PlacePreferenceForm 
+                                            eventId={event.id} 
+                                            timeRangeFrom={event.timeRangeFrom}
+                                            timeRangeTo={event.timeRangeTo}
+                                            onClose={() => setShowPreferences(false)} 
+                                            loadPreferencesSummary={loadPreferencesSummary}
+                                            />}
 
                     <div className="mt-6">
                         <h3 className="text-lg font-semibold">Participants</h3>

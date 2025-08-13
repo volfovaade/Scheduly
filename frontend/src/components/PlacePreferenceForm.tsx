@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import axios from "../api/axios";
 import { SquareX } from "lucide-react";
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import { NOTFOUND } from "dns";
+
+const customIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
 
 enum PlaceType {
     Restaurant = "Restaurant",
@@ -15,10 +27,22 @@ type TimeInterval = {
 };
 type Props = {
     eventId: string;
+    timeRangeFrom: string;
+    timeRangeTo: string;
     onClose: () => void;
     loadPreferencesSummary: () => void;
 };
-export default function PlacePreferenceForm({ eventId, onClose, loadPreferencesSummary }: Props){
+
+// strip "Z" and adjust for our timezone
+function toLocalDateTimeString(isoString: string) {
+    const date = new Date(isoString);  // parse UTC
+    const timeZoneOffset = date.getTimezoneOffset() * 60000;  // in ms
+    const localISOTime = new Date(date.getTime() - timeZoneOffset)
+            .toISOString()
+            .slice(0, 16);  // without Z in the end... "YYYY-MM-DDTHH:mm"
+    return localISOTime;
+}
+export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeTo, onClose, loadPreferencesSummary }: Props){
     const [type, setType] = useState<PlaceType>(PlaceType.Other);
     const [latitude, setLatitude] = useState(50.08); // for Prague as default
     const [longitude, setLongitude] = useState(14.42);
@@ -29,6 +53,9 @@ export default function PlacePreferenceForm({ eventId, onClose, loadPreferencesS
         const load = async () => {
             try {
                 const res = await axios.get(`/events/${eventId}/preferences/my`);
+                if (res.status === 404) {
+                    return;  // defaults will stay set
+                };
                 setType(res.data.type);
                 setLatitude(res.data.latitude);
                 setLongitude(res.data.longitude);
@@ -79,7 +106,9 @@ export default function PlacePreferenceForm({ eventId, onClose, loadPreferencesS
                         <div key={idx} className="flex gap-2 mb-2">
                             <input
                                 type="datetime-local"
-                                value={int.from}
+                                min={toLocalDateTimeString(timeRangeFrom)}
+                                max={toLocalDateTimeString(timeRangeTo)}
+                                value={int.from ? toLocalDateTimeString(int.from) : ""}
                                 onChange={e => {
                                     const updated = [...intervals];
                                     updated[idx].from = e.target.value;
@@ -89,7 +118,9 @@ export default function PlacePreferenceForm({ eventId, onClose, loadPreferencesS
                             />
                             <input
                                 type="datetime-local"
-                                value={int.to}
+                                min={toLocalDateTimeString(timeRangeFrom)}
+                                max={toLocalDateTimeString(timeRangeTo)}
+                                value={int.to ? toLocalDateTimeString(int.to) : ""}
                                 onChange={e => {
                                     const updated = [...intervals];
                                     updated[idx].to = e.target.value;
@@ -106,7 +137,7 @@ export default function PlacePreferenceForm({ eventId, onClose, loadPreferencesS
                         <MapContainer center={[latitude, longitude]} zoom={13} style={{ height: "100%" }}>
                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                             <MapMarkerSetter setLat={setLatitude} setLong={setLongitude} />
-                            <Marker position={[latitude, longitude]} />
+                            <Marker position={[latitude, longitude]} icon={customIcon} />
                         </MapContainer>
                     </div>
 

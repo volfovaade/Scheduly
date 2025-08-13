@@ -13,6 +13,10 @@ export default function EventDetailPage() {
         mode: "Open" | "Fixed";
         timeRangeFrom: Date | null;
         timeRangeTo: Date | null;
+        finalPlaceName: string;
+        finalAddress: string;
+        finalTimeFrom: string;
+        finalTimeTo: string;
     } | null>(null);
     
     const [preferenceSummary, setPreferenceSummary] = useState([]);
@@ -62,7 +66,7 @@ export default function EventDetailPage() {
         if (!window.confirm("Are you sure you want to close the event?")) return;
 
         try {
-            await axios.post(`/events/${eventId}/close`);
+            await axios.post(`/events/${eventId}/closeOpen`);
             window.location.reload();
         } catch (err) {
             console.error(err);

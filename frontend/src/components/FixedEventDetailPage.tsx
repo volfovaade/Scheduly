@@ -8,6 +8,10 @@ interface Option {
     timeFrom: string;
     timeTo: string;
 }
+interface Vote {
+    id: string;
+    voteCount: number;
+}
 interface NewOption {
     placeName: string;
     location: string;
@@ -18,6 +22,7 @@ interface NewOption {
 interface Props {
     event: any;
     options: Option[];
+    votes: Vote[];
     newOption: NewOption;
     myVotes: string[];
     setMyVotes: (votes: string[]) => void;
@@ -25,18 +30,21 @@ interface Props {
     handleVote: () => void;
     handleAddOption: () => void;
     submittedUsers: any[];
+    handleCloseEvent: () => void;
 }
 
 export default function FixedEventDetailPage({
     event,
     options, 
+    votes,
     newOption,
     myVotes, 
     setMyVotes, 
     setNewOption, 
     handleVote, 
     handleAddOption, 
-    submittedUsers
+    submittedUsers,
+    handleCloseEvent
     } : Props) {
     const eventCode = event.code;
     return (
@@ -66,48 +74,76 @@ export default function FixedEventDetailPage({
                 </ul>
             </div>
 
-            <div className="mb-6">
-                <h3 className="text-lg font-semibold">Voting options</h3>
-                <ul className="mb-4">
-                    {options.map((o: any) => (
-                        <li key={o.id}>
-                            <label>
-                                <input
-                                    type="checkbox"
-                                    value={o.id}
-                                    checked={myVotes.includes(o.id)}
-                                    onChange={e => {
-                                        if (e.target.checked)
-                                            setMyVotes([...myVotes, o.id]);
-                                        else
-                                            setMyVotes(myVotes.filter(id => id !== o.id));
-                                    }}
-                                />
-                                <strong>{o.placeName}</strong>{" "}
-                                <span className="text-sm text-gray-600">
-                                    {new Date(o.timeFrom).toLocaleString()} - {new Date(o.timeTo).toLocaleString()}
-                                </span>
-                            </label>
-                        </li>
-                    ))}
-                </ul>
-                <button className="bg-blue-600 text-white px-4 py-2" onClick={handleVote}>Send votes</button>
-            </div>
+            { event.phase === "Proposal" && (
+                <>
+                    <div className="border-t mb-6">
+                        <h3 className="text-lg font-semibold">Voting options</h3>
+                        <ul className="mb-4">
+                            {options.map((o: any) => (
+                                <li key={o.id}>
+                                    <label>
+                                        <input
+                                            type="checkbox"
+                                            value={o.id}
+                                            checked={myVotes.includes(o.id)}
+                                            onChange={e => {
+                                                if (e.target.checked)
+                                                    setMyVotes([...myVotes, o.id]);
+                                                else
+                                                    setMyVotes(myVotes.filter(id => id !== o.id));
+                                            }}
+                                        />
+                                        <strong>{o.placeName}</strong>{" "}
+                                        <span className="text-sm text-gray-600">
+                                            {new Date(o.timeFrom).toLocaleString()} - {new Date(o.timeTo).toLocaleString()}
+                                        </span>
+                                    </label>
+                                </li>
+                            ))}
+                        </ul>
+                        <button className="bg-blue-600 text-white px-4 py-2" onClick={handleVote}>Send votes</button>
+                    </div>
 
-            <div className="border-t pt-4">
-                <h3 className="text-lg font-semibold mb-2">Add your preference</h3>
-                <input placeholder="Name of the place" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, placeName: e.target.value})} />
-                <input placeholder="Location (address)" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, location: e.target.value})} />
-                <div className="flex items-center gap-4 my-2">
-                    <div>
-                        From: <DatePicker selected={newOption.timeFrom} onChange={date => setNewOption({...newOption, timeFrom: date!})} showTimeSelect dateFormat="Pp" />
+                    <div className="border-t pt-4">
+                        <h3 className="text-lg font-semibold mb-2">Add your preference</h3>
+                        <input placeholder="Name of the place" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, placeName: e.target.value})} />
+                        <input placeholder="Location (address)" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, location: e.target.value})} />
+                        <div className="flex items-center gap-4 my-2">
+                            <div>
+                                From: <DatePicker selected={newOption.timeFrom} onChange={date => setNewOption({...newOption, timeFrom: date!})} showTimeSelect dateFormat="Pp" />
+                            </div>
+                            <div>
+                                To: <DatePicker selected={newOption.timeTo} onChange={date => setNewOption({...newOption, timeTo: date!})} showTimeSelect dateFormat="Pp" />
+                            </div>
+                        </div>
+                        <button onClick={handleAddOption} className="bg-green-600 text-white px-4 py-2">Add option</button>
                     </div>
-                    <div>
-                        To: <DatePicker selected={newOption.timeTo} onChange={date => setNewOption({...newOption, timeTo: date!})} showTimeSelect dateFormat="Pp" />
-                    </div>
+                </>
+            )}
+
+            {event.currentUserIsOrganizer && event.phase === "Proposal" && (
+                <button
+                    className="mt-4 bg-green-600 text-white px-4 py-2 rounded"
+                    onClick={handleCloseEvent}
+                >
+                    Close Event
+                </button>
+            )}
+
+            {event.phase === "Closed" && (
+                <div className="mt-6 p-4 border rounded bg-green-50">
+                    <h3 className="text-xl font-bold mb-2">Final Decision</h3>
+                    <p>
+                        <strong>Place:</strong> {event.finalPlaceName}<br/>
+                        <strong>Address:</strong> {event.finalAddress}<br/>
+                        <strong>Time:</strong> {new Date(event.finalTimeFrom).toLocaleString()} – {new Date(event.finalTimeTo).toLocaleString()}
+                    </p>
+                    <p className="mt-4 text-green-700">
+                        Note the date to your calendar! Excited to see you all there!!
+                    </p>
                 </div>
-                <button onClick={handleAddOption} className="bg-green-600 text-white px-4 py-2">Add option</button>
-            </div>
+            )}
+
         </div>
     );
 }
