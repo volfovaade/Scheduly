@@ -34,7 +34,7 @@ namespace backend.Controllers
                 .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
             if (pref == null)
             {
-                return NotFound();
+                return Ok();
             }
             return Ok(new PlacePreferenceDto
             {
