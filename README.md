@@ -79,7 +79,7 @@ Pro Docker je již přednastaveno:
 }
 ```
 
-Pokud spouštíš aplikaci lokálně bez Dockeru, odkomentuj v appsettings.json řádek:
+Pokud spouštíš aplikaci lokálně bez Dockeru:
 ```json
 {
   "ConnectionStrings": {
