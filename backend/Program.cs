@@ -19,7 +19,11 @@ builder.Services.AddControllers().AddJsonOptions(opts =>
 
 // API documentation and Swagger UI setup
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
 
 // Configure CORS policy
 // Allows frontend requests from http://localhost:3000 with any header and method
@@ -70,6 +74,16 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     context.Database.Migrate();  // apply any pending EF migrations
     await DbInitializer.InitializeAsync(context);  // seed initial data
+}
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Scheduly API v1");
+        options.RoutePrefix = string.Empty; // Swagger bude na http://localhost:5000/
+    });
 }
 
 app.UseCors();  // enable CORS for all incoming requests
