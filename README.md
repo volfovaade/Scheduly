@@ -55,6 +55,7 @@ Aplikace používá soubor appsettings.json pro konfiguraci. Do adresáře backe
 ---
 
 ## 📝 Co je potřeba nastavit ručně
+
 ### 1. JWT klíč
 
 Slouží pro podepisování a ověřování tokenů. Měl by mít alespoň 512 bitů. Bezpečně si ho vygeneruješ v C# například takto:
@@ -63,11 +64,11 @@ var key = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 Console.WriteLine(key);
 ```
 
-## 2. Google API Key
+### 2. Google API Key
 
 Potřebuješ vlastní Google Places API klíč. Získáš ho v Google Cloud Console. Klíč vlož do GoogleApiKey v appsettings.json.
 
-## 3. Connection string
+### 3. Connection string
 
 Pro Docker je již přednastaveno:
 ```json
@@ -89,7 +90,7 @@ Pokud spouštíš aplikaci lokálně bez Dockeru, odkomentuj v appsettings.json 
 
 ---
 
-### 📌 Požadavky
+## 📌 Požadavky
 
 - .NET 8 SDK
 - Docker
