@@ -153,6 +153,7 @@ namespace backend.Controllers
             {
                 return Unauthorized();
             }
+            
             var ev = await _context.Events
                 .Include(e => e.Participants)
                 .FirstOrDefaultAsync(e => e.Id == eventId);
@@ -179,7 +180,7 @@ namespace backend.Controllers
             var winningVoteGroup = votesCount.FirstOrDefault();
             if (winningVoteGroup == null)
             {
-                return BadRequest("No votes were cast");
+                return Ok(new { empty = true });
             }
             var winningOptionId = winningVoteGroup.OptionId;
 
@@ -188,7 +189,7 @@ namespace backend.Controllers
                 .FirstOrDefaultAsync(o => o.Id == winningOptionId);
             if (winningOption == null)
             {
-                return BadRequest("No winning option could be selected.");
+                return Ok(new { empty = true });
             }
 
             // save final choice of the event

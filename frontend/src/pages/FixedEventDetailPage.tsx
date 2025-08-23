@@ -135,10 +135,20 @@ export default function EventDetailPage() {
     const handleCloseEvent = async () => {
         if (!window.confirm("Are you sure you want to close the event?")) return;
         try {
-            await axios.post(`/events/${eventId}/closeFixed`);
+            const response = await axios.post(`events/${eventId}/closeFixed`);
+            if (response.data.empty) {
+                const confirmDelete = window.confirm(
+                    "No votes were submitted. Do you really want to delete the event instead?"
+                );
+                if (confirmDelete) {
+                    await axios.delete(`events/${eventId}`);
+                    navigate('/dashboard');
+                }
+                return;
+            }
             window.location.reload();
         } catch (err: any) {
-            console.error(err);
+            console.error("Full error:", err);
             if (err.response?.status === 404) {
                 alert("Event was deleted");
                 navigate('/dashboard');
