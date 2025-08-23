@@ -155,7 +155,6 @@ export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeT
                 longitude,
                 timeIntervals: intervals
             });
-            alert("Preferences saved");
             await loadPreferencesSummary();
             onClose();
         } catch (err: any) {
