@@ -21,6 +21,7 @@ namespace backend.Services {
         /// Searches for nearby places of specified type using Google Places API.
         /// Returns up to 3 closest places ranked by distance.
         /// </summary>
+        /// 
         /// <param name="type">Place type (e.g. "restaurant", "cafe")</param>
         /// <param name="lat">Latitude coordinate</param>
         /// <param name="lng">Longitude coordinate</param>

@@ -170,7 +170,8 @@ namespace backend.Services
             var toTime = bestDate.AddHours(durationInHours / 2);
 
             // generate place suggestions using Google Places API
-            var generated = await _googlePlacesService.SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, eventId, fromTime, toTime);
+            var generated = await _googlePlacesService
+                .SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, eventId, fromTime, toTime);
 
             _context.GeneratedPlaceOptions.AddRange(generated);
             await _context.SaveChangesAsync();
