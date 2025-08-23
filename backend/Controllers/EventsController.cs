@@ -59,7 +59,7 @@ namespace backend.Controllers
         // POST: api/events/{eventId}/finalize
         // Organizer finalizes proposal phase — generates top place/time options for voting.
         [HttpPost("{eventId}/finalize")]
-        public async Task<IActionResult> FinalizeProposal(Guid eventId, [FromQuery] int radius, [FromQuery] int duration)
+        public async Task<IActionResult> FinalizeProposal(Guid eventId, [FromQuery] int duration)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
@@ -79,7 +79,7 @@ namespace backend.Controllers
             }
             // calling algorithm for top options
             try {
-                var selectedOptions = await _eventService.FinalizeProposalPhase(eventId, radius*1000, duration);
+                var selectedOptions = await _eventService.FinalizeProposalPhase(eventId, duration);
 
                 // mark the event phase as "FinalVoting"
                 ev.Phase = EventPhase.FinalVoting;

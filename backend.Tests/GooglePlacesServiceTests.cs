@@ -63,7 +63,7 @@ namespace backend.Tests
             var toTime = DateTime.UtcNow.AddHours(2);
 
             // Act
-            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, 2000, eventId, fromTime, toTime);
+            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, eventId, fromTime, toTime);
 
             // Assert
             Assert.NotNull(result);
@@ -90,7 +90,7 @@ namespace backend.Tests
             var service = new GooglePlacesService(httpClient, config);
 
             // Act
-            var result = await service.SearchPlacesAsync("restaurant", 50.0, 14.0, 1000, Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddHours(1));
+            var result = await service.SearchPlacesAsync("restaurant", 50.0, 14.0, Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddHours(1));
 
             // Assert
             Assert.NotNull(result);
@@ -108,7 +108,7 @@ namespace backend.Tests
 
             // Act & Assert
             await Assert.ThrowsAsync<JsonException>(() =>
-                service.SearchPlacesAsync("parc", 50.0, 14.0, 500, Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddHours(1)));
+                service.SearchPlacesAsync("parc", 50.0, 14.0, Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddHours(1)));
         }
     }
 }

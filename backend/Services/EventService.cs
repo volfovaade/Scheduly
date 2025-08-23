@@ -18,7 +18,7 @@ namespace backend.Services
         Task<IEnumerable<EventDto>> GetUserEventsAsync(Guid userId);
         Task<EventDto> CreateAsync(Guid userId, EventCreateDto dto);
         Task<bool> DeleteAsync(Guid id, Guid userId);
-        Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int radius, int duration);
+        Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int duration);
     }
     /// <summary>
     /// Service for managing events including creation, retrieval, and place recommendation generation.
@@ -128,7 +128,7 @@ namespace backend.Services
         /// </summary>
         /// <param name="durationInHours"> Organizator sets the duration of the event </param>
         /// <param name="radius"> Currently unused </param>
-        public async Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int radius, int durationInHours)
+        public async Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int durationInHours)
         {     
             var preferences = await _context.PlacePreferences
                 .Include(p => p.TimeIntervals)
@@ -170,7 +170,7 @@ namespace backend.Services
             var toTime = bestDate.AddHours(durationInHours / 2);
 
             // generate place suggestions using Google Places API
-            var generated = await _googlePlacesService.SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, radius, eventId, fromTime, toTime);
+            var generated = await _googlePlacesService.SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, eventId, fromTime, toTime);
 
             _context.GeneratedPlaceOptions.AddRange(generated);
             await _context.SaveChangesAsync();

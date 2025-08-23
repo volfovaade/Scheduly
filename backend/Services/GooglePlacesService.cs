@@ -24,13 +24,12 @@ namespace backend.Services {
         /// <param name="type">Place type (e.g. "restaurant", "cafe")</param>
         /// <param name="lat">Latitude coordinate</param>
         /// <param name="lng">Longitude coordinate</param>
-        /// <param name="radius">Search radius (currently unused - using distance ranking)</param>
         /// <param name="eventId">Event ID to associate with found places</param>
         /// <param name="fromTime">Start time for the place option</param>
         /// <param name="toTime">End time for the place option</param>
         /// <returns>List of generated place options</returns>
         public async Task<List<GeneratedPlaceOption>> SearchPlacesAsync(
-            string type, double lat, double lng, int radius, Guid eventId, DateTime fromTime, DateTime toTime)
+            string type, double lat, double lng, Guid eventId, DateTime fromTime, DateTime toTime)
         {
             // get API key from configuration
             var apiKey = _config["GoogleApiKey"];
@@ -38,7 +37,6 @@ namespace backend.Services {
             // build Google Places API URL - using distance ranking
             var url = $"https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
                       $"?location={lat},{lng}" +
-                      //$"&radius={radius}" +  // radius means e.g. 2000 = 2km around
                       $"&type={type}" +
                       $"&rankby=distance" +
                       $"&key={apiKey}";
