@@ -122,7 +122,17 @@ export default function EventDetailPage() {
         if (!window.confirm("Are you sure you want to close the event?")) return;
 
         try {
-            await axios.post(`/events/${eventId}/closeOpen`);
+            const response = await axios.post(`/events/${eventId}/closeOpen`);
+            if (response.data.empty) {
+                const confirmDelete = window.confirm(
+                    "No votes were submitted. Do you really want to delete the event instead?"
+                );
+                if (confirmDelete) {
+                    await axios.delete(`events/${eventId}`);
+                    navigate('/dashboard');
+                }
+                return;
+            }
             window.location.reload();
         } catch (err: any) {
             console.error(err);

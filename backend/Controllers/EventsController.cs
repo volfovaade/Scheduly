@@ -127,9 +127,9 @@ namespace backend.Controllers
                     (g, o) => o)
                 .FirstOrDefaultAsync();
 
-            if (winningOption  == null)
+            if (winningOption == null)
             {
-                return BadRequest("No votes were cast");
+                return Ok(new { empty = true });
             }
 
             // save final choice of the event
