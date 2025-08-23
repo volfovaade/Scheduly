@@ -78,14 +78,26 @@ export default function CreateEventDialog({ isOpen, onClose, onCreate }: Props) 
                         <div className="flex gap-2 items-center">
                             <input
                                 type="datetime-local"
-                                value={rangeFrom?.toISOString().slice(0, 16) || ""}
+                                value={
+                                    rangeFrom
+                                        ? new Date(rangeFrom.getTime() - rangeFrom.getTimezoneOffset() * 60000)
+                                            .toISOString()
+                                            .slice(0, 16)
+                                        : ""
+                                }  
                                 onChange={(e) => setRangeFrom(new Date(e.target.value))}
                                 className="border px-2 py-1 rounded"
                             />
                             <span>–</span>
                             <input
                                 type="datetime-local"
-                                value={rangeTo?.toISOString().slice(0, 16) || ""}
+                                value={
+                                    rangeTo
+                                        ? new Date(rangeTo.getTime() - rangeTo.getTimezoneOffset() * 60000)
+                                            .toISOString()
+                                            .slice(0, 16)
+                                        : ""
+                                }
                                 onChange={(e) => setRangeTo(new Date(e.target.value))}
                                 className="border px-2 py-1 rounded"
                             />

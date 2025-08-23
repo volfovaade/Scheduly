@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { useLocation } from "react-router-dom";
 import OpenEventDetailPage from "../components/OpenEventDetailPage";
+import ErrorNotification from "../components/ErrorNotification";
 
 export default function EventDetailPage() {
     const { eventId } = useParams();
+    const navigate = useNavigate();
+
     const [event, setEvent] = useState<{ 
         title: string; 
         description: string; 
@@ -26,25 +29,73 @@ export default function EventDetailPage() {
     const showPreferenceFormInitially = new URLSearchParams(location.search).get("showPreferenceForm") === "true";
     const [showPreferences, setShowPreferences] = useState(showPreferenceFormInitially);
 
-    const [radius, setRadius] = useState(2);  // in km (change to meters in backend)
     const [duration, setDuration] = useState(2);
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<{
+        type: 'not-found' | 'network' | 'unauthorized' | 'unknown';
+        message: string;
+    } | null>(null);
 
     useEffect(() => {
         const loadEvent = async () => {
-            const res = await axios.get(`/events/${eventId}`);
-            setEvent(res.data);
+            try {
+                setLoading(true);
+                setError(null);
+
+                const res = await axios.get(`/events/${eventId}`);
+                setEvent(res.data);
+
+            } catch (err: any){
+                if (err.response?.status === 404) {
+                    setError({
+                        type: 'not-found',
+                        message: 'Event wasn\'t found. Maybe it was deleted or you don\'t have permissions to display it.'
+                    });
+                } else if (err.response?.status === 401 || err.response?.status === 403) {
+                    setError({
+                        type: 'unauthorized', 
+                        message: 'You don\'t have permissions to display the event.'
+                    });
+                } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+                    setError({
+                        type: 'network',
+                        message: 'Problem with the network connection. Please try later.'
+                    });
+                } else {
+                    setError({
+                        type: 'unknown',
+                        message: 'Unexpected error has occured while loading the event.'
+                    });
+                }
+            } finally {
+                setLoading(false);
+            }
+
         };
-        loadEvent();
-        loadPreferencesSummary();
+        if (eventId) {
+            loadEvent();
+            loadPreferencesSummary();
+        }
     }, [eventId]);
 
     const loadPreferencesSummary = async () => {
-        const [summaryRes, usersRes ] = await Promise.all([
-            axios.get(`/events/${eventId}/preferences/summary`),
-            axios.get(`/events/${eventId}/participants`)
-        ]);
-        setPreferenceSummary(summaryRes.data);  // [{ Day, Hour, Count }]
-        setSubmittedUsers(usersRes.data);
+        try {
+            const [summaryRes, usersRes ] = await Promise.all([
+                axios.get(`/events/${eventId}/preferences/summary`),
+                axios.get(`/events/${eventId}/participants`)
+            ]);
+            setPreferenceSummary(summaryRes.data);  // [{ Day, Hour, Count }]
+            setSubmittedUsers(usersRes.data);
+        } catch (err: any){
+            console.error(err);
+            if (err.response?.status === 404) {
+                alert("Event was deleted");
+                navigate('/dashboard');
+            } else {
+                alert("Failed to load event preferences.");
+            }
+        }
     };
 
     const handleFinalize = async () => {
@@ -53,12 +104,17 @@ export default function EventDetailPage() {
 
         try {
             await axios.post(`/events/${eventId}/finalize`, null, {
-                params: { radius, duration }
+                params: { duration }
             });
-            window.location.reload();  // to do: navigate to new form
-        } catch (err) {
+            window.location.reload(); 
+        } catch (err: any) {
             console.error(err);
-            alert("Failed to finalize proposals.");
+            if (err.response?.status === 404) {
+                alert("Event was deleted");
+                navigate('/dashboard');
+            } else {
+                alert("Failed to finalize proposals.");
+            }
         }
     };
 
@@ -68,10 +124,31 @@ export default function EventDetailPage() {
         try {
             await axios.post(`/events/${eventId}/closeOpen`);
             window.location.reload();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Failed to close event.");
+            if (err.response?.status === 404) {
+                alert("Event was deleted");
+                navigate('/dashboard');
+            } else {
+                alert("Failed to close event.");
+            }
         }
+    }
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p className="text-lg">Loading event detail...</p>
+                </div>
+            </div>
+        );
+    }
+    // error state
+    if (error) {
+        return (
+            <ErrorNotification error={error} />
+        );
     }
 
     return event ? (
@@ -83,13 +160,9 @@ export default function EventDetailPage() {
             preferenceSummary={preferenceSummary}
             submittedUsers={submittedUsers}
             handleFinalize={handleFinalize}
-            radius={radius}
-            setRadius={setRadius}
             duration={duration}
             setDuration={setDuration}
             handleCloseEvent={handleCloseEvent}
         />
-    ) : (
-    <div className="p-6 text-gray-500">Loading event...</div>
-    );
+    ) : null;
 }

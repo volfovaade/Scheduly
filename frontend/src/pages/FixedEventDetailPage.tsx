@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import FixedEventDetailPage from "../components/FixedEventDetailPage";
+import ErrorNotification from "../components/ErrorNotification";
 
 export default function EventDetailPage() {
     const { eventId } = useParams();
+    const navigate = useNavigate();
+
     const [event, setEvent] = useState<{ 
         title: string; 
         description: string; 
@@ -29,6 +32,12 @@ export default function EventDetailPage() {
     const [myVotes, setMyVotes] = useState<string[]>([]);
     const [participants, setParticipants] = useState([]);
 
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<{
+        type: 'not-found' | 'network' | 'unauthorized' | 'unknown';
+        message: string;
+    } | null>(null);
+
     const loadParticipants = async () => {
         const usersRes = await axios.get(`/events/${eventId}/participants`);
         setParticipants(usersRes.data);
@@ -46,48 +55,113 @@ export default function EventDetailPage() {
 
     useEffect(() => {
         const loadEvent = async () => {
-            const res = await axios.get(`/events/${eventId}`);
-            setEvent(res.data);
-            await loadOptions();
-            await loadVotes();
-            await loadParticipants();
+            try {
+                setLoading(true);
+                setError(null);
+
+                const res = await axios.get(`/events/${eventId}`);
+                setEvent(res.data);
+                // load left data in parallel
+                await Promise.all([
+                    loadOptions(),
+                    loadVotes(),
+                    loadParticipants()
+                ]);
+            } catch (err: any) {
+                if (err.response?.status === 404) {
+                    setError({
+                        type: 'not-found',
+                        message: 'Event wasn\'t found. Maybe it was deleted or you don\'t have permissions to display it.'
+                    });
+                } else if (err.response?.status === 401 || err.response?.status === 403) {
+                    setError({
+                        type: 'unauthorized', 
+                        message: 'You don\'t have permissions to display the event.'
+                    });
+                } else if (err.code === 'NETWORK_ERROR' || !err.response) {
+                    setError({
+                        type: 'network',
+                        message: 'Problem with the network connection. Please try later.'
+                    });
+                } else {
+                    setError({
+                        type: 'unknown',
+                        message: 'Unexpected error has occured while loading the event.'
+                    });
+                }
+            } finally {
+                setLoading(false);
+            }
         };
-        loadEvent();
+        if (eventId) loadEvent();
     }, [eventId]);
 
-    const loadAll = async () => {
-        await loadOptions();
-        await loadVotes();
-        await loadParticipants();
-    };
-
     const handleVote = async () => {
-        await axios.post(`/events/${eventId}/votes`, { optionIds: myVotes }, {
-            headers: {"Content-Type": "application/json" }
-        });
-        alert("Vote saved.");
-        await loadVotes();
+        try {
+            await axios.post(`/events/${eventId}/votes`, { optionIds: myVotes }, {
+                headers: {"Content-Type": "application/json" }
+            });
+            alert("Vote saved.");
+            await loadVotes();
+        } catch (err: any){
+            if (err.response?.status === 404) {
+                alert("Event was deleted.");
+                navigate('/dashboard');
+            } else {
+                alert("The vote couldn't be saved.");
+            }
+        }
     };
     const handleAddOption = async () => {
-        await axios.post(`/events/${eventId}/options`, newOption);
-        await loadOptions();
-        // reset form
-        setNewOption({
-            placeName: "",
-            location: "",
-            timeFrom: new Date(),
-            timeTo: new Date(),
-        });
+        try {
+            await axios.post(`/events/${eventId}/options`, newOption);
+            await loadOptions();
+            // reset form
+            setNewOption({
+                placeName: "",
+                location: "",
+                timeFrom: new Date(),
+                timeTo: new Date(),
+            });
+        } catch (err: any){
+            if (err.response?.status === 404) {
+                alert("Event was deleted");
+                navigate('/dashboard');
+            } else {
+                alert("The option couldn't be addeed.");
+            }
+        }
     }
     const handleCloseEvent = async () => {
         if (!window.confirm("Are you sure you want to close the event?")) return;
         try {
             await axios.post(`/events/${eventId}/closeFixed`);
             window.location.reload();
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            alert("Failed to close event.");
+            if (err.response?.status === 404) {
+                alert("Event was deleted");
+                navigate('/dashboard');
+            } else {
+                alert("Failed to close event.");
+            }
         }
+    }
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p className="text-lg">Loading event detail...</p>
+                </div>
+            </div>
+        );
+    }
+    // error state
+    if (error) {
+        return (
+            <ErrorNotification error={error} />
+        );
     }
 
     return event ? (
@@ -104,7 +178,5 @@ export default function EventDetailPage() {
             submittedUsers={participants}
             handleCloseEvent={handleCloseEvent}
         />
-    ) : (
-    <div className="p-6 text-gray-500">Loading event...</div>
-    );
+    ) : null;
 }

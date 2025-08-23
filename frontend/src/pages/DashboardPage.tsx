@@ -11,12 +11,14 @@ type Event = {
     description: string;
     ownerId: string;
 }
+
 export default function DashboardPage() {
     const [organized, setOrganized] = useState<Event[]>([]);
     const [participating, setParticipating] = useState<Event[]>([]);
     const [showDialog, setShowDialog] = useState(false);
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -25,12 +27,15 @@ export default function DashboardPage() {
         }
         const load = async () => {  
             try {
+                setLoading(true);
                 const res = await axios.get("events/my");
                 setOrganized(res.data.filter((e: any) => e.ownerId === user!.id));
                 setParticipating(res.data.filter((e: any) => e.ownerId !== user!.id));
             } catch (err) {
                 console.error("Failed to load events", err);
                 navigate("/");
+            } finally {
+                setLoading(false);
             }
         };
         load();
@@ -64,11 +69,13 @@ export default function DashboardPage() {
     }
     const handleDeleteEvent = async (eventId: string) => {
         await axios.delete(`events/${eventId}`);
+        setOrganized(prev => prev.filter(e => e.id !== eventId));
         ///// !!!!!!!!!!!!! pri delete bude potreba informovat lidi
         // ze se akce rusi
     };
     const handleLeaveEvent = async (eventId: string) => {
         await axios.delete(`events/${eventId}/participants/leave`);
+        setParticipating(prev => prev.filter(e => e.id !== eventId));
     };
     const handleGoToDetail = (id: string, mode: string) => {
         if (mode === "Open"){
@@ -77,6 +84,18 @@ export default function DashboardPage() {
             navigate(`/events/fixed/${id}`);
         }
     };
+    // loading component
+    if (loading) {
+        return (
+            <div className="p-6">
+                <div className="flex flex-col items-center justify-center min-h-[400px] text-gray-500">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p className="text-lg">Loading your events...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6">
             <h2 className="text-3xl font-bold mb-6">My Events</h2>

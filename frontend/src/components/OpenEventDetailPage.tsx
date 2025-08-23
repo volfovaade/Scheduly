@@ -10,8 +10,6 @@ interface Props {
     preferenceSummary: any[];
     submittedUsers: any[];
     handleFinalize: () => void;
-    radius: number;
-    setRadius: (val: number) => void;
     duration: number;
     setDuration: (val: number) => void;
     handleCloseEvent: () => void;
@@ -25,8 +23,6 @@ export default function OpenEventDetailPage({
     preferenceSummary,
     submittedUsers,
     handleFinalize,
-    radius,
-    setRadius,
     duration,
     setDuration,
     handleCloseEvent
@@ -92,19 +88,6 @@ export default function OpenEventDetailPage({
 
             {event.currentUserIsOrganizer && event.phase === "Proposal" && (
                 <>
-                    <div className="mt-4 mb-4">
-                        <label className="block font-medium">Search radius (km): {radius}</label>
-                        <input
-                            type="range"
-                            min={3}
-                            max={30}
-                            step={1}
-                            value={radius}
-                            onChange={(e) => setRadius(Number(e.target.value))}
-                            className="w-full"
-                        />
-                    </div>
-
                     <div className="mb-4">
                         <label className="block font-medium">Duration (hours): {duration}</label>
                         <input
