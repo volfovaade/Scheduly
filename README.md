@@ -27,12 +27,13 @@ cd eventplanner
 ### 2. Spuštění pomocí Dockeru
 ```bash
 docker compose up --build
+# pro development:  docker-compose -f docker-compose.dev.yml up --build
 ```
 
 ---
 
 ## ⚙️ Konfigurace aplikace
-Aplikace používá soubor appsettings.json pro konfiguraci. Do adresáře backend tedy přidejte vlastní appsettings.json. Předloha zde:
+Aplikace používá soubor appsettings.json pro konfiguraci. V adresáři backend se ujistěte, že v souboru appsettings.json máte nastavené klíče a connection k databázi. Předloha zde:
 ```json
 {
   "ConnectionStrings": {

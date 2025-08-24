@@ -82,7 +82,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Scheduly API v1");
-        options.RoutePrefix = string.Empty; // Swagger bude na http://localhost:5000/
+        options.RoutePrefix = string.Empty; // Swagger will be available at http://localhost:8081/
     });
 }
 
