@@ -1,5 +1,4 @@
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import { useState } from "react";
 
 interface Option {
     id: string;
@@ -46,7 +45,96 @@ export default function FixedEventDetailPage({
     submittedUsers,
     handleCloseEvent
     } : Props) {
+
     const eventCode = event.code;
+    const [timeError, setTimeError] = useState<string>("");
+
+    // Validace časového rozsahu
+    const validateTimeRange = (from: Date, to: Date): string => {
+        if (!from || !to) return "";
+        
+        if (from >= to) {
+            return "Start time must be before end time";
+        }
+        
+        const diffInMs = to.getTime() - from.getTime();
+        const diffInHours = diffInMs / (1000 * 60 * 60);
+        
+        if (diffInHours < 1) {
+            return "Time range must be at least 1 hour";
+        }
+        
+        return "";
+    };
+
+    const handleFromChange = (value: string) => {
+        const newFrom = new Date(value);
+        let newTo = newOption.timeTo;
+        
+        // Auto-adjust "to" time if it's invalid
+        if (!newTo || newFrom >= newTo) {
+            newTo = new Date(newFrom.getTime() + 60 * 60 * 1000); // +1 hour
+        }
+        
+        setNewOption({...newOption, timeFrom: newFrom, timeTo: newTo});
+        
+        // Validate
+        const error = validateTimeRange(newFrom, newTo);
+        setTimeError(error);
+    };
+
+    const handleToChange = (value: string) => {
+        const newTo = new Date(value);
+        setNewOption({...newOption, timeTo: newTo});
+        
+        // Validate
+        const error = validateTimeRange(newOption.timeFrom, newTo);
+        setTimeError(error);
+    };
+
+    const handleAddOptionWithValidation = () => {
+        // Check if all fields are filled
+        if (!newOption.placeName.trim()) {
+            setTimeError("Place name is required");
+            return;
+        }
+        if (!newOption.location.trim()) {
+            setTimeError("Location is required");
+            return;
+        }
+        if (!newOption.timeFrom || !newOption.timeTo) {
+            setTimeError("Both start and end times are required");
+            return;
+        }
+
+        // Validate time range
+        const validationError = validateTimeRange(newOption.timeFrom, newOption.timeTo);
+        if (validationError) {
+            setTimeError(validationError);
+            return;
+        }
+        // Clear error and proceed
+        setTimeError("");
+        handleAddOption();
+    };
+
+    // Get minimum value for "To" input
+    const getMinToValue = (): string => {
+        if (!newOption.timeFrom) return "";
+        const minTo = new Date(newOption.timeFrom.getTime() + 60 * 60 * 1000); // +1 hour
+        return new Date(minTo.getTime() - minTo.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
+    };
+
+    // Convert Date to datetime-local string
+    const dateToInputValue = (date: Date): string => {
+        if (!date) return "";
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
+    };
+
     return (
         <div className="p-6">
             <h2 className="text-2xl font-bold mb-4">Fixed Event: {event.title}</h2>
@@ -106,17 +194,59 @@ export default function FixedEventDetailPage({
 
                     <div className="border-t pt-4">
                         <h3 className="text-lg font-semibold mb-2">Add your preference</h3>
-                        <input placeholder="Name of the place" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, placeName: e.target.value})} />
-                        <input placeholder="Location (address)" className="border p-1 mr-2" onChange={e => setNewOption({...newOption, location: e.target.value})} />
-                        <div className="flex items-center gap-4 my-2">
-                            <div>
-                                From: <DatePicker selected={newOption.timeFrom} onChange={date => setNewOption({...newOption, timeFrom: date!})} showTimeSelect dateFormat="Pp" />
+
+                        {/* Error message */}
+                        {timeError && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                                {timeError}
                             </div>
+                        )}
+                        <div className="mb-3">
+                            <input 
+                                placeholder="Name of the place" 
+                                className="border p-2 mr-2 w-48 rounded" 
+                                value={newOption.placeName}
+                                onChange={e => setNewOption({...newOption, placeName: e.target.value})} 
+                            />
+                            <input 
+                                placeholder="Location (address)" 
+                                className="border p-2 mr-2 w-48 rounded" 
+                                value={newOption.location}
+                                onChange={e => setNewOption({...newOption, location: e.target.value})} 
+                            />
+                        </div>
+                        <div className="flex items-center gap-4 my-3">
                             <div>
-                                To: <DatePicker selected={newOption.timeTo} onChange={date => setNewOption({...newOption, timeTo: date!})} showTimeSelect dateFormat="Pp" />
+                                <label className="block text-sm font-medium mb-1">From:</label>
+                                <input
+                                    type="datetime-local"
+                                    value={dateToInputValue(newOption.timeFrom)}
+                                    onChange={(e) => handleFromChange(e.target.value)}
+                                    className="border px-2 py-1 rounded"
+                                />
+                            </div>
+                            <span className="text-gray-500 mt-6">–</span>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">To:</label>
+                                <input
+                                    type="datetime-local"
+                                    min={getMinToValue()}
+                                    value={dateToInputValue(newOption.timeTo)}
+                                    onChange={(e) => handleToChange(e.target.value)}
+                                    className="border px-2 py-1 rounded"
+                                />
                             </div>
                         </div>
-                        <button onClick={handleAddOption} className="bg-green-600 text-white px-4 py-2">Add option</button>
+                        <p className="text-xs text-gray-500 mb-3">
+                            End time must be at least 1 hour after start time
+                        </p>
+                        <button 
+                            onClick={handleAddOptionWithValidation} 
+                            className="bg-green-600 text-white px-4 py-2"
+                            disabled={!!timeError}
+                        >
+                            Add option
+                        </button>
                     </div>
                 </>
             )}

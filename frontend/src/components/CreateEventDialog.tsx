@@ -20,12 +20,72 @@ export default function CreateEventDialog({ isOpen, onClose, onCreate }: Props) 
     // range only for open events
     const [rangeFrom, setRangeFrom] = useState<Date | null>(null);
     const [rangeTo, setRangeTo] = useState<Date | null>(null);
+    const [error, setError] = useState<string>("");
+
+    // time diff validation
+    const validateTimeRange = (from: Date | null, to: Date | null): string => {
+        if (!from || !to) return "";
+        if (from >= to) {
+            return "Start time must be before end time";
+        }
+        const diffInMs = to.getTime() - from.getTime();
+        const diffInHours = diffInMs / (1000 * 60 * 60);
+        
+        if (diffInHours < 1) {
+            return "Time range must be at least 1 hour";
+        }
+        return "";
+    };
+
+    const handleFromChange = (value: string) => {
+        const newFrom = new Date(value);
+        setRangeFrom(newFrom);
+        
+        const validationError = validateTimeRange(newFrom, rangeTo);
+        setError(validationError);
+        
+        // Auto-adjust "to" 
+        if (rangeTo && newFrom >= rangeTo) {
+            const newTo = new Date(newFrom.getTime() + 60 * 60 * 1000); // +1 hodina
+            setRangeTo(newTo);
+            setError("");
+        }
+    };
     
+    const handleToChange = (value: string) => {
+        const newTo = new Date(value);
+        setRangeTo(newTo);
+        
+        const validationError = validateTimeRange(rangeFrom, newTo);
+        setError(validationError);
+    };
+
+    // func to get min value for "to" field
+    const getMinToValue = (): string => {
+        if (!rangeFrom) return "";
+        const minTo = new Date(rangeFrom.getTime() + 60 * 60 * 1000); // +1 hour
+        return new Date(minTo.getTime() - minTo.getTimezoneOffset() * 60000)
+            .toISOString()
+            .slice(0, 16);
+    };
+
     const handleSubmit = () => {
-        if (!title.trim()) return;
-        if (mode === "Open" && (!rangeFrom || !rangeTo)) {
-            alert("Open event requires both From and To times.");
+        if (!title.trim()) {
+            setError("Event name is required");
             return;
+        }
+        
+        if (mode === "Open" && (!rangeFrom || !rangeTo)) {
+            setError("Open event requires both From and To times");
+            return;
+        }
+        
+        if (mode === "Open") {
+            const validationError = validateTimeRange(rangeFrom, rangeTo);
+            if (validationError) {
+                setError(validationError);
+                return;
+            }
         }
         onCreate({title, description, mode, timeRangeFrom: rangeFrom, timeRangeTo: rangeTo});
         setTitle("");
@@ -43,6 +103,12 @@ export default function CreateEventDialog({ isOpen, onClose, onCreate }: Props) 
                 <DialogTitle className="text-lg font-semibold mb-4">
                     New event
                 </DialogTitle>
+                {/* Error message */}
+                {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                        {error}
+                    </div>
+                )}
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Name</label>
                     <input
@@ -74,7 +140,7 @@ export default function CreateEventDialog({ isOpen, onClose, onCreate }: Props) 
                 </div>
                 {mode === "Open" && (
                     <div className="mb-4">
-                        <label className="block text-sm font-medium mb-1">Allowed Time Range</label>
+                        <label className="block text-sm font-medium mb-1">Allowed Time Range (minimum 1 hour)</label>
                         <div className="flex gap-2 items-center">
                             <input
                                 type="datetime-local"
@@ -85,12 +151,13 @@ export default function CreateEventDialog({ isOpen, onClose, onCreate }: Props) 
                                             .slice(0, 16)
                                         : ""
                                 }  
-                                onChange={(e) => setRangeFrom(new Date(e.target.value))}
+                                onChange={(e) => handleFromChange(e.target.value)}
                                 className="border px-2 py-1 rounded"
                             />
                             <span>–</span>
                             <input
                                 type="datetime-local"
+                                min={getMinToValue()}
                                 value={
                                     rangeTo
                                         ? new Date(rangeTo.getTime() - rangeTo.getTimezoneOffset() * 60000)
@@ -98,10 +165,13 @@ export default function CreateEventDialog({ isOpen, onClose, onCreate }: Props) 
                                             .slice(0, 16)
                                         : ""
                                 }
-                                onChange={(e) => setRangeTo(new Date(e.target.value))}
+                                onChange={(e) => handleToChange(e.target.value)}
                                 className="border px-2 py-1 rounded"
                             />
                         </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                            End time must be at least 1 hour after start time
+                        </p>
                     </div>
                 )}
                 <div className="flex justify-end gap-2">
