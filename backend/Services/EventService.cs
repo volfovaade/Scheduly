@@ -126,8 +126,9 @@ namespace backend.Services
         /// Analyzes user preferences and generates place recommendations using Google Places API.
         /// Determines the most popular place type, optimal location, and best time slot.
         /// </summary>
+        /// <param name="eventId">The event's id that is being finalized</param>
         /// <param name="durationInHours"> Organizator sets the duration of the event </param>
-        /// <param name="radius"> Currently unused </param>
+ 
         public async Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int durationInHours)
         {     
             var preferences = await _context.PlacePreferences

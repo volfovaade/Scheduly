@@ -26,7 +26,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // Configure CORS policy
-// Allows frontend requests from http://localhost:3000 with any header and method
+// Allows frontend requests from given origins with any header and method
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>

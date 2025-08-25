@@ -54,7 +54,7 @@ namespace backend.Services {
             {
                 PropertyNameCaseInsensitive = true
             });
-            // convert Google API results to our model(take only first 3) -> might be better to do some better algorithm
+            // convert Google API results to our model(take only first 3) -> might be better to do some more random algorithm
             var results = data?.Results?.Take(3)
                 .Select(r => new GeneratedPlaceOption
                 {
