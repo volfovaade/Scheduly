@@ -16,7 +16,7 @@ namespace backend.Models
         /// <summary>
         /// Navigation property for many-to-many relationship with Events.
         /// Contains event participation data with roles.
-        /// User <-> Event + Role
+        /// User - Event + Role
         /// </summary>
         public List<EventParticipant> Events { get; set; } = new();
     }
