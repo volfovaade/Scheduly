@@ -25,7 +25,7 @@ namespace backend.Controllers
         // Registers a new user, hashes the password, assigns default "User" role, and returns a JWT token.
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register(AuthRequest request)
-        {
+        { 
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                 return BadRequest("User already exists");
 

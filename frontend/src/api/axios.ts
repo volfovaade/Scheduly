@@ -3,8 +3,11 @@
 
 import axios from 'axios';
 
+// use environment variable or fallback to default
+const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081/api';
+
 const instance = axios.create({
-    baseURL: 'http://10.0.0.31:8081/api',  //'http://localhost:8081/api',
+    baseURL: baseUrl,  
 })
 
 // to avoid setting up the headers repeatedly => DRY

@@ -24,8 +24,11 @@ namespace backend.Services
     /// </summary>
     public class TokenService : ITokenService
     {
-        private readonly IConfiguration _config;
-        public TokenService(IConfiguration config) => _config = config;
+        private readonly string _jwtKey;
+        public TokenService()
+        {
+            _jwtKey = Environment.GetEnvironmentVariable("JWT_KEY")!;
+        }
 
         /// <summary>
         /// Creates a new JWT token for the specified user.
@@ -41,7 +44,7 @@ namespace backend.Services
                 new Claim(ClaimTypes.Role, user.Role!.Name)
             };
             // Create signing key from configuration
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             // generate the token

@@ -10,12 +10,12 @@ namespace backend.Services {
     public class GooglePlacesService
     {
         private readonly HttpClient _httpClient;
-        private readonly IConfiguration _config; 
+        private readonly string _apiKey; 
 
-        public GooglePlacesService (HttpClient httpClient, IConfiguration config)
+        public GooglePlacesService (HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _config = config;
+            _apiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")!;  // already validated in Program.cs
         }
         /// <summary>
         /// Searches for nearby places of specified type using Google Places API.
@@ -32,15 +32,13 @@ namespace backend.Services {
         public async Task<List<GeneratedPlaceOption>> SearchPlacesAsync(
             string type, double lat, double lng, Guid eventId, DateTime fromTime, DateTime toTime)
         {
-            // get API key from configuration
-            var apiKey = _config["GoogleApiKey"];
 
             // build Google Places API URL - using distance ranking
             var url = $"https://maps.googleapis.com/maps/api/place/nearbysearch/json" +
                       $"?location={lat},{lng}" +
                       $"&type={type}" +
                       $"&rankby=distance" +
-                      $"&key={apiKey}";
+                      $"&key={_apiKey}";
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {

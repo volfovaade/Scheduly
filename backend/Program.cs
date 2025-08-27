@@ -10,6 +10,22 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// loading environment variables and validation
+var jwtKey = Environment.GetEnvironmentVariable("JWT_KEY")
+            ?? throw new InvalidOperationException("JWT Key not configured");
+
+var googleApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")
+                  ?? throw new InvalidOperationException("Google API Key not configured");
+
+// build connection string from environment variables or use default
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "db";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+var dbName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "planner";
+var dbUser = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres";
+var dbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
+
+var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+
 // Add controllers and configure JSON serialization
 // JsonStringEnumConverter => serialize enums as strings (e.g. "cafe") instead of numeric values
 builder.Services.AddControllers().AddJsonOptions(opts =>
@@ -27,11 +43,13 @@ builder.Services.AddSwaggerGen(options =>
 
 // Configure CORS policy
 // Allows frontend requests from given origins with any header and method
+var frontendUrl = Environment.GetEnvironmentVariable("FRONTEND_URL") ?? "http://localhost:3000";
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://10.0.0.31:3000")
+        policy.WithOrigins(frontendUrl)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -40,7 +58,7 @@ builder.Services.AddCors(options =>
 
 // Configure Entity Framework Core with PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Configure JWT authentication (Bearer token in the Authorization header)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -48,7 +66,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,  // verify token signature
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateIssuer = false, // skip issuer and audience validation
             ValidateAudience = false
         };
@@ -83,7 +101,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Scheduly API v1");
-        options.RoutePrefix = string.Empty; // Swagger will be available at http://localhost:8081/
+        options.RoutePrefix = string.Empty; // Swagger will be available at ${BACKEND_URL}
     });
 }
 
