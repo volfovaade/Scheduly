@@ -17,7 +17,7 @@ const customIcon = L.icon({
 enum PlaceType {
     Restaurant = "Restaurant",
     Cafe = "Cafe",
-    Park = "Park",
+    Parc = "Parc",
     Other = "Other"
 }
 type TimeInterval = {
