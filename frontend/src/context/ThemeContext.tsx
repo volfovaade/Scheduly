@@ -3,14 +3,21 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 const ThemeContext = createContext({} as any);
 
 export const ThemeProvider = ({ children }: any) => {
-    const [theme, setTheme] = useState("light");
+    const getDefaultTheme = () => {
+        if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            return "dark";
+        }
+        return "light";
+    };
+
+    const [theme, setTheme] = useState<string>(getDefaultTheme);
 
     useEffect(() => {
-        document.body.dataset.theme = theme;
+        document.documentElement.classList.toggle("dark", theme === "dark");
     }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{ theme, toggle: () => setTheme(t => t === "light" ? "dark" : "light")}}>
+        <ThemeContext.Provider value={{ theme, toggleTheme: () => setTheme(t => t === "light" ? "dark" : "light")}}>
             {children}
         </ThemeContext.Provider>
     );

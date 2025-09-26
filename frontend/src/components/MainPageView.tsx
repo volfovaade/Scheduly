@@ -1,3 +1,5 @@
+import { HomePage } from "./HomepageView";
+
 type Props = {
     code: string;
     setCode: (v: string) => void;
@@ -8,7 +10,22 @@ type Props = {
     onGoToDashboard: () => void;
 };
 
-export default function MainPageView({code, setCode, isAuthenticated, onJoin, onLogin, onRegister, onGoToDashboard} : Props){
+export default function MainPageView({code, setCode, onJoin, onGoToDashboard}: Props){
+
+    return (
+        //<div className="mih-h-screen bg-gray-50 dark:bg-gray-900 flex">
+            //<Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+            //<div className="flex-1 lg:ml-72">
+                //<TopBar toggleSidebar={toggleSidebar} />
+                <main className="min-h-[calc(100vh-80px)]">
+                    <HomePage code={code} setCode={setCode} onJoin={onJoin} onGoToDashboard={onGoToDashboard} />
+                </main>
+            //</div>
+        //</div>
+    );
+}
+
+export function MainPageViewOld({code, setCode, isAuthenticated, onJoin, onLogin, onRegister, onGoToDashboard} : Props){
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-3xl font-bold mb-6">Scheduly</h1>
