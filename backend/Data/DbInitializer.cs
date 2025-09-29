@@ -24,9 +24,7 @@ namespace backend.Data
             {
                 context.Roles.AddRange(
                     new Role { Name = Roles.Admin },
-                    new Role { Name = Roles.User },
-                    new Role { Name = EventRoles.Organizator },
-                    new Role { Name = EventRoles.Participant }
+                    new Role { Name = Roles.User }
                 );
                 await context.SaveChangesAsync();
             }

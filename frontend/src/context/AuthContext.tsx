@@ -5,11 +5,13 @@ type User = {
     id: string;
     name: string;
     email: string;
+    role: string;
 };
 type AuthContextType = {
     user: User | null;
     isAuthenticated: boolean;
-    login: (token: string, userId: string) => void;
+    isAdmin: boolean;
+    login: (token: string, userId: string) => Promise<void>;
     logout: () => void;
 };
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +24,7 @@ export function AuthProvider ({children}:{children: React.ReactNode}) {
         try {
             const res = await axios.get(`/users/${userId}`);
             setUser(res.data);
+            console.log("User loaded:", res.data);
         } catch (err) {
             console.error("Failed to fetch user info", err);
         }
@@ -31,14 +34,25 @@ export function AuthProvider ({children}:{children: React.ReactNode}) {
         setUser(null);
     };
     useEffect(() => {
-        const token = sessionStorage.getItem("token");
-        const userId = sessionStorage.getItem("userId");
-        if (token && userId) {
-            login(token, userId); // silent login on page reload
+        const initAuth = async () => {
+            const token = sessionStorage.getItem("token");
+            const userId = sessionStorage.getItem("userId");
+            if (token && userId) {
+                try {
+                    const res = await axios.get(`/users/${userId}`);
+                    console.log("Silent login - user loaded:", res.data); 
+                    setUser(res.data);
+                } catch (err) {
+                    console.error("Silent login failed", err);
+                    sessionStorage.clear();
+                } // silent login on page reload
+            }
         }
+        initAuth();
     }, []);
+    const isAdmin = user?.role === 'Admin';
     return (
-        <AuthContext.Provider value={{user, isAuthenticated: !!user, login, logout,}}>
+        <AuthContext.Provider value={{user, isAuthenticated: !!user, isAdmin, login, logout,}}>
             {children}
         </AuthContext.Provider>
     );

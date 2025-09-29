@@ -24,7 +24,9 @@ namespace backend.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return NotFound();
             return Ok(ToUserDto(user));
         }
@@ -33,7 +35,8 @@ namespace backend.Controllers
         {
             Id = user.Id,
             Name = user.Name,
-            Email = user.Email
+            Email = user.Email,
+            Role = user.Role?.Name ?? Roles.User
         };
     }
 }

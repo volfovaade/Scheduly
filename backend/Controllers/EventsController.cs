@@ -115,7 +115,7 @@ namespace backend.Controllers
                 return Forbid();
             }
 
-            // find the most preffered option
+            // find the most preffered option, get detailed object
             var winningOption = await _context.FinalVotes
                 .Where(v => v.EventId == eventId)
                 .GroupBy(v => v.OptionId)

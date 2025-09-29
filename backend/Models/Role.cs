@@ -2,6 +2,7 @@ namespace backend.Models
 {
     /// <summary>
     /// Static classes defining role constants for the application.
+    /// In DbInitilizer seeding only system roles User and Admin
     /// </summary>
     public static class Roles
     {

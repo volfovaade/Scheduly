@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
-import MainPageView from "../components/MainPageView";
+import { HomePage } from "../components/HomepageView";
 import { useAuth } from "../context/AuthContext"; 
 
 export default function MainPage(){
     const [code, setCode] = useState("");
-    const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
     const handleJoinEvent = async () => {
@@ -19,13 +18,10 @@ export default function MainPage(){
         }
     };
     return (
-        <MainPageView
+        <HomePage
             code={code}
             setCode={setCode}
-            isAuthenticated={isAuthenticated}
             onJoin={handleJoinEvent}
-            onLogin={() => navigate("/login")}
-            onRegister={() => navigate("/register")}
             onGoToDashboard={() => navigate("/dashboard")}
         />
     );

@@ -1,4 +1,4 @@
-import { X, Calendar, Settings, Home, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { X, Calendar, Settings, Home, LogIn, UserPlus, LogOut, Trash2, AlertTriangle, Shield } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import Logo from "../assets/badge.png";
 import { Link } from "react-router-dom";
@@ -9,11 +9,15 @@ type Props = {
 };
 
 export function Sidebar({ isOpen, toggleSidebar}: Props) {
-    const {user, isAuthenticated, logout} = useAuth();
+    const {user, isAuthenticated, isAdmin, logout} = useAuth();
     const menuItems = [
         {icon: Home, label: 'Home', href: '/'},
         {icon: Calendar, label: 'My events', href: '/dashboard'},
         {icon: Settings, label: 'Settings', href: '/settings'}
+    ];
+    const adminMenuItems = [
+        {icon: Trash2, label: 'Clean up data', href: '/admin/cleanup'},
+        {icon: AlertTriangle, label: 'Suspicious activity', href: '/admin/suspicious'}
     ];
     const authItems = isAuthenticated 
         ? [{icon: LogOut, label: 'Log out', action: logout}]
@@ -60,13 +64,22 @@ export function Sidebar({ isOpen, toggleSidebar}: Props) {
                 {isAuthenticated && (
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-pink-600 to-pink-700 rounded-full flex items-center justify-center">
+                            <div className={`w-10 h-10 bg-gradient-to-br from-pink-600 to-pink-700 rounded-full flex items-center justify-center ${
+                                isAdmin 
+                                    ? 'bg-gradient-to-br from-yellow-500 to-orange-600' 
+                                    : 'bg-gradient-to-br from-pink-600 to-pink-700'
+                            }`}>
                                 <span className="text-sm font-medium text-white">
                                     {user?.name?.charAt(0) || 'U'}
                                 </span>
                             </div>
                             <div>
                                 <p className="font-medium text-gray-900 dark:text-white">{user?.name}</p>
+                                {isAdmin && (
+                                    <span className="text-xs text-yellow-600 dark:text-yellow-400 font-semibold">
+                                        Admin
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -88,6 +101,33 @@ export function Sidebar({ isOpen, toggleSidebar}: Props) {
                             </li>
                         ))}
                     </ul>
+                    {/* Admin section - visible to admins */}
+                    {isAdmin && (
+                        <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center space-x-2 px-4 mb-3">
+                                <Shield className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                                <h3 className="text-sm font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-wide">
+                                    Admin Panel
+                                </h3>
+                            </div>
+                            <ul className="space-y-2">
+                                {adminMenuItems.map((item, index) => (
+                                    <li key={index}>
+                                        <Link
+                                            to={item.href}
+                                            className="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300
+                                                hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-700 dark:hover:text-yellow-400
+                                                rounded-lg transition-colors duration-200 group"
+                                        >
+                                            <item.icon className="w-5 h-5 group:hover:scale-110 transition-transform" />
+                                            <span className="font-medium">{item.label}</span>
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     {/* Authorization section */}
                     <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
                         <ul className="space-y-2">

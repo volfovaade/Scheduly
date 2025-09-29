@@ -31,13 +31,13 @@ namespace backend.Tests
 
             return new HttpClient(handlerMock.Object);
         }
-        private IConfiguration CreateConfiguration(string apiKey = "test_api_key")
-        {
-            var mockConfig = new Mock<IConfiguration>();
-            mockConfig.Setup(c => c[It.Is<string>(s => s == "GoogleApiKey")])
-                      .Returns(apiKey);
-            return mockConfig.Object;
-        }
+        //private IConfiguration CreateConfiguration(string apiKey = "test_api_key")
+        //{
+        //    var mockConfig = new Mock<IConfiguration>();
+        //    mockConfig.Setup(c => c[It.Is<string>(s => s == "GoogleApiKey")])
+        //              .Returns(apiKey);
+        //    return mockConfig.Object;
+        //}
 
         [Fact]
         public async Task SearchPlacesAsync_ReturnsTop3Results()
@@ -55,8 +55,8 @@ namespace backend.Tests
             });
 
             var httpClient = CreateHttpClientWithResponse(sampleJson);
-            var config = CreateConfiguration();
-            var service = new GooglePlacesService(httpClient, config);
+            //var config = CreateConfiguration();
+            var service = new GooglePlacesService(httpClient);
 
             var eventId = Guid.NewGuid();
             var fromTime = DateTime.UtcNow;
@@ -86,8 +86,8 @@ namespace backend.Tests
         {
             // Arrange
             var httpClient = CreateHttpClientWithResponse("{}", HttpStatusCode.BadRequest);
-            var config = CreateConfiguration();
-            var service = new GooglePlacesService(httpClient, config);
+            //var config = CreateConfiguration();
+            var service = new GooglePlacesService(httpClient);
 
             // Act
             var result = await service.SearchPlacesAsync("restaurant", 50.0, 14.0, Guid.NewGuid(), DateTime.UtcNow, DateTime.UtcNow.AddHours(1));
@@ -103,8 +103,8 @@ namespace backend.Tests
             // Arrange
             var malformedJson = "{ invalid json";
             var httpClient = CreateHttpClientWithResponse(malformedJson);
-            var config = CreateConfiguration();
-            var service = new GooglePlacesService(httpClient, config);
+            //var config = CreateConfiguration();
+            var service = new GooglePlacesService(httpClient);
 
             // Act & Assert
             await Assert.ThrowsAsync<JsonException>(() =>

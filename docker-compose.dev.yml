@@ -7,8 +7,7 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     env_file:
-      - .env.shared
-      - frontend/.env
+      - .env
     volumes:
       - ./frontend:/app
       - /app/node_modules  # exclude node_modules from sync
@@ -23,7 +22,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile.dev 
     env_file:
-      - .env.shared
+      - .env
       - backend/.env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -49,7 +48,7 @@ services:
       timeout: 5s
       retries: 5
     env_file:
-      - .env.shared
+      - .env
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
