@@ -1,22 +1,8 @@
 import { useState } from "react";
-
-interface Option {
-    id: string;
-    placeName: string;
-    location: string;
-    timeFrom: string;
-    timeTo: string;
-}
-interface Vote {
-    id: string;
-    voteCount: number;
-}
-interface NewOption {
-    placeName: string;
-    location: string;
-    timeFrom: Date;
-    timeTo: Date;
-}
+import Option from "../types/option";
+import Vote from "../types/vote";
+import NewOption from "../types/newOption";
+import { useNotification } from "../context/NotificationContext";
 
 interface Props {
     event: any;
@@ -45,7 +31,7 @@ export default function FixedEventDetailPage({
     submittedUsers,
     handleCloseEvent
     } : Props) {
-
+    const notify = useNotification();
     const eventCode = event.code;
     const [timeError, setTimeError] = useState<string>("");
 
@@ -145,7 +131,7 @@ export default function FixedEventDetailPage({
                 <button
                 onClick={() => {
                     navigator.clipboard.writeText(eventCode);
-                    alert("Copied!");
+                    notify.info("Copied!");
                 }}
                 className="ml-2 px-2 py-1 text-sm bg-gray-200 rounded"
                 >

@@ -16,12 +16,31 @@ namespace backend.Models
     public enum EventMode
     {
         Open,    // automated place and date selection
-        Fixed   // users can add prefrences but just as fixed date+place
+        Fixed,   // users can add prefrences but just as fixed date+place
+        SingleOption,           // Typ 1: Organizátor vytvoøí 1 místo+èas, ostatní se pøihlašují
+        CollaborativeOptions,   // Typ 2: Kdokoli mùže pøidávat návrhy míst a èasù
+        OrganizerOptions,       // Typ 3: Pouze organizátor pøidává návrhy
+        FixedTimeOpenPlace,     // Typ 4: Fixní èas, generování míst z preferencí
+        FixedPlaceOpenTime,     // Typ 5: Fixní místo, výbìr prùniku èasù
+        FullyOpen              // Typ 6: Otevøené místo i èas, generování obojího
+
+    }
+    /// <summary>
+    /// Represents the contrains of the event
+    /// </summary>
+    public enum ConstraintType
+    {
+        None,        
+        TimeRange,      
+        FixedPlace,     
+        FixedTime,      
+        MultiDay        
     }
 
     /// <summary>
     /// Main event entity representing a planned gathering or meeting.
     /// </summary>
+
     public class Event
     {
         public Guid Id { get; set; }
@@ -30,20 +49,37 @@ namespace backend.Models
         public Guid OwnerId { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public EventMode Mode { get; set; } = EventMode.Fixed;
+        public bool IsMultiDay { get; set; } = false;
 
-        // time range for open mode events
-        public DateTime? TimeRangeFrom { get; set; }   
-        public DateTime? TimeRangeTo { get; set; } 
+        // Constraints
+        public ConstraintType Constraint { get; set; } = ConstraintType.None;
+        public DateTime? TimeRangeFrom { get; set; }
+        public DateTime? TimeRangeTo { get; set; }
+        public string? FixedPlaceName { get; set; }
+        public string? FixedAddress { get; set; }
+        public double? FixedLatitude { get; set; }
+        public double? FixedLongitude { get; set; }
+
+        public DateTime? FixedTimeFrom { get; set; }
+        public DateTime? FixedTimeTo { get; set; }
+
         public EventPhase Phase { get; set; } = EventPhase.Proposal;
+
+        // Permissions
+        public bool AllowParticipantOptions { get; set; } = false;
+        public int MaxOptionsPerUser { get; set; } = 3;
+        public int GeneratedOptionsCount { get; set; } = 3;
 
         /// <summary>
         /// Short 6-character code for easy event sharing (first 6 chars of GUID).
         /// </summary>
         public string Code => Id.ToString("N")[..6]; // auto-generated based on GUID, first 6 chars
+        
+        // Navigation
         public List<EventOption> Options { get; set; } = new List<EventOption>();
         public List<EventParticipant> Participants { get; set; } = new();
 
-        // final selected results after voting
+        // Final results
         public string? FinalPlaceName { get; set; }
         public string? FinalAddress { get; set; }
         public DateTime? FinalTimeFrom { get; set; }

@@ -29,7 +29,7 @@ namespace backend.Services {
         /// <param name="fromTime">Start time for the place option</param>
         /// <param name="toTime">End time for the place option</param>
         /// <returns>List of generated place options</returns>
-        public async Task<List<GeneratedPlaceOption>> SearchPlacesAsync(
+        public async Task<List<EventOption>> SearchPlacesAsync(
             string type, double lat, double lng, Guid eventId, DateTime fromTime, DateTime toTime)
         {
 
@@ -42,7 +42,7 @@ namespace backend.Services {
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
-                return new List<GeneratedPlaceOption>();
+                return new List<EventOption>();
             }
 
             // parse JSON response
@@ -54,13 +54,15 @@ namespace backend.Services {
             });
             // convert Google API results to our model(take only first 3) -> might be better to do some more random algorithm
             var results = data?.Results?.Take(3)
-                .Select(r => new GeneratedPlaceOption
+                .Select(r => new EventOption
                 {
                     Id = Guid.NewGuid(),
                     EventId = eventId,
+                    Source = OptionSource.Generated, 
                     PlaceName = r.Name,
                     Address = r.Vicinity,
-                    Location = r.Geometry.Location,
+                    Latitude = r.Geometry.Location.Lat,
+                    Longitude = r.Geometry.Location.Lng,
                     TimeFrom = fromTime,
                     TimeTo = toTime
                 })

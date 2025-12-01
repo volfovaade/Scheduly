@@ -6,7 +6,7 @@ type Event = {
     title: string;
     description: string;
 }
-
+/// not being used at this time --- maybe later for admin page
 export default function EventsPage () {
     const [events, setEvents] = useState<Event[]>([]);
 

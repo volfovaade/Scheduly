@@ -8,7 +8,9 @@ namespace backend.Models
     {
         public Guid Id { get; set; }
 
-        public Guid PlacePreferenceId { get; set; }  // foreign key to PlacePreference
+        // key to TimePreference
+        public Guid TimePreferenceId { get; set; }
+        public TimePreference TimePreference { get; set; } = null!;
 
         public DateTime From { get; set; }
         public DateTime To { get; set; }

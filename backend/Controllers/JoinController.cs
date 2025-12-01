@@ -50,7 +50,13 @@ namespace backend.Controllers
                 });
                 await _context.SaveChangesAsync();
             }
-            return Ok(new { id=ev.Id, mode=ev.Mode });
+            return Ok(new {
+                id = ev.Id,
+                mode = ev.Mode,
+                phase = ev.Phase,
+                title = ev.Title,
+                allowParticipantOptions = ev.AllowParticipantOptions
+            });
         }
     }
 }

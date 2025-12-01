@@ -22,6 +22,7 @@ namespace backend.Controllers
 
         // POST: api/events/{eventId}/votes
         // Submits a list of votes for event options.
+        // Unified voting endpoint for all phases
         [HttpPost]
         public async Task<IActionResult> SubmitVotes(Guid eventId, VoteRequestDto voteDto)
         {
@@ -31,19 +32,40 @@ namespace backend.Controllers
                 return Unauthorized("Invalid user ID in token.");
             }
 
-            var userVotes = await _context.Votes
-                .Where(v => v.Option.EventId == eventId && v.UserId == userId)
+            var ev = await _context.Events.FindAsync(eventId);
+            if (ev == null) return NotFound("Event not found");
+
+            // determine vote type based on phase
+            var voteType = ev.Phase == EventPhase.FinalVoting
+                ? VoteType.Final
+                : VoteType.Preference;
+
+            // remove existing votes of this type for this user
+            var existingVotes = await _context.Votes
+                .Where(v => v.Option.EventId == eventId
+                    && v.UserId == userId
+                    && v.Type == voteType)
                 .ToListAsync();
 
-            _context.Votes.RemoveRange(userVotes); // rewrite of votes
+            _context.Votes.RemoveRange(existingVotes); // for future rewrite of votes
 
-            foreach (var optionId in voteDto.OptionIds)
+            // add new votes
+            foreach (var voteItem in voteDto.Votes)
             {
+                // validate option exists and belongs to this event
+                var optionExists = await _context.EventOptions
+                    .AnyAsync(o => o.Id == voteItem.OptionId && o.EventId == eventId);
+
+                if (!optionExists)
+                    continue; // skip invalid options
+
                 _context.Votes.Add(new Vote
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
-                    OptionId = optionId
+                    OptionId = voteItem.OptionId,
+                    Type = voteType,
+                    Score = voteItem.Score
                 });
             }
 
@@ -51,33 +73,28 @@ namespace backend.Controllers
             return Ok("Votes submitted");
         }
 
-        // POST: api/events/{eventId}/votes/final
-        // Used for open events in final stage
-        // Submits a final vote for a single generated place option.
-        [HttpPost("final")]
-        public async Task<IActionResult> VoteFinal(Guid eventId, [FromBody] Guid optionId)
+        // GET: api/events/{eventId}/votes/my
+        // Get user's votes for this event
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyVotes(Guid eventId)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
-            {
                 return Unauthorized();
-            }
-            // removing previous if exists
-            var existingVote = await _context.FinalVotes
-                .FirstOrDefaultAsync(v => v.Id == eventId &&  v.UserId == userId);
-            if (existingVote != null) _context.FinalVotes.Remove(existingVote);
 
-            // save new vote
-            var vote = new FinalVote
-            {
-                Id = Guid.NewGuid(),
-                EventId = eventId,
-                UserId = userId,
-                OptionId = optionId
-            };
-            _context.FinalVotes.Add(vote);
-            await _context.SaveChangesAsync();
+            var votes = await _context.Votes
+                .Include(v => v.Option)
+                .Where(v => v.Option.EventId == eventId && v.UserId == userId)
+                .Select(v => new
+                {
+                    v.Id,
+                    v.OptionId,
+                    v.Type,
+                    v.Score,
+                    v.VotedAt
+                })
+                .ToListAsync();
 
-            return Ok();
+            return Ok(votes);
         }
 
         // GET: api/events/{eventId}/votes/summary
@@ -90,12 +107,17 @@ namespace backend.Controllers
                 .Select(o => new
                 {
                     o.Id,
+                    o.PlaceName,
                     o.TimeFrom,
                     o.TimeTo,
-                    o.Location,
-                    VoteCount = o.Votes.Count,
-                    TotalScore = _context.Votes
-                        .Where(v => v.OptionId == o.Id)
+                    o.Address,
+                    PreferenceVotes = o.Votes.Count(v => v.Type == VoteType.Preference),
+                    PreferenceScore = o.Votes
+                        .Where(v => v.Type == VoteType.Preference)
+                        .Sum(v => (int?)v.Score) ?? 0,
+                    FinalVotes = o.Votes.Count(v => v.Type == VoteType.Final),
+                    FinalScore = o.Votes
+                        .Where(v => v.Type == VoteType.Final)
                         .Sum(v => (int?)v.Score) ?? 0
                 })
                 .ToListAsync();

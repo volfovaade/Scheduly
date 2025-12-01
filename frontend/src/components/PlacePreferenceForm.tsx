@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNotification } from "../context/NotificationContext";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import axios from "../api/axios";
 import { SquareX } from "lucide-react";
@@ -75,6 +76,7 @@ export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeT
     const [latitude, setLatitude] = useState(PRAGUE_LAT); // for Prague as default
     const [longitude, setLongitude] = useState(PRAGUE_LNG);
     const [intervals, setIntervals] = useState<TimeInterval[]>([{from: "", to: ""}]);
+    const notify = useNotification();
 
     const [loading, setLoading] = useState(false);
 
@@ -108,7 +110,7 @@ export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeT
         const rangeEnd = new Date(timeRangeTo);
 
         if (newDate < rangeStart || newDate > rangeEnd) {
-            alert(`Selected ${field} time must be between ${toLocalDateTimeString(timeRangeFrom)} and ${toLocalDateTimeString(timeRangeTo)}`);
+            notify.warning(`Selected ${field} time must be between ${toLocalDateTimeString(timeRangeFrom)} and ${toLocalDateTimeString(timeRangeTo)}`);
             return;
         }
         const updated = [...intervals];
@@ -122,7 +124,7 @@ export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeT
             const interval = intervals[i];
             
             if (!interval.from || !interval.to) {
-                alert(`Interval ${i + 1}: Please select both times.`);
+                notify.warning(`Interval ${i + 1}: Please select both times.`);
                 return false;
             }
             
@@ -130,7 +132,7 @@ export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeT
             const toTime = new Date(interval.to).getTime();
             
             if (fromTime >= toTime) {
-                alert(`Interval ${i + 1}: Time "from" must be smaller than "to"`);
+                notify.warning(`Interval ${i + 1}: Time "from" must be smaller than "to"`);
                 return false;
             }
         }
@@ -161,11 +163,11 @@ export default function PlacePreferenceForm({ eventId, timeRangeFrom, timeRangeT
             console.error("Error saving preferences:", err);
             
             if (err.response?.status === 404) {
-                alert("Event not found.");
+                notify.error("Event not found.");
             } else if (err.response?.status === 400) {
-                alert("Invalid data. Check please all the fields.");
+                notify.error("Invalid data. Check please all the fields.");
             } else {
-                alert("Couldn't save preferences. Please try again later.");
+                notify.error("Couldn't save preferences. Please try again later.");
             }
         } finally {
             setLoading(false);

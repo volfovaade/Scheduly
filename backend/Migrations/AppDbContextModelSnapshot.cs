@@ -28,6 +28,12 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("AllowParticipantOptions")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Constraint")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -46,6 +52,33 @@ namespace backend.Migrations
 
                     b.Property<DateTime?>("FinalTimeTo")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FixedAddress")
+                        .HasColumnType("text");
+
+                    b.Property<double?>("FixedLatitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("FixedLongitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("FixedPlaceName")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("FixedTimeFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("FixedTimeTo")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("GeneratedOptionsCount")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsMultiDay")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxOptionsPerUser")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Mode")
                         .HasColumnType("integer");
@@ -77,15 +110,30 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Location")
-                        .HasColumnType("text");
+                    b.Property<bool>("IsSelected")
+                        .HasColumnType("boolean");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("PlaceName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("TimeFrom")
                         .HasColumnType("timestamp with time zone");
@@ -119,26 +167,6 @@ namespace backend.Migrations
                     b.ToTable("EventParticipants");
                 });
 
-            modelBuilder.Entity("backend.Models.FinalVote", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OptionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("FinalVotes");
-                });
-
             modelBuilder.Entity("backend.Models.GeneratedPlaceOption", b =>
                 {
                     b.Property<Guid>("Id")
@@ -164,10 +192,10 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("GeneratedPlaceOptions");
+                    b.ToTable("GeneratedPlaceOption");
                 });
 
-            modelBuilder.Entity("backend.Models.PlacePreference", b =>
+            modelBuilder.Entity("backend.Models.LocationPreference", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -194,7 +222,7 @@ namespace backend.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PlacePreferences");
+                    b.ToTable("LocationPreferences");
                 });
 
             modelBuilder.Entity("backend.Models.Role", b =>
@@ -221,7 +249,7 @@ namespace backend.Migrations
                     b.Property<DateTime>("From")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("PlacePreferenceId")
+                    b.Property<Guid>("TimePreferenceId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("To")
@@ -229,9 +257,30 @@ namespace backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PlacePreferenceId");
+                    b.HasIndex("TimePreferenceId");
 
                     b.ToTable("TimeIntervals");
+                });
+
+            modelBuilder.Entity("backend.Models.TimePreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TimePreferences");
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>
@@ -252,7 +301,7 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("RoleId")
+                    b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -274,8 +323,14 @@ namespace backend.Migrations
                     b.Property<int>("Score")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("VotedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -329,7 +384,7 @@ namespace backend.Migrations
 
                             b1.HasKey("GeneratedPlaceOptionId");
 
-                            b1.ToTable("GeneratedPlaceOptions");
+                            b1.ToTable("GeneratedPlaceOption");
 
                             b1.WithOwner()
                                 .HasForeignKey("GeneratedPlaceOptionId");
@@ -339,7 +394,7 @@ namespace backend.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("backend.Models.PlacePreference", b =>
+            modelBuilder.Entity("backend.Models.LocationPreference", b =>
                 {
                     b.HasOne("backend.Models.Event", "Event")
                         .WithMany()
@@ -360,18 +415,41 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.TimeInterval", b =>
                 {
-                    b.HasOne("backend.Models.PlacePreference", null)
+                    b.HasOne("backend.Models.TimePreference", "TimePreference")
                         .WithMany("TimeIntervals")
-                        .HasForeignKey("PlacePreferenceId")
+                        .HasForeignKey("TimePreferenceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("TimePreference");
+                });
+
+            modelBuilder.Entity("backend.Models.TimePreference", b =>
+                {
+                    b.HasOne("backend.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>
                 {
                     b.HasOne("backend.Models.Role", "Role")
                         .WithMany()
-                        .HasForeignKey("RoleId");
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Role");
                 });
@@ -407,7 +485,7 @@ namespace backend.Migrations
                     b.Navigation("Votes");
                 });
 
-            modelBuilder.Entity("backend.Models.PlacePreference", b =>
+            modelBuilder.Entity("backend.Models.TimePreference", b =>
                 {
                     b.Navigation("TimeIntervals");
                 });

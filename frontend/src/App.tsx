@@ -5,8 +5,7 @@ import MainPage from "./pages/MainPage";
 import EventsPage from "./pages/EventsPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
-import OpenEventDetailPage from "./pages/OpenEventDetailPage"; 
-import FixedEventDetailPage from "./pages/FixedEventDetailPage"; 
+import EventDetailPage from "./pages/EventDetailPage";  
 
 function App() {
   return (
@@ -18,8 +17,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/events" element={<EventsPage />} />
-          <Route path="/events/open/:eventId" element={<OpenEventDetailPage />} />
-          <Route path="/events/fixed/:eventId" element={<FixedEventDetailPage />} />
+          <Route path="/events/:eventId" element={<EventDetailPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

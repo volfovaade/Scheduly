@@ -16,24 +16,25 @@ namespace backend.Database
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Event> Events { get; set; }
-        public DbSet<PlacePreference> PlacePreferences { get; set; }
         public DbSet<TimeInterval> TimeIntervals { get; set; }
         public DbSet<EventOption> EventOptions { get; set; }
         public DbSet<Vote> Votes { get; set; }
         public DbSet<EventParticipant> EventParticipants { get; set; }
-        public DbSet<GeneratedPlaceOption> GeneratedPlaceOptions { get; set; }
-        public DbSet<FinalVote> FinalVotes { get; set; }
+        public DbSet<LocationPreference> LocationPreferences { get; set; }
+        public DbSet<TimePreference> TimePreferences { get; set; }
 
         /// <summary>
         /// Configures entity relationships and database schema.
         /// </summary>
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // configure TimeInterval->PlacePreference relationship
+            base.OnModelCreating(modelBuilder);
+
+            // configure TimeInterval->TimePreference relationship
             modelBuilder.Entity<TimeInterval>()
-                .HasOne<PlacePreference>()
+                .HasOne<TimePreference>()
                 .WithMany(p => p.TimeIntervals)
-                .HasForeignKey(t => t.PlacePreferenceId);
+                .HasForeignKey(t => t.TimePreferenceId);
 
             // configure EventParticipant with composite primary key (UserId + EventId)
             modelBuilder.Entity<EventParticipant>()
@@ -80,7 +81,20 @@ namespace backend.Database
                     }
                 }
             }
-            base.OnModelCreating(modelBuilder);
+
+            // kaskádové mazání pro TimeIntervals pøi smazání TimePreference
+            modelBuilder.Entity<TimeInterval>()
+                .HasOne(ti => ti.TimePreference)
+                .WithMany(tp => tp.TimeIntervals)
+                .HasForeignKey(ti => ti.TimePreferenceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // kaskádové mazání pro TimePreferences pøi smazání Event
+            modelBuilder.Entity<TimePreference>()
+                .HasOne(tp => tp.Event)
+                .WithMany()
+                .HasForeignKey(tp => tp.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

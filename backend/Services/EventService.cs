@@ -18,7 +18,10 @@ namespace backend.Services
         Task<IEnumerable<EventDto>> GetUserEventsAsync(Guid userId);
         Task<EventDto> CreateAsync(Guid userId, EventCreateDto dto);
         Task<bool> DeleteAsync(Guid id, Guid userId);
-        Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int duration);
+        Task<List<EventOption>> FinalizeFullyOpen(Guid eventId, int durationInHours);
+        Task<List<EventOption>> FinalizeFixedTimeOpenPlace(Guid eventId);
+        Task<DateTime> FinalizeFixedPlaceOpenTime(Guid eventId);
+
     }
     /// <summary>
     /// Service for managing events including creation, retrieval, and place recommendation generation.
@@ -43,8 +46,18 @@ namespace backend.Services
                 Title = dto.Title,
                 Description = dto.Description,
                 Mode = dto.Mode,
+                IsMultiDay = dto.IsMultiDay,
+                Constraint = dto.Constraint,
                 TimeRangeFrom = dto.TimeRangeFrom,
                 TimeRangeTo = dto.TimeRangeTo,
+                FixedPlaceName = dto.FixedPlaceName,
+                FixedAddress = dto.FixedAddress,
+                FixedLatitude = dto.FixedLatitude,
+                FixedLongitude = dto.FixedLongitude,
+                FixedTimeFrom = dto.FixedTimeFrom,
+                FixedTimeTo = dto.FixedTimeTo,
+                AllowParticipantOptions = dto.AllowParticipantOptions,
+                MaxOptionsPerUser = dto.MaxOptionsPerUser,
                 CreatedAt = DateTime.UtcNow,
                 OwnerId = userId
             };
@@ -98,11 +111,18 @@ namespace backend.Services
                 Title = ev.Title,
                 Description = ev.Description,
                 Mode = ev.Mode,
+                IsMultiDay = ev.IsMultiDay,
+                Constraint = ev.Constraint,
                 TimeRangeFrom = ev.TimeRangeFrom,
                 TimeRangeTo = ev.TimeRangeTo,
+                FixedPlaceName = ev.FixedPlaceName,
+                FixedAddress = ev.FixedAddress,
+                FixedTimeFrom = ev.FixedTimeFrom,
+                FixedTimeTo = ev.FixedTimeTo,
                 OwnerId = ev.OwnerId,
                 CreatedAt = ev.CreatedAt,
                 Phase = ev.Phase,
+                AllowParticipantOptions = ev.AllowParticipantOptions,
                 FinalPlaceName = ev.FinalPlaceName,
                 FinalAddress = ev.FinalAddress,
                 FinalTimeFrom = ev.FinalTimeFrom,
@@ -128,45 +148,30 @@ namespace backend.Services
         /// </summary>
         /// <param name="eventId">The event's id that is being finalized</param>
         /// <param name="durationInHours"> Organizator sets the duration of the event </param>
- 
-        public async Task<List<GeneratedPlaceOption>> FinalizeProposalPhase(Guid eventId, int durationInHours)
-        {     
-            var preferences = await _context.PlacePreferences
-                .Include(p => p.TimeIntervals)
-                .Where(p => p.EventId == eventId).ToListAsync();
+    
+        public async Task<List<EventOption>> FinalizeFullyOpen(Guid eventId, int durationInHours)
+        {
+            var ev = await _context.Events.FindAsync(eventId);
+            if (ev == null) throw new Exception("Event not found");
 
-            if (preferences.Count == 0)
-                throw new Exception("No preferences to analyze");
+            var locationPrefs = await _context.LocationPreferences
+                .Where(p => p.EventId == eventId)
+                .ToListAsync();
 
-            // most preffered type of place
-            var topType = preferences.GroupBy(p => p.Type)
+            if (locationPrefs.Count == 0)
+                throw new Exception("No location preferences submitted");
+
+            // Most preferred type
+            var topType = locationPrefs.GroupBy(p => p.Type)
                 .OrderByDescending(g => g.Count())
                 .First().Key;
 
-            //  average location
-            var avgLat = preferences.Average(p => p.Latitude);
-            var avgLng = preferences.Average(p => p.Longitude);
-
-            // find most convenient time slot by counting overlapping hours
-            var timeCounts = new Dictionary<DateTime, int>();
-            foreach (var pref in preferences)
-            {
-                foreach (var interval in pref.TimeIntervals)
-                {
-                    for (var t = interval.From; t < interval.To; t = t.AddHours(1))
-                    {
-                        var key = new DateTime(t.Year, t.Month, t.Day, t.Hour, 0, 0);
-                        if (!timeCounts.ContainsKey(key))
-                        {
-                            timeCounts[key] = 0;
-                        }
-                        timeCounts[key]++;
-                    }
-                }
-            }
+            // Average location
+            var avgLat = locationPrefs.Average(p => p.Latitude);
+            var avgLng = locationPrefs.Average(p => p.Longitude);
 
             // get the hour with most availability and center the event duration around it
-            var bestDate = timeCounts.OrderByDescending(kvp => kvp.Value).First().Key;
+            var bestDate = await FinalizeFixedPlaceOpenTime(eventId);
             var fromTime = bestDate.AddHours(-durationInHours / 2);
             var toTime = bestDate.AddHours(durationInHours / 2);
 
@@ -174,11 +179,77 @@ namespace backend.Services
             var generated = await _googlePlacesService
                 .SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, eventId, fromTime, toTime);
 
-            _context.GeneratedPlaceOptions.AddRange(generated);
+            _context.EventOptions.AddRange(generated);
             await _context.SaveChangesAsync();
 
             return generated;
         }
+        public async Task<List<EventOption>> FinalizeFixedTimeOpenPlace(Guid eventId)
+        {
+            var ev = await _context.Events.FindAsync(eventId);
+            if (ev == null) throw new Exception("Event not found");
+
+            var locationPrefs = await _context.LocationPreferences
+                .Where(p => p.EventId == eventId)
+                .ToListAsync();
+
+            if (locationPrefs.Count == 0)
+                throw new Exception("No location preferences submitted");
+
+            // Most preferred type
+            var topType = locationPrefs.GroupBy(p => p.Type)
+                .OrderByDescending(g => g.Count())
+                .First().Key;
+
+            // Average location
+            var avgLat = locationPrefs.Average(p => p.Latitude);
+            var avgLng = locationPrefs.Average(p => p.Longitude);
+
+            // Generate places using fixed time
+            var generated = await _googlePlacesService.SearchPlacesAsync(
+                ConvertPlaceTypeToString(topType),
+                avgLat,
+                avgLng,
+                eventId,
+                ev.FixedTimeFrom!.Value,
+                ev.FixedTimeTo!.Value
+            );
+
+            _context.EventOptions.AddRange(generated);
+            await _context.SaveChangesAsync();
+
+            return generated;
+        }
+        public async Task<DateTime> FinalizeFixedPlaceOpenTime(Guid eventId)
+        {
+            var timePrefs = await _context.TimePreferences
+                .Include(p => p.TimeIntervals)
+                .Where(p => p.EventId == eventId)
+                .ToListAsync();
+
+            if (timePrefs.Count == 0)
+                throw new Exception("No time preferences submitted");
+
+            // Find most overlapping time
+            var timeCounts = new Dictionary<DateTime, int>();
+            foreach (var pref in timePrefs)
+            {
+                foreach (var interval in pref.TimeIntervals)
+                {
+                    for (var t = interval.From; t < interval.To; t = t.AddHours(1))
+                    {
+                        var key = new DateTime(t.Year, t.Month, t.Day, t.Hour, 0, 0);
+                        if (!timeCounts.ContainsKey(key))
+                            timeCounts[key] = 0;
+                        timeCounts[key]++;
+                    }
+                }
+            }
+
+            var bestTime = timeCounts.OrderByDescending(kvp => kvp.Value).First().Key;
+            return bestTime;
+        }
+
         /// <summary>
         /// Converts enum place type to Google Places API string format.
         /// </summary>
@@ -202,8 +273,14 @@ namespace backend.Services
             Title = e.Title,
             Description = e.Description,
             Mode = e.Mode,
+            IsMultiDay = e.IsMultiDay,
+            Constraint = e.Constraint,
             TimeRangeFrom = e.TimeRangeFrom,
             TimeRangeTo = e.TimeRangeTo,
+            FixedPlaceName = e.FixedPlaceName,
+            FixedAddress = e.FixedAddress,
+            FixedTimeFrom = e.FixedTimeFrom,
+            FixedTimeTo = e.FixedTimeTo,
             CreatedAt = e.CreatedAt,
             OwnerId = e.OwnerId
         };
@@ -214,7 +291,8 @@ namespace backend.Services
         {
             Id = user.Id,
             Name = user.Name,
-            Email = user.Email
+            Email = user.Email,
+            Role = user.Role?.Name ?? Roles.User
         };
         /// <summary>
         /// Converts EventParticipant entity to DTO.

@@ -36,7 +36,7 @@ namespace backend.Controllers
                 Email = request.Email,
                 Name = request.Email.Split('@')[0],
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Role = role
+                Role = role!
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();

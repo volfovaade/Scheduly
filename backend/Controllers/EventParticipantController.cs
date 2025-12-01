@@ -26,12 +26,12 @@ namespace backend.Controllers
             var participants = await _context.EventParticipants
                 .Include(p => p.User)
                 .Where(p => p.EventId == eventId)
-                .Select(p => new{
+                .Select(p => new
+                {
                     p.UserId,
                     p.User.Name,
                     p.Role
                 }).ToListAsync();
-
             return Ok(participants);
         }
 
@@ -74,6 +74,16 @@ namespace backend.Controllers
             if (participant == null)
                 return NotFound("Not a participant of this event.");
 
+            // delete all votes connected with this user leaving the event
+            var userVotes = await _context.Votes
+                .Include(v => v.Option)
+                .Where(v => v.UserId == userId && v.Option.EventId == eventId)
+                .ToListAsync();
+
+            if (userVotes.Any())
+            {
+                _context.Votes.RemoveRange(userVotes);
+            }
             _context.EventParticipants.Remove(participant);
             await _context.SaveChangesAsync();
             return Ok("Left the event.");

@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
+import { useNotification } from "../context/NotificationContext";
 
 export default function RegisterPage (){
+    const notify = useNotification();
     const [form, setForm] = useState({name: "", email: "", password: ""});
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -20,7 +22,7 @@ export default function RegisterPage (){
             await login(res.data.token, res.data.userId); // login after registration
             navigate("/dashboard");
         } catch (err) {
-            alert("Registration failed.");
+            notify.error("Registration failed.");
         } finally {
             setLoading(false);
         }

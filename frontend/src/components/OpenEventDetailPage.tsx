@@ -1,7 +1,7 @@
 import PlacePreferenceForm from "../components/PlacePreferenceForm";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import FinalVotingForm from "../components/FinalVotingForm";
-
+import { useNotification } from "../context/NotificationContext";
 interface Props {
     event: any;
     showPreferences: boolean;
@@ -27,6 +27,7 @@ export default function OpenEventDetailPage({
     setDuration,
     handleCloseEvent
 }: Props) {
+    const notify = useNotification();
     const barData = preferenceSummary.map((item) => ({
             Label: `${item.day} ${item.hour}:00`,
             Count: item.count
@@ -44,7 +45,7 @@ export default function OpenEventDetailPage({
                 <button
                 onClick={() => {
                     navigator.clipboard.writeText(eventCode);
-                    alert("Copied!");
+                    notify.info("Copied!");
                 }}
                 className="ml-2 px-2 py-1 text-sm bg-gray-200 rounded"
                 >
