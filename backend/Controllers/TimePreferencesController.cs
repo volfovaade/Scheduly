@@ -2,6 +2,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,13 @@ namespace backend.Controllers
     [Authorize]
     public class TimePreferencesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IEventRepository _eventRepo;
+        private readonly ITimePrefRepository _timePrefRepo;
 
-        public TimePreferencesController(AppDbContext context)
+        public TimePreferencesController(ITimePrefRepository timePrefRepo, IEventRepository eventRepo)
         {
-            _context = context;
+            _timePrefRepo = timePrefRepo;
+            _eventRepo = eventRepo;
         }
 
         // GET: api/events/{eventId}/timePreferences/my
@@ -28,9 +31,7 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var pref = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var pref = await _timePrefRepo.GetWithIntervalsAsync(eventId, userId);
 
             if (pref == null)
                 return Ok(null);
@@ -52,21 +53,18 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound("Event not found");
 
             if (ev.Mode != EventMode.FixedPlaceOpenTime)
                 return BadRequest("This endpoint is only for open time events");
 
             // Delete existing preference
-            var existing = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var existing = await _timePrefRepo.GetWithIntervalsAsync(eventId, userId);
 
             if (existing != null)
             {
-                _context.TimeIntervals.RemoveRange(existing.TimeIntervals);
-                _context.TimePreferences.Remove(existing);
+                await _timePrefRepo.DeleteWithIntervalsAsync(existing);
             }
 
             // Add new preference
@@ -85,8 +83,7 @@ namespace backend.Controllers
                 }).ToList()
             };
 
-            _context.TimePreferences.Add(pref);
-            await _context.SaveChangesAsync();
+            await _timePrefRepo.AddAsync(pref);
 
             return Ok();
         }
@@ -95,10 +92,7 @@ namespace backend.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetTimeSummary(Guid eventId)
         {
-            var preferences = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var preferences = await _eventRepo.GetTimePreferencesWithIntervalsAsync(eventId);
 
             var allHours = new List<(DateTime Day, int Hour)>();
 

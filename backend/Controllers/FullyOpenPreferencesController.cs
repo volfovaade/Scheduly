@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,15 @@ namespace backend.Controllers
     [Authorize]
     public class FullyOpenPreferencesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ILocationPrefRepository _locationPrefRepo;
+        private readonly ITimePrefRepository _timePrefRepo;
+        private readonly IEventRepository _eventRepo;
 
-        public FullyOpenPreferencesController(AppDbContext context)
+        public FullyOpenPreferencesController(ILocationPrefRepository locationPrefRepo, ITimePrefRepository timePrefRepo, IEventRepository eventRepo)
         {
-            _context = context; 
+            _locationPrefRepo = locationPrefRepo;
+            _timePrefRepo = timePrefRepo;
+            _eventRepo = eventRepo;
         }
 
         // GET: api/events/{eventId}/fullyOpenPreferences/my
@@ -26,11 +31,8 @@ namespace backend.Controllers
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
-            var locationPref = await _context.LocationPreferences
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
-            var timePref = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var locationPref = await _locationPrefRepo.GetAsync(eventId, userId);
+            var timePref = await _timePrefRepo.GetWithIntervalsAsync(eventId, userId);
             return Ok(new
             {
                 Location = locationPref == null ? null : new LocationPreferenceDto
@@ -57,18 +59,17 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound("Event not found.");
 
             if (ev.Mode != EventMode.FullyOpen)
                 return BadRequest("This endpoint is only for fully open events");
 
             // Delete existing preference
-            var existing = await _context.LocationPreferences
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var existing = await _locationPrefRepo.GetAsync(eventId, userId);
 
             if (existing != null)
-                _context.LocationPreferences.Remove(existing);
+                await _locationPrefRepo.DeleteAsync(existing);
 
             // Add new preference
             var pref = new LocationPreference
@@ -81,8 +82,7 @@ namespace backend.Controllers
                 Longitude = dto.Longitude
             };
 
-            _context.LocationPreferences.Add(pref);
-            await _context.SaveChangesAsync();
+            await _locationPrefRepo.AddAsync(pref);
 
             return Ok();
         }
@@ -94,21 +94,18 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound("Event not found");
 
             if (ev.Mode != EventMode.FullyOpen)
                 return BadRequest("This endpoint is only for fully open events");
 
             // Delete existing preference
-            var existing = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var existing = await _timePrefRepo.GetWithIntervalsAsync(eventId, userId);
 
             if (existing != null)
             {
-                _context.TimeIntervals.RemoveRange(existing.TimeIntervals);
-                _context.TimePreferences.Remove(existing);
+                await _timePrefRepo.DeleteWithIntervalsAsync(existing);
             }
 
             // Add new preference
@@ -127,8 +124,7 @@ namespace backend.Controllers
                 }).ToList()
             };
 
-            _context.TimePreferences.Add(pref);
-            await _context.SaveChangesAsync();
+            await _timePrefRepo.AddAsync(pref);
 
             return Ok();
         }
@@ -137,9 +133,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetSummary(Guid eventId)
         {
             // Location summary
-            var locationPrefs = await _context.LocationPreferences
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var locationPrefs = await _eventRepo.GetLocationPreferencesAsync(eventId);
 
             var locationSummary = locationPrefs.Any() ? new
             {
@@ -152,10 +146,7 @@ namespace backend.Controllers
             } : null;
 
             // Time summary
-            var timePrefs = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var timePrefs = await _eventRepo.GetTimePreferencesWithIntervalsAsync(eventId);
 
             var allHours = new List<(DateTime Day, int Hour)>();
             foreach (var pref in timePrefs)

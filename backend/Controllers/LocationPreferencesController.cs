@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace backend.Controllers
     [Authorize]
     public class LocationPreferencesController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        public LocationPreferencesController(AppDbContext context)
+        private readonly IEventRepository _eventRepo;
+        private readonly ILocationPrefRepository _locationPrefRepo;
+        public LocationPreferencesController(ILocationPrefRepository locationPrefRepo, IEventRepository eventRepo)
         {
-            _context = context;
+            _locationPrefRepo = locationPrefRepo;
+            _eventRepo = eventRepo;
         }
 
         // GET: api/events/{eventId}/locationPreferences/my
@@ -27,8 +30,7 @@ namespace backend.Controllers
             {
                 return Unauthorized();
             }
-            var pref = await _context.LocationPreferences
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var pref = await _locationPrefRepo.GetAsync(eventId, userId);
             if (pref == null)
             {
                 return Ok(null);
@@ -48,18 +50,17 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound("Event not found");
 
             if (ev.Mode != EventMode.FixedTimeOpenPlace)
                 return BadRequest("This endpoint is only for open place events");
 
             // Delete existing preference
-            var existing = await _context.LocationPreferences
-                .FirstOrDefaultAsync(p => p.EventId == eventId && p.UserId == userId);
+            var existing = await _locationPrefRepo.GetAsync(eventId, userId);
 
             if (existing != null)
-                _context.LocationPreferences.Remove(existing);
+                await _locationPrefRepo.DeleteAsync(existing);
 
             // Add new preference
             var pref = new LocationPreference
@@ -71,8 +72,7 @@ namespace backend.Controllers
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude
             };
-            _context.LocationPreferences.Add(pref);
-            await _context.SaveChangesAsync();
+            await _locationPrefRepo.AddAsync(pref);
 
             return Ok();
         }
@@ -80,9 +80,7 @@ namespace backend.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetLocationSummary(Guid eventId)
         {
-            var preferences = await _context.LocationPreferences
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var preferences = await _eventRepo.GetLocationPreferencesAsync(eventId);
 
             var summary = new
             {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using backend.DTOs;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using backend.Repositories.Interfaces;
 
 namespace backend.Controllers
 {
@@ -12,11 +13,11 @@ namespace backend.Controllers
     [Authorize]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepo;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IUserRepository userRepo)
         {
-            _context = context;
+            _userRepo = userRepo;
         }
 
         // GET: api/users/{userId}
@@ -24,9 +25,7 @@ namespace backend.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
-            var user = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userRepo.GetByIdAsync(userId);
             if (user == null) return NotFound();
             return Ok(ToUserDto(user));
         }

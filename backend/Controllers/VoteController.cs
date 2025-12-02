@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,15 @@ namespace backend.Controllers
     [Authorize]
     public class VotesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IEventRepository _eventRepo;
+        private readonly IVoteRepository _voteRepo;
+        private readonly IEventOptionRepository _eventOptionRepo;
 
-        public VotesController(AppDbContext context)
+        public VotesController(IEventRepository eventRepo, IVoteRepository voteRepo, IEventOptionRepository eventOptionRepo)
         {
-            _context = context;
+            _eventRepo = eventRepo;
+            _voteRepo = voteRepo;
+            _eventOptionRepo = eventOptionRepo;
         }
 
         // POST: api/events/{eventId}/votes
@@ -32,7 +37,7 @@ namespace backend.Controllers
                 return Unauthorized("Invalid user ID in token.");
             }
 
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound("Event not found");
 
             // determine vote type based on phase
@@ -40,26 +45,18 @@ namespace backend.Controllers
                 ? VoteType.Final
                 : VoteType.Preference;
 
-            // remove existing votes of this type for this user
-            var existingVotes = await _context.Votes
-                .Where(v => v.Option.EventId == eventId
-                    && v.UserId == userId
-                    && v.Type == voteType)
-                .ToListAsync();
-
-            _context.Votes.RemoveRange(existingVotes); // for future rewrite of votes
+            await _voteRepo.DeleteExistingBy(userId, eventId, voteType); // for future rewrite of votes
 
             // add new votes
             foreach (var voteItem in voteDto.Votes)
             {
                 // validate option exists and belongs to this event
-                var optionExists = await _context.EventOptions
-                    .AnyAsync(o => o.Id == voteItem.OptionId && o.EventId == eventId);
+                var optionExists = await _eventOptionRepo.HasEventOption(eventId, voteItem.OptionId);
 
                 if (!optionExists)
                     continue; // skip invalid options
 
-                _context.Votes.Add(new Vote
+                await _voteRepo.AddAsync(new Vote
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
@@ -69,7 +66,6 @@ namespace backend.Controllers
                 });
             }
 
-            await _context.SaveChangesAsync();
             return Ok("Votes submitted");
         }
 
@@ -81,18 +77,15 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var votes = await _context.Votes
-                .Include(v => v.Option)
-                .Where(v => v.Option.EventId == eventId && v.UserId == userId)
-                .Select(v => new
-                {
-                    v.Id,
-                    v.OptionId,
-                    v.Type,
-                    v.Score,
-                    v.VotedAt
-                })
-                .ToListAsync();
+            var votes = (await _voteRepo.GetUserVotes(eventId, userId))
+                                .Select(v => new
+                                {
+                                    v.Id,
+                                    v.OptionId,
+                                    v.Type,
+                                    v.Score,
+                                    v.VotedAt
+                                });
 
             return Ok(votes);
         }
@@ -102,8 +95,7 @@ namespace backend.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetVoteSummary(Guid eventId)
         {
-            var summary = await _context.EventOptions
-                .Where(o => o.EventId == eventId)
+            var summary = (await _eventOptionRepo.GetOptionsAsync(eventId))
                 .Select(o => new
                 {
                     o.Id,
@@ -119,8 +111,7 @@ namespace backend.Controllers
                     FinalScore = o.Votes
                         .Where(v => v.Type == VoteType.Final)
                         .Sum(v => (int?)v.Score) ?? 0
-                })
-                .ToListAsync();
+                });
 
             return Ok(summary);
         }

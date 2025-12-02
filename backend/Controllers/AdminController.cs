@@ -1,4 +1,5 @@
 using backend.Database;
+using backend.Repositories.Interfaces;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,20 +11,20 @@ namespace backend.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserRepository _userRepo;
+        private readonly IEventRepository _eventRepo;
 
-        public AdminController(AppDbContext context)
+        public AdminController(IUserRepository userRepo, IEventRepository eventRepo)
         {
-            _context = context;
+            _userRepo = userRepo;
+            _eventRepo = eventRepo;
         }
         // GET: api/admin/users/suspicious
         // Returns all of the suspicious users that have more than 50 events
         [HttpGet("users/suspicious")]
         public async Task<IActionResult> GetSuspiciousUsers()
         {
-            var suspiciousUsers = await _context.Users
-                    .Where(u => u.Events.Count > 50)
-                    .ToListAsync();
+            var suspiciousUsers = await _userRepo.GetSuspiciousUsersAsync();
             return Ok(suspiciousUsers);
         }
 
@@ -34,11 +35,9 @@ namespace backend.Controllers
         public async Task<IActionResult> CleanupOldEvents()
         {
             var oldDate = DateTime.UtcNow.AddYears(-1);
-            var oldEvents = await _context.Events
-                    .Where(e => e.CreatedAt < oldDate && e.Participants.Count == 0)
-                    .ToListAsync();
-            _context.Events.RemoveRange(oldEvents);
-            await _context.SaveChangesAsync();
+            var oldEvents = await _eventRepo.GetOldEventsAsync(oldDate);
+            await _eventRepo.DeleteAsync(oldEvents);
+
             return Ok(new { deletedCount = oldEvents.Count });
         }
     }

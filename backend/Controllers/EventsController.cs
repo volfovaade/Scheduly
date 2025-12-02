@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,16 @@ namespace backend.Controllers
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
-        private readonly AppDbContext _context;
+        private readonly IEventRepository _eventRepo;
+        private readonly IEventOptionRepository _eventOptionRepo;
+        private readonly IVoteRepository _voteRepo;
 
-        public EventsController(IEventService eventService, AppDbContext context)
+        public EventsController(IEventService eventService, IEventRepository eventRepo, IEventOptionRepository eventOptionRepo, IVoteRepository voteRepo)
         {
             _eventService = eventService;
-            _context = context;
+            _eventRepo = eventRepo;
+            _eventOptionRepo = eventOptionRepo;
+            _voteRepo = voteRepo;
         }
 
         // GET: api/events
@@ -65,9 +70,7 @@ namespace backend.Controllers
             {
                 return Unauthorized();
             }
-            var ev = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
             if (ev == null)
             {
                 return NotFound();
@@ -81,9 +84,6 @@ namespace backend.Controllers
             try {
                 var selectedOptions = await _eventService.FinalizeFullyOpen(eventId, duration);
 
-                // mark the event phase as "FinalVoting"
-                ev.Phase = EventPhase.FinalVoting;
-                await _context.SaveChangesAsync();
                 return Ok(selectedOptions);
 
             } catch (Exception err) {
@@ -97,9 +97,7 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             if (ev == null) return NotFound();
 
@@ -109,8 +107,6 @@ namespace backend.Controllers
             try
             {
                 var options = await _eventService.FinalizeFixedTimeOpenPlace(eventId);
-                ev.Phase = EventPhase.FinalVoting;
-                await _context.SaveChangesAsync();
                 return Ok(options);
             }
             catch (Exception err)
@@ -125,9 +121,7 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             if (ev == null) return NotFound();
 
@@ -138,14 +132,6 @@ namespace backend.Controllers
             {
                 var bestTime = await _eventService.FinalizeFixedPlaceOpenTime(eventId);
 
-                // Directly close (no voting phase)
-                ev.Phase = EventPhase.Closed;
-                ev.FinalPlaceName = ev.FixedPlaceName;
-                ev.FinalAddress = ev.FixedAddress;
-                ev.FinalTimeFrom = bestTime;
-                ev.FinalTimeTo = bestTime.AddHours(2); // Default 2 hours
-
-                await _context.SaveChangesAsync();
                 return Ok(new { bestTime, place = ev.FixedPlaceName });
             }
             catch (Exception err)
@@ -164,9 +150,7 @@ namespace backend.Controllers
             {
                 return Unauthorized();
             }
-            var ev = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             if (ev == null)
             {
@@ -187,7 +171,7 @@ namespace backend.Controllers
                 ev.FinalTimeFrom = ev.FixedTimeFrom;
                 ev.FinalTimeTo = ev.FixedTimeTo;
 
-                await _context.SaveChangesAsync();
+                await _eventRepo.UpdateAsync(ev);
 
                 return Ok(new { empty = false });  // no votes for this type of the event, never empty
             }
@@ -198,17 +182,7 @@ namespace backend.Controllers
                 : VoteType.Preference;
 
             // find the most preffered option, get detailed object
-            var winningOption = await _context.Votes
-                .Where(v => v.Option.EventId == eventId && v.Type == voteType)
-                .GroupBy(v => v.OptionId)
-                .Select(g => new { OptionId = g.Key, Count = g.Count(), TotalScore = g.Sum(v => v.Score) })
-                .OrderByDescending(g => g.TotalScore)
-                .ThenByDescending(g => g.Count)
-                .Join(_context.EventOptions,
-                    g => g.OptionId,
-                    o => o.Id,
-                    (g, o) => o)
-                .FirstOrDefaultAsync();
+            var winningOption = await _voteRepo.GetWinningOptionAsync(eventId, voteType);
 
             if (winningOption == null)
             {
@@ -226,7 +200,8 @@ namespace backend.Controllers
             // Mark winning option
             winningOption.IsSelected = true;
 
-            await _context.SaveChangesAsync();
+            await _eventRepo.UpdateAsync(ev);
+            await _eventOptionRepo.UpdateAsync(winningOption);
 
             return Ok(winningOption);
         }

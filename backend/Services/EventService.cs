@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Metadata.Ecma335;
@@ -28,11 +29,15 @@ namespace backend.Services
     /// </summary>
     public class EventService : IEventService
     {
-        private readonly AppDbContext _context;
+        private readonly IEventRepository _eventRepo;
+        private readonly IEventOptionRepository _eventOptionRepo;
+        private readonly IEventParticipantRepository _eventParticipantRepo;
         private readonly GooglePlacesService _googlePlacesService;
-        public EventService(AppDbContext context, GooglePlacesService googlePlacesService)
+        public EventService(IEventRepository eventRepo, IEventOptionRepository eventOptionRepo, IEventParticipantRepository eventPaarticipantRepo, GooglePlacesService googlePlacesService)
         {
-            _context = context;
+            _eventRepo = eventRepo;
+            _eventOptionRepo = eventOptionRepo;
+            _eventParticipantRepo = eventPaarticipantRepo;
             _googlePlacesService = googlePlacesService;
         }
         /// <summary>
@@ -61,15 +66,14 @@ namespace backend.Services
                 CreatedAt = DateTime.UtcNow,
                 OwnerId = userId
             };
-            _context.Events.Add(newEvent);
+            await _eventRepo.AddAsync(newEvent);
             // add creator as organizer participant
-            _context.EventParticipants.Add(new EventParticipant
+            await _eventParticipantRepo.AddEventParticipantAsync(new EventParticipant
             {
                 UserId = userId,
                 EventId = newEvent.Id,
                 Role = EventRoles.Organizator
             });
-            await _context.SaveChangesAsync();
             return ToDto(newEvent);
         }
         /// <summary>
@@ -77,13 +81,12 @@ namespace backend.Services
         /// </summary>
         public async Task<bool> DeleteAsync(Guid eventId, Guid userId)
         {
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null || userId != ev.OwnerId)
             {
                 return false;
             }
-            _context.Events.Remove(ev);
-            await _context.SaveChangesAsync();
+            await _eventRepo.DeleteAsync(ev);
             return true;
         }
         /// <summary>
@@ -91,7 +94,9 @@ namespace backend.Services
         /// </summary>
         public async Task<IEnumerable<EventDto>> GetAllAsync()
         {
-            var events = await _context.Events.Select(e => ToDto(e)).ToListAsync();
+            var events = (await _eventRepo.GetAllAsync())
+                 .Select(ToDto)
+                 .ToList();
             return events;
         }
         /// <summary>
@@ -99,9 +104,7 @@ namespace backend.Services
         /// </summary>
         public async Task<DetailedEventDto?> GetByIdAsync(Guid eventId, Guid currentUserId)
         {
-            var ev = await _context.Events
-                .Include(e => e.Participants).ThenInclude(p => p.User)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             if (ev == null) return null;
 
@@ -136,10 +139,9 @@ namespace backend.Services
         /// </summary>
         public async Task<IEnumerable<EventDto>> GetUserEventsAsync(Guid userId)
         {
-            var userEvents = await _context.Events
-                    .Where(e => e.Participants.Any(p => p.UserId == userId))
+            var userEvents =(await _eventRepo.GetByUserParticipation(userId))
                     .Select(e => ToDto(e))
-                    .ToListAsync();
+                    .ToList();
             return userEvents;
         }
         /// <summary>
@@ -151,12 +153,10 @@ namespace backend.Services
     
         public async Task<List<EventOption>> FinalizeFullyOpen(Guid eventId, int durationInHours)
         {
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) throw new Exception("Event not found");
 
-            var locationPrefs = await _context.LocationPreferences
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var locationPrefs = await _eventRepo.GetLocationPreferencesAsync(eventId);
 
             if (locationPrefs.Count == 0)
                 throw new Exception("No location preferences submitted");
@@ -179,19 +179,20 @@ namespace backend.Services
             var generated = await _googlePlacesService
                 .SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, eventId, fromTime, toTime);
 
-            _context.EventOptions.AddRange(generated);
-            await _context.SaveChangesAsync();
+            await _eventOptionRepo.AddOptionsAsync(generated);
+
+            // mark the event phase as "FinalVoting"
+            ev.Phase = EventPhase.FinalVoting;
+            await _eventRepo.UpdateAsync(ev);
 
             return generated;
         }
         public async Task<List<EventOption>> FinalizeFixedTimeOpenPlace(Guid eventId)
         {
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) throw new Exception("Event not found");
 
-            var locationPrefs = await _context.LocationPreferences
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var locationPrefs = await _eventRepo.GetLocationPreferencesAsync(eventId);
 
             if (locationPrefs.Count == 0)
                 throw new Exception("No location preferences submitted");
@@ -215,17 +216,17 @@ namespace backend.Services
                 ev.FixedTimeTo!.Value
             );
 
-            _context.EventOptions.AddRange(generated);
-            await _context.SaveChangesAsync();
+            await _eventOptionRepo.AddOptionsAsync(generated);
+            ev.Phase = EventPhase.FinalVoting;
+            await _eventRepo.UpdateAsync(ev);
 
             return generated;
         }
         public async Task<DateTime> FinalizeFixedPlaceOpenTime(Guid eventId)
         {
-            var timePrefs = await _context.TimePreferences
-                .Include(p => p.TimeIntervals)
-                .Where(p => p.EventId == eventId)
-                .ToListAsync();
+            var ev = await _eventRepo.GetByIdAsync(eventId) ?? throw new Exception("Event not found");
+
+            var timePrefs = await _eventRepo.GetTimePreferencesAsync(eventId);
 
             if (timePrefs.Count == 0)
                 throw new Exception("No time preferences submitted");
@@ -247,6 +248,15 @@ namespace backend.Services
             }
 
             var bestTime = timeCounts.OrderByDescending(kvp => kvp.Value).First().Key;
+
+            // Directly close (no voting phase)
+            ev.Phase = EventPhase.Closed;
+            ev.FinalPlaceName = ev.FixedPlaceName;
+            ev.FinalAddress = ev.FixedAddress;
+            ev.FinalTimeFrom = bestTime;
+            ev.FinalTimeTo = bestTime.AddHours(2); // Default 2 hours
+            await _eventRepo.UpdateAsync(ev);
+
             return bestTime;
         }
 

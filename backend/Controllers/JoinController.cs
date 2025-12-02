@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,13 @@ namespace backend.Controllers
     [Authorize]
     public class JoinController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IEventRepository _eventRepo;
+        private readonly IEventParticipantRepository _eventParticipantRepo;
 
-        public JoinController(AppDbContext context)
+        public JoinController(IEventRepository eventRepo, IEventParticipantRepository eventParticipantRepo)
         {
-            _context = context;
+            _eventRepo = eventRepo;
+            _eventParticipantRepo = eventParticipantRepo;
         }
 
         // POST: api/join/{code}
@@ -28,7 +31,7 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var ev = await _context.Events.FirstOrDefaultAsync(e => e.Id.ToString().StartsWith(code));
+            var ev = await _eventRepo.GetByCodeAsync(code);
             if (ev == null)
             {
                 return NotFound("Event not found");
@@ -38,17 +41,15 @@ namespace backend.Controllers
                 return BadRequest("You are already the owner of this event");
             }
                 
-            bool alreadyJoined = await _context.EventParticipants
-                .AnyAsync(p => p.EventId == ev.Id && p.UserId == userId);
-            if (!alreadyJoined)
+            var existingParticipant = await _eventParticipantRepo.GetParticipantAsync(ev.Id, userId);
+            if (existingParticipant == null)
             {
-                _context.EventParticipants.Add(new EventParticipant
+                await _eventParticipantRepo.AddEventParticipantAsync(new EventParticipant
                 {
                     UserId = userId,
                     EventId = ev.Id,
                     Role = EventRoles.Participant
                 });
-                await _context.SaveChangesAsync();
             }
             return Ok(new {
                 id = ev.Id,

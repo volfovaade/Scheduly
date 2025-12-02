@@ -1,6 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,13 @@ namespace backend.Controllers
     [Authorize]
     public class EventOptionsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IEventRepository _eventRepo;
+        private readonly IEventOptionRepository _eventOptionRepo;
 
-        public EventOptionsController(AppDbContext context)
+        public EventOptionsController(IEventRepository eventRepo, IEventOptionRepository eventOptionRepo)
         {
-            _context = context;
+            _eventRepo = eventRepo;
+            _eventOptionRepo = eventOptionRepo;
         }
 
         // POST: api/events/{eventId}/options
@@ -26,9 +29,7 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> AddOption(Guid eventId, OptionCreateDto dto)
         {
-            var ev = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             if (ev == null) return NotFound("Event not found");
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
@@ -74,8 +75,7 @@ namespace backend.Controllers
                 Longitude = dto.Longitude
             };
 
-            _context.EventOptions.Add(option);
-            await _context.SaveChangesAsync();
+            await _eventOptionRepo.AddOptionAsync(option);
             return Ok(option);
         }
 
@@ -84,7 +84,7 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOptions(Guid eventId)
         {
-            var ev = await _context.Events.FindAsync(eventId);
+            var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound("Event not found");
 
             // Determine which vote type to count based on phase
@@ -92,8 +92,7 @@ namespace backend.Controllers
                 ? VoteType.Final
                 : VoteType.Preference;
 
-            var options = await _context.EventOptions
-                .Where(o => o.EventId == eventId)
+            var options = (await _eventOptionRepo.GetOptionsAsync(eventId))
                 .Select(o => new OptionDto
                 {
                     Id = o.Id,
@@ -108,8 +107,7 @@ namespace backend.Controllers
                     IsSelected = o.IsSelected,
                     VoteCount = o.Votes.Count(v => v.Type == voteType), 
                     TotalScore = o.Votes.Where(v => v.Type == voteType).Sum(v => v.Score)
-                })
-                .ToListAsync();
+                });
             return Ok(options);
         }
 
@@ -121,15 +119,11 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
-            var option = await _context.EventOptions
-                .Include(o => o.Votes)
-                .FirstOrDefaultAsync(o => o.Id == optionId && o.EventId == eventId);
+            var option = await _eventOptionRepo.GetOptionWithVotesAsync(eventId, optionId);
 
             if (option == null) return NotFound();
 
-            var ev = await _context.Events
-                .Include(e => e.Participants)
-                .FirstOrDefaultAsync(e => e.Id == eventId);
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             var isOrganizer = ev!.Participants.Any(p =>
                 p.UserId == userId && p.Role == EventRoles.Organizator);
@@ -137,8 +131,7 @@ namespace backend.Controllers
             if (option.CreatedByUserId != userId && !isOrganizer)
                 return Forbid("Can only delete your own options");
 
-            _context.EventOptions.Remove(option);
-            await _context.SaveChangesAsync();
+            await _eventOptionRepo.DeleteAsync(option);
             return NoContent();
         }
     }
