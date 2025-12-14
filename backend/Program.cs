@@ -1,7 +1,6 @@
 using backend.Data;
 using backend.Database;
 using backend.Services;
-using backend.Repositories;            
 using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
 using System.Text.Json.Serialization;
+using backend.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 

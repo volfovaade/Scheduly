@@ -5,7 +5,7 @@ using backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace backend.Repositories
+namespace backend.Persistence.Repositories
 {
     public class EventOptionRepository : IEventOptionRepository
     {

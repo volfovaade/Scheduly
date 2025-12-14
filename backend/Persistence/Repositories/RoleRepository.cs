@@ -3,7 +3,7 @@ using backend.Database;
 using backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace backend.Repositories
+namespace backend.Persistence.Repositories
 {
     public class RoleRepository : IRoleRepository
     {
