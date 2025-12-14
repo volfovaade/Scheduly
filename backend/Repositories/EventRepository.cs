@@ -51,14 +51,14 @@ namespace backend.Repositories
         public async Task<List<LocationPreference>> GetLocationPreferencesAsync(Guid eventId)
         {
             return await _context.LocationPreferences
-                .Where(e => e.Id == eventId)
+                .Where(p => p.EventId == eventId)
                 .ToListAsync();
         }
 
         public async Task<List<TimePreference>> GetTimePreferencesAsync(Guid eventId)
         {
             return await _context.TimePreferences
-                .Where(e => e.Id == eventId)
+                .Where(p => p.EventId == eventId)
                 .ToListAsync();
         }
         public async Task<List<TimePreference>> GetTimePreferencesWithIntervalsAsync(Guid eventId)
@@ -78,7 +78,7 @@ namespace backend.Repositories
         public async Task<List<Event>> GetOldEventsAsync(DateTime oldDate)
         {
             return await _context.Events
-                    .Where(e => e.CreatedAt < oldDate && e.Participants.Count == 0)
+                    .Where(e => e.CreatedAt < oldDate)
                     .ToListAsync();
         }
         public async Task UpdateAsync(Event e)

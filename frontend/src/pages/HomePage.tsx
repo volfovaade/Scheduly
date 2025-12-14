@@ -14,7 +14,7 @@ export function HomePage({code, setCode, onJoin, onGoToDashboard}: Props){
     const { isAuthenticated } = useAuth();
 
     return (
-        <main className="min-h-[calc(100vh-80px)]">
+        <main className="min-h-[calc(100vh-80px)] w-full">
             <div className="max-w-4xl mx-auto p-6 lg:p-8">
                 {/* Welcome section */}
                 <div className="text-center mb-12">
@@ -69,7 +69,7 @@ export function HomePage({code, setCode, onJoin, onGoToDashboard}: Props){
                             <Users className="w-8 h-8 text-pink-700 dark:text-pink-400" />
                         </div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                            Týmová spolupráce
+                            Team collab
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300">
                             Invite participants and collaborate in real time

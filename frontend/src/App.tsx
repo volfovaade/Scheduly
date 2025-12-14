@@ -6,6 +6,8 @@ import EventsPage from "./pages/EventsPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import EventDetailPage from "./pages/EventDetailPage";  
+import SuspiciousActivityPage from "./pages/SuspiciousActivityPage";
+import DataCleanupPage from "./pages/DataCleanupPage";
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:eventId" element={<EventDetailPage />} />
+          <Route path="/admin/suspicious" element={<SuspiciousActivityPage />} />
+          <Route path="/admin/cleanup" element={<DataCleanupPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

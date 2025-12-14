@@ -1,5 +1,5 @@
 // components/AddOptionForm.tsx
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { MapPin, Clock, X } from "lucide-react";
 import Option from "../types/option";
 import Event from "../types/event";
@@ -20,6 +20,12 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollToTop = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
     const formatDateTime = (date: Date | null) => {
         if (!date) return "";
         return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
@@ -35,8 +41,9 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
         const diffInMs = to.getTime() - from.getTime();
         const diffInHours = diffInMs / (1000 * 60 * 60);
         
-        if (diffInHours < 1) return "Duration must be at least 1 hour";
-        
+        if (diffInHours < 0.5) return "Duration must be at least 30 minutes";
+        if (event.isMultiDay && diffInHours < 24) return "Time range must be at least 24 hours for multiple day events";
+        if (!event.isMultiDay && diffInHours > 24) return "Time range cannot exceed 24 hours for single day events";
         // Validate against event time range if exists
         if (event.timeRangeFrom && event.timeRangeTo) {
             const eventFrom = new Date(event.timeRangeFrom);
@@ -63,17 +70,20 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
         
         if (!placeName.trim()) {
             setError("Place name is required");
+            scrollToTop();
             return;
         }
 
         if (!timeFrom || !timeTo) {
             setError("Please fill in both start and end time");
+            scrollToTop();
             return;
         }
 
         const validationError = validateTimeRange(timeFrom, timeTo);
         if (validationError) {
             setError(validationError);
+            scrollToTop();
             return;
         }
 
@@ -104,7 +114,8 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
                 className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
                 onClick={onClose}
             />
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div ref={scrollContainerRef}
+                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-gradient-to-r from-pink-700 to-pink-900 text-white p-6 rounded-t-2xl">
                     <div className="flex justify-between items-start">
@@ -188,7 +199,9 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
                                         type="datetime-local"
                                         value={formatDateTime(timeFrom)}
                                         onChange={(e) => setTimeFrom(new Date(e.target.value))}
-                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                                        className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
+                                            dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                                            rounded-lg focus:ring-1"
                                         min={event.timeRangeFrom ? formatDateTime(new Date(event.timeRangeFrom)) : undefined}
                                         max={event.timeRangeTo ? formatDateTime(new Date(event.timeRangeTo)) : undefined}
                                     />
@@ -201,14 +214,16 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
                                         type="datetime-local"
                                         value={formatDateTime(timeTo)}
                                         onChange={(e) => setTimeTo(new Date(e.target.value))}
-                                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+                                        className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
+                                            dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                                            rounded-lg focus:ring-1"
                                         min={timeFrom ? formatDateTime(timeFrom) : undefined}
                                         max={event.timeRangeTo ? formatDateTime(new Date(event.timeRangeTo)) : undefined}
                                     />
                                 </div>
                             </div>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                                💡 Minimum duration: 30 minutes
+                                { event.isMultiDay ? "💡 Minimum duration: 1 day" : "💡 Minimum duration: 30 minutes" }
                             </p>
                         </div>
 
@@ -226,7 +241,7 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
                                     {address && <p className="ml-4">{address}</p>}
                                     <p>
                                         <Clock className="w-3 h-3 inline mr-1" />
-                                        {new Date(timeFrom).toLocaleString('cs-CZ', { timeStyle: 'short' })} - {new Date(timeTo).toLocaleString('cs-CZ', { timeStyle: 'short' })}
+                                        {new Date(timeFrom).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })} - {new Date(timeTo).toLocaleString('en-US', { timeStyle: 'short' })}
                                     </p>
                                 </div>
                             </div>

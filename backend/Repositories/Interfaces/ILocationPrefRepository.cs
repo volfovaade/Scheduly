@@ -8,5 +8,6 @@ namespace backend.Repositories.Interfaces
         Task<List<LocationPreference>> GetAllAsync(Guid eventId, Guid userId);
         Task<LocationPreference?> GetAsync(Guid eventId, Guid userId);
         Task DeleteAsync(LocationPreference pref);
+        Task UpdateAsync(LocationPreference pref);
     }
 }

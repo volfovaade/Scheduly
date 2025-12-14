@@ -74,6 +74,15 @@ export default function LoginPage(){
                     "Login"
                 )}
             </button>
+            <div className="mt-4 flex items-center justify-between">
+                <p>Don't have account yet?</p>
+                <button
+                    onClick={() => navigate("/register")}
+                    className="text-blue-600 underline"
+                >
+                    Create an account
+                </button>
+            </div>
 
             {message && <p className="text-red-600 mt-3">{message}</p>}
         </div>

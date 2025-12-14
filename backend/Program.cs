@@ -1,6 +1,8 @@
 using backend.Data;
 using backend.Database;
 using backend.Services;
+using backend.Repositories;            
+using backend.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -75,7 +77,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Register application services into DI container
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEventService, EventService>();  // core business logic for events
-
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IVoteRepository, VoteRepository>();
+builder.Services.AddScoped<IEventOptionRepository, EventOptionRepository>();
+builder.Services.AddScoped<IEventParticipantRepository, EventParticipantRepository>();
+builder.Services.AddScoped<ILocationPrefRepository, LocationPrefRepository>();
+builder.Services.AddScoped<ITimePrefRepository, TimePrefRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 // Register Google Places API service:
 // AddHttpClient => provide HttpClient with automatic disposal and configuration
 // AddScoped => service lifetime matches a single HTTP request

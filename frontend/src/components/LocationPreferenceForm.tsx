@@ -90,7 +90,7 @@ export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, 
                 longitude
             });
             notify.info("Location preference saved!");
-            onSubmit();
+            await onSubmit();
             onClose();
         } catch (err) {
             notify.error("Failed to save preference");

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Calendar, MapPin, Users, Clock, Sparkles, CheckCircle, X } from "lucide-react";
 
 type EventMode = "SingleOption" | "CollaborativeOptions" | "OrganizerOptions"
@@ -104,6 +104,37 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
 
   const selectedType = EVENT_TYPES.find(t => t.id === eventType);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  // func to scroll up 
+  const scrollToTop = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: 0,
+        behavior: "smooth" 
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      handleReset();
+    }
+  }, [isOpen]);
+
+  const getMinDateTime = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1); // minimum is tomorrow
+    tomorrow.setHours(0, 0, 0, 0);
+    return new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
+  };
+  const getDefaultDate = (hour: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + 1); // tomorrow
+    date.setHours(hour, 0, 0, 0);
+    return date;
+  };
   const validateTimeRange = (from: Date | null, to: Date | null): string => {
     if (!from || !to) return "";
     if (from >= to) return "Start time must be before end time";
@@ -112,6 +143,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     const diffInHours = diffInMs / (1000 * 60 * 60);
 
     if (isMultiDay && diffInHours < 24) return "Time range must be at least 24 hours for multiple day events";
+    if (!isMultiDay && diffInHours > 24) return "Time range cannot exceed 24 hours for single day events";
     if ( selectedType != null && selectedType.requiresTimeRange && !isMultiDay && diffInHours < 1) 
       return "Time range must be at least 1 hour";
 
@@ -132,42 +164,53 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     setTitle("");
     setDescription("");
     setError("");
-    setRangeFrom(null);
-    setRangeTo(null);
+    setRangeFrom(getDefaultDate(8));
+    setRangeTo(getDefaultDate(16));
     setFixedPlace("");
     setFixedAddress("");
-    setFixedTimeFrom(null);
-    setFixedTimeTo(null);
+    setFixedTimeFrom(getDefaultDate(8));
+    setFixedTimeTo(getDefaultDate(10));
   };
 
   const handleSubmit = () => {
     if (!title.trim()) {
       setError("The event name is mandatory");
+      scrollToTop();
       return;
     }
 
     if (selectedType?.requiresTimeRange && (!rangeFrom || !rangeTo)) {
       setError("Please fill in the time range");
+      scrollToTop();
       return;
     }
 
-    if (selectedType?.requiresTimeRange || 
-      (selectedType?.requiresFixedTime && (!fixedTimeFrom || !fixedTimeTo))
-    ) {
+    if (selectedType?.requiresTimeRange)
+   {
       const validationError = validateTimeRange(rangeFrom, rangeTo);
       if (validationError) {
         setError(validationError);
+        scrollToTop();
         return;
       }
     }
-
+    if (selectedType?.requiresFixedTime && (fixedTimeFrom && fixedTimeTo)) {
+      const validationError = validateTimeRange(fixedTimeFrom, fixedTimeTo);
+      if (validationError) {
+        setError(validationError);
+        scrollToTop();
+        return;
+      }
+    }
     if (selectedType?.requiresFixedPlace && !fixedPlace.trim()) {
       setError("Please fill in the fixed place");
+      scrollToTop();
       return;
     }
 
     if (selectedType?.requiresFixedTime && (!fixedTimeFrom || !fixedTimeTo)) {
       setError("Please fill in the fixed time of the event");
+      scrollToTop();
       return;
     }
     onCreate({
@@ -193,7 +236,8 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 dark:bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div ref={scrollContainerRef}
+        className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-gradient-to-r  from-pink-700 to-pink-900 text-white p-6 rounded-t-2xl">
           <div className="flex justify-between items-start">
             <div>
@@ -330,15 +374,21 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                   <div className="grid grid-cols-2 gap-3">
                     <input
                       type="datetime-local"
+                      min={getMinDateTime()}
                       value={formatDateTime(rangeFrom)}
                       onChange={(e) => setRangeFrom(new Date(e.target.value))}
-                      className="px-4 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-lg focus:ring-1"
+                      className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                        rounded-lg focus:ring-1"
                     />
                     <input
                       type="datetime-local"
+                      min={getMinDateTime()}
                       value={formatDateTime(rangeTo)}
                       onChange={(e) => setRangeTo(new Date(e.target.value))}
-                      className="px-4 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-lg focus:ring-1"
+                      className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                        rounded-lg focus:ring-1"
                     />
                   </div>
                 </div>
@@ -382,18 +432,24 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                       <label className="text-xs text-gray-500 mb-1 block">From</label>
                       <input
                         type="datetime-local"
+                        min={getMinDateTime()}
                         value={formatDateTime(fixedTimeFrom)}
                         onChange={(e) => setFixedTimeFrom(new Date(e.target.value))}
-                        className="w-full px-4 py-3 border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-lg focus:ring-1"
+                        className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                        rounded-lg focus:ring-1"
                       />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500 mb-1 block">To</label>
                       <input
                         type="datetime-local"
+                        min={getMinDateTime()}
                         value={formatDateTime(fixedTimeTo)}
                         onChange={(e) => setFixedTimeTo(new Date(e.target.value))}
-                        className="w-full px-4 py-3 border border-gray-300  dark:bg-gray-700 dark:border-gray-600 dark:text-white rounded-lg focus:ring-1"
+                        className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                        rounded-lg focus:ring-1"
                       />
                     </div>
                   </div>

@@ -33,5 +33,10 @@ namespace backend.Repositories
             _context.LocationPreferences.Remove(pref);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateAsync(LocationPreference pref)
+        {
+            _context.LocationPreferences.Update(pref);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -168,7 +168,7 @@ export default function EventDetailPage() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* event header... common for all types */}
             <div className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-600">
-                <div className="max-w-7xl mx-auto px-6 py-4">
+                <div className="px-6 py-4">
                     <div className="flex justify-between items-start">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{event.title}</h1>

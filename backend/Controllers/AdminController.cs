@@ -1,4 +1,5 @@
 using backend.Database;
+using backend.Models;
 using backend.Repositories.Interfaces;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +10,7 @@ namespace backend.Controllers
 {
     [ApiController]
     [Authorize(Roles = "Admin")]
+    [Route("api/[controller]")]
     public class AdminController : ControllerBase
     {
         private readonly IUserRepository _userRepo;
@@ -25,19 +27,41 @@ namespace backend.Controllers
         public async Task<IActionResult> GetSuspiciousUsers()
         {
             var suspiciousUsers = await _userRepo.GetSuspiciousUsersAsync();
-            return Ok(suspiciousUsers);
+            var result = new List<object>();
+
+            foreach (var u in suspiciousUsers)
+            {
+                result.Add(new
+                {
+                    u.Id,
+                    u.Email,
+                    EventCount = await _userRepo.GetNumberOfUsersEvents(u.Id),
+                    Reason = "Excessive creation"
+                });
+            }
+
+            return Ok(result);
         }
 
-        // DELETE: api/admin/events/cleanup
-        // Deletes events created year ago without any participant
-        // Returns number of deleted events
-        [HttpDelete("events/cleanup")]
-        public async Task<IActionResult> CleanupOldEvents()
+        // GET: api/admin/events/cleanup?daysOld=365
+        [HttpGet("events/cleanup")]
+        public async Task<IActionResult> GetEventsForCleanup([FromQuery] int daysOld = 365)
         {
-            var oldDate = DateTime.UtcNow.AddYears(-1);
-            var oldEvents = await _eventRepo.GetOldEventsAsync(oldDate);
-            await _eventRepo.DeleteAsync(oldEvents);
+            var thresholdDate = DateTime.UtcNow.AddDays(-daysOld);
+            var oldEvents = await _eventRepo.GetOldEventsAsync(thresholdDate);
+            return Ok(oldEvents);
+        }
 
+        // DELETE: api/admin/events/cleanup?daysOld=365
+        // Deletes events created from query days ago
+        // Returns number of deleted events
+         
+        [HttpDelete("events/cleanup")]
+        public async Task<IActionResult> CleanupOldEvents([FromQuery] int daysOld = 365)
+        {
+            var thresholdDate = DateTime.UtcNow.AddDays(-daysOld);
+            var oldEvents = await _eventRepo.GetOldEventsAsync(thresholdDate);
+            await _eventRepo.DeleteAsync(oldEvents);
             return Ok(new { deletedCount = oldEvents.Count });
         }
     }

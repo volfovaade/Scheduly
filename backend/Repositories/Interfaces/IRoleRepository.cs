@@ -4,6 +4,6 @@ namespace backend.Repositories.Interfaces
 {
     public interface IRoleRepository
     {
-        Task<Role> GetRoleAsync(string roleName);
+        Task<Role?> GetAsync(string roleName);
     }
 }

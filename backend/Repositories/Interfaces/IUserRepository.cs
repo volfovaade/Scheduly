@@ -8,6 +8,8 @@ namespace backend.Repositories.Interfaces
         Task<List<User>> GetSuspiciousUsersAsync();
         Task<bool> Contains(string email);
         Task AddAsync(User user);
+        Task UpdatePassword(string email, string newPassword);
         Task<User?> GetUserWithRole(string email);
+        Task<int> GetNumberOfUsersEvents(Guid userId);
     }
 }

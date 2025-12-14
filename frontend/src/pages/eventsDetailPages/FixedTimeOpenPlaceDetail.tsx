@@ -15,7 +15,12 @@ interface Props {
     onReload: () => void;
     showPreferenceFormInitially: boolean;
 }
-
+type LocationSummary = {
+    totalSubmissions: number,
+    averageLatitude: number, 
+    averageLongitude: number,
+    typeCounts: { type: string, count: number }[]
+}
 export default function FixedTimeOpenPlaceDetail({ 
     event, 
     eventId, 
@@ -26,7 +31,12 @@ export default function FixedTimeOpenPlaceDetail({
     const notify = useNotification();
     const [participants, setParticipants] = useState([]);
     const [showPreferenceForm, setShowPreferenceForm] = useState(showPreferenceFormInitially);
-    const [locationSummary, setLocationSummary] = useState<any>(null);
+    const [locationSummary, setLocationSummary] = useState<LocationSummary>({
+        totalSubmissions: 0,
+        averageLatitude: 0,
+        averageLongitude: 0,
+        typeCounts: []
+    });
     const [hasSubmitted, setHasSubmitted] = useState(false);
     const [finalizing, setFinalizing] = useState(false);
 
@@ -44,6 +54,7 @@ export default function FixedTimeOpenPlaceDetail({
             
             setParticipants(participantsRes.data);
             setLocationSummary(summaryRes.data);
+            console.log(summaryRes.data);
             setHasSubmitted(!!myPrefRes.data);
         } catch (err) {
             console.error("Failed to load data:", err);
@@ -88,7 +99,7 @@ export default function FixedTimeOpenPlaceDetail({
                             📅 Event will take place at:
                         </p>
                         <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {event.fixedTimeFrom && new Date(event.fixedTimeFrom).toLocaleString('cs-CZ', {
+                            {event.fixedTimeFrom && new Date(event.fixedTimeFrom).toLocaleString('en-US', {
                                 dateStyle: 'full',
                                 timeStyle: 'short'
                             })}
@@ -175,7 +186,7 @@ export default function FixedTimeOpenPlaceDetail({
                         )}
 
                         {/* Organizer Actions */}
-                        {event.currentUserIsOrganizer && locationSummary && locationSummary.totalSubmissions > 0 && (
+                        {event.currentUserIsOrganizer && locationSummary.totalSubmissions > 0 && (
                             <div className="mb-8 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-xl shadow-lg p-6">
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                     <Sparkles className="w-5 h-5 text-orange-600" />

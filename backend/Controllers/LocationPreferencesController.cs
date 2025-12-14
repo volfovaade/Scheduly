@@ -56,23 +56,28 @@ namespace backend.Controllers
             if (ev.Mode != EventMode.FixedTimeOpenPlace)
                 return BadRequest("This endpoint is only for open place events");
 
-            // Delete existing preference
             var existing = await _locationPrefRepo.GetAsync(eventId, userId);
 
             if (existing != null)
-                await _locationPrefRepo.DeleteAsync(existing);
-
-            // Add new preference
-            var pref = new LocationPreference
             {
-                Id = Guid.NewGuid(),
-                EventId = eventId,
-                UserId = userId,
-                Type = dto.Type,
-                Latitude = dto.Latitude,
-                Longitude = dto.Longitude
-            };
-            await _locationPrefRepo.AddAsync(pref);
+                existing.Type = dto.Type;
+                existing.Latitude = dto.Latitude;
+                existing.Longitude = dto.Longitude;
+                await _locationPrefRepo.UpdateAsync(existing);
+            }
+            else
+            {
+                var pref = new LocationPreference
+                {
+                    Id = Guid.NewGuid(),
+                    EventId = eventId,
+                    UserId = userId,
+                    Type = dto.Type,
+                    Latitude = dto.Latitude,
+                    Longitude = dto.Longitude
+                };
+                await _locationPrefRepo.AddAsync(pref);
+            }
 
             return Ok();
         }
@@ -81,7 +86,16 @@ namespace backend.Controllers
         public async Task<IActionResult> GetLocationSummary(Guid eventId)
         {
             var preferences = await _eventRepo.GetLocationPreferencesAsync(eventId);
-
+            if (preferences == null || !preferences.Any())
+            {
+                return Ok(new
+                {
+                    TotalSubmissions = 0,
+                    AverageLatitude = 0.0, 
+                    AverageLongitude = 0.0,
+                    TypeCounts = new List<object>()
+                });
+            }
             var summary = new
             {
                 TotalSubmissions = preferences.Count,

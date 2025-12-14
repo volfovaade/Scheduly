@@ -33,7 +33,7 @@ namespace backend.Controllers
             if (alreadyTaken)
                 return BadRequest("User already exists");
 
-            Role? role = await _roleRepo.GetRoleAsync("User");
+            Role? role = await _roleRepo.GetAsync("User");
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -69,6 +69,19 @@ namespace backend.Controllers
                 Role = user.Role?.Name,
                 UserId = user.Id
             };
+        }
+
+        // Updates password for given email's account. Through email sender.
+        [HttpPut("updatePassword")]
+        public async Task<ActionResult> UpdatePassword(AuthRequest request)
+        {
+            var user = await _userRepo.GetUserWithRole(request.Email);
+            if (user == null)
+            {
+                return BadRequest("No account under this email.");
+            }
+            await _userRepo.UpdatePassword(request.Email, request.Password);
+            return Ok("Password was updated");
         }
     }
 }

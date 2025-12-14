@@ -10,7 +10,11 @@ export function TopBar({toggleSidebar}: Props){
     const { theme, toggleTheme } = useTheme();
 
     return (
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="sticky top-0 z-20
+            bg-white/80 backdrop-blur-md dark:bg-gray-900/80 
+            border-b border-gray-200 dark:border-gray-700 
+            shadow-md dark:shadow-white/5 dark:shadow-md px-6 py-5"
+        >
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     <button

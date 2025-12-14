@@ -53,7 +53,7 @@ export default function OptionList({ options, myVotes, setMyVotes, showVoting }:
                                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 ml-6">
                                     <Clock className="w-4 h-4" />
                                     <span>
-                                        {new Date(option.timeFrom).toLocaleString('cs-CZ')} - {new Date(option.timeTo).toLocaleString('cs-CZ', { timeStyle: 'short' })}
+                                        {new Date(option.timeFrom).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })} - {new Date(option.timeTo).toLocaleString('en-US', { timeStyle: 'short' })}
                                     </span>
                                 </div>
 

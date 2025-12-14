@@ -40,6 +40,10 @@ namespace backend.Controllers
             {
                 return BadRequest("You are already the owner of this event");
             }
+            if (ev.Phase == EventPhase.Closed)
+            {
+                return BadRequest("This event is already closed.");
+            }
                 
             var existingParticipant = await _eventParticipantRepo.GetParticipantAsync(ev.Id, userId);
             if (existingParticipant == null)

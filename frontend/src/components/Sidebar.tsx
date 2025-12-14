@@ -1,7 +1,7 @@
 import { X, Calendar, Settings, Home, LogIn, UserPlus, LogOut, Trash2, AlertTriangle, Shield } from 'lucide-react';
 import { useAuth } from "../context/AuthContext";
 import Logo from "../assets/badge.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 type Props = {
     isOpen: boolean;
@@ -10,6 +10,7 @@ type Props = {
 
 export function Sidebar({ isOpen, toggleSidebar}: Props) {
     const {user, isAuthenticated, isAdmin, logout} = useAuth();
+    const navigate = useNavigate();
     const menuItems = [
         {icon: Home, label: 'Home', href: '/'},
         {icon: Calendar, label: 'My events', href: '/dashboard'},
@@ -20,7 +21,7 @@ export function Sidebar({ isOpen, toggleSidebar}: Props) {
         {icon: AlertTriangle, label: 'Suspicious activity', href: '/admin/suspicious'}
     ];
     const authItems = isAuthenticated 
-        ? [{icon: LogOut, label: 'Log out', action: logout}]
+        ? [{icon: LogOut, label: 'Log out', action: logout, href: '/'}]
         : [
             {icon: LogIn, label: 'Log in', action: null, href: '/login'},
             {icon: UserPlus, label: 'Sign up', action: null, href: '/register'}
@@ -41,16 +42,15 @@ export function Sidebar({ isOpen, toggleSidebar}: Props) {
                 transform transition-transform duration-300 ease-in-out z-50
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
                 lg:translate-x-0
-                shadow-xl lg:shadow-none border-r border-gray-200 dark:border-gray-700
+                shadow-xl dark:shadow-white/10
+                border-r border-gray-200 dark:border-gray-700
             `}>
                 {/* Header in sidebar*/}
                 <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <div className="flex items-center justify-center">
-                                <img src={Logo} alt="Scheduly logo" className="w-10 h-9 text-white" />
-                            </div>
-                            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Scheduly</h1>
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-3">
+                            <img src={Logo} alt="Scheduly logo" className="w-10 h-9 text-white" />
+                            <h1 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Scheduly</h1>
                         </div>
                         <button
                             onClick={toggleSidebar}
@@ -133,27 +133,18 @@ export function Sidebar({ isOpen, toggleSidebar}: Props) {
                         <ul className="space-y-2">
                             {authItems.map((item, index) => (
                                 <li key={index}>
-                                    {item.action ? (
-                                        <button
-                                            onClick={item.action}
-                                            className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300
-                                            hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400
-                                            rounded-lg transition-colors duration-200 group"
-                                        >
-                                            <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                            <span className="font-medium">{item.label}</span>
-                                        </button>
-                                    ) : (
-                                        <a
-                                            href={item.href}
-                                            className="flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300 
-                                                hover:bg-pink-50 dark:hover:bg-pink-900/20 hover:text-pink-700 dark:hover:text-pink-400
-                                                rounded-lg transition-colors duration-200 group"
-                                        >
-                                            <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                            <span className="font-medium">{item.label}</span>
-                                        </a>
-                                    )}
+                                    <button
+                                        onClick={() => {
+                                            if (item.action) item.action(); 
+                                            navigate(item.href);            
+                                        }}
+                                        className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 dark:text-gray-300
+                                        hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400
+                                        rounded-lg transition-colors duration-200 group"
+                                    >
+                                        <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                        <span className="font-medium">{item.label}</span>
+                                    </button>
                                 </li>
                             ))}
                         </ul>

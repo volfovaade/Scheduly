@@ -40,5 +40,20 @@ namespace backend.Repositories
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
+        public async Task<int> GetNumberOfUsersEvents(Guid userId)
+        {
+            return await _context.Events
+                .Where(e => e.OwnerId == userId)
+                .CountAsync();
+        }
+        public async Task UpdatePassword(string email, string newPasswordHash)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user != null)
+            {
+                user.PasswordHash = newPasswordHash;
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

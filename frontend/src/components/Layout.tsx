@@ -12,7 +12,7 @@ export default function Layout() {
       <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 lg:ml-72">
         <TopBar toggleSidebar={toggleSidebar} />
-        <main className="flex-grow container mx-auto">
+        <main className="flex-grow w-full">
           <Outlet />
         </main>
       </div>
