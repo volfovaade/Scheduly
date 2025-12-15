@@ -26,15 +26,5 @@ namespace backend.Models
         // navigation
         public ICollection<Vote> Votes { get; set; } = new List<Vote>();
     }
-    //public class EventOption
-    //{
-    //    public Guid Id { get; set; }
-    //    public Guid EventId { get; set; }
-    //    public required string PlaceName { get; set; }
-    //    public string? Address { get; set; }             // pozor zmenit location z address na 3 mistech
-    //    public required DateTime TimeFrom { get; set; }
-    //    public required DateTime TimeTo { get; set; }
-    //    // navigation
-    //    public ICollection<Vote> Votes { get; set; } = new List<Vote>();
-    //}
+
 }

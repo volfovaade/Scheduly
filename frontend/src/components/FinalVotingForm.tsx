@@ -87,13 +87,14 @@ export default function FinalVotingForm({ eventId }: Props){
     }
         return (
         <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4">Final Voting - Select Your Preferred Option</h3>
+            <h3 className="text-lg font-semibold mb-4 dark:text-gray-50">Final Voting - Select Your Preferred Option</h3>
             <ul className="space-y-4">
                 {options.map(opt => (
                     <li 
                         key={opt.id} 
                         className={`border p-4 rounded shadow transition-all ${
-                            selected === opt.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                            selected === opt.id ? 'border-blue-500 dark:border-blue-300 bg-blue-50 dark:bg-blue-900/20' 
+                            : 'border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50'
                         }`}
                     >
                         <label className="flex items-start gap-4 cursor-pointer">
@@ -103,12 +104,12 @@ export default function FinalVotingForm({ eventId }: Props){
                                 value={opt.id}
                                 checked={selected === opt.id}
                                 onChange={() => setSelected(opt.id)}
-                                className="mt-1"
+                                className="mt-1 dark:[color-scheme:dark]"
                             />
                             <div className="flex-1">
-                                <p className="font-semibold text-lg">{opt.placeName}</p>
-                                <p className="text-sm text-gray-600 mb-2">{opt.address}</p>
-                                <p className="text-sm text-gray-700">
+                                <p className="font-semibold text-lg dark:text-gray-50">{opt.placeName}</p>
+                                <p className="text-sm text-gray-600 mb-2 dark:text-gray-200">{opt.address}</p>
+                                <p className="text-sm text-gray-700 dark:text-gray-100">
                                     📅 {new Date(opt.timeFrom).toLocaleString('cs-CZ', {
                                         dateStyle: 'short',
                                         timeStyle: 'short'
@@ -118,7 +119,7 @@ export default function FinalVotingForm({ eventId }: Props){
                                         timeStyle: 'short'
                                     })}
                                 </p>
-                                <p className="text-xs text-gray-500 mt-2">
+                                <p className="text-sm text-gray-500 dark:text-gray-50 mt-2">
                                     👥 Current votes: {opt.voteCount || 0}
                                 </p>
                             </div>
@@ -129,40 +130,10 @@ export default function FinalVotingForm({ eventId }: Props){
             <button 
                 onClick={handleVote} 
                 disabled={!selected || loading}
-                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
             >
                 {loading ? 'Submitting...' : 'Submit Vote'}
             </button>
         </div>
     );
-    // return (
-    //     <div className="mt-8">
-    //         <h3 className="text-lg font-semibold mb-4">Final Voting</h3>
-    //         <ul className="space-y-4">
-    //             {options.map(opt => (
-    //                 <li key={opt.id} className="border p-4 rounded shadow">
-    //                     <label className="flex items-center gap-4">
-    //                         <input
-    //                             type="radio"
-    //                             name="final"
-    //                             value={opt.id}
-    //                             checked={selected === opt.id}
-    //                             onChange={() => setSelected(opt.id)}
-    //                         />
-    //                         <div>
-    //                             <p className="font-semibold">{opt.placeName}</p>
-    //                             <p className="text-sm text-gray-600">{opt.address}</p>
-    //                             <p className="text-sm text-gray-500">
-    //                                 {new Date(opt.timeFrom).toLocaleString()} – {new Date(opt.timeTo).toLocaleString()}
-    //                             </p>
-    //                         </div>
-    //                     </label>
-    //                 </li>
-    //             ))}
-    //         </ul>
-    //         <button onClick={handleVote} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-    //             Submit Vote
-    //         </button>
-    //     </div>
-    // );
 }

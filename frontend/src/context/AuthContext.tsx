@@ -24,7 +24,6 @@ export function AuthProvider ({children}:{children: React.ReactNode}) {
         try {
             const res = await axios.get(`/users/${userId}`);
             setUser(res.data);
-            console.log("User loaded:", res.data);
         } catch (err) {
             console.error("Failed to fetch user info", err);
         }
@@ -40,7 +39,6 @@ export function AuthProvider ({children}:{children: React.ReactNode}) {
             if (token && userId) {
                 try {
                     const res = await axios.get(`/users/${userId}`);
-                    console.log("Silent login - user loaded:", res.data); 
                     setUser(res.data);
                 } catch (err) {
                     console.error("Silent login failed", err);

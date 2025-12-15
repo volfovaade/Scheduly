@@ -61,7 +61,7 @@ namespace backend.Controllers
             return Ok(myEvents);
         }
 
-        // POST: api/events/{eventId}/finalize
+        // POST: api/events/{eventId}/finalizeFullyOpen?duration=int
         // Organizer finalizes proposal phase — generates top place/time options for voting.
         [HttpPost("{eventId}/finalizeFullyOpen")]
         public async Task<IActionResult> FinalizeProposal(Guid eventId, [FromQuery] int duration)

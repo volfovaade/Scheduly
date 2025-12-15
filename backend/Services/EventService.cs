@@ -191,12 +191,12 @@ namespace backend.Services
         {
             var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) throw new Exception("Event not found");
-
+            
             var locationPrefs = await _eventRepo.GetLocationPreferencesAsync(eventId);
 
             if (locationPrefs.Count == 0)
                 throw new Exception("No location preferences submitted");
-
+            
             // Most preferred type
             var topType = locationPrefs.GroupBy(p => p.Type)
                 .OrderByDescending(g => g.Count())
@@ -226,11 +226,11 @@ namespace backend.Services
         {
             var ev = await _eventRepo.GetByIdAsync(eventId) ?? throw new Exception("Event not found");
 
-            var timePrefs = await _eventRepo.GetTimePreferencesAsync(eventId);
+            var timePrefs = await _eventRepo.GetTimePreferencesWithIntervalsAsync(eventId);
 
             if (timePrefs.Count == 0)
                 throw new Exception("No time preferences submitted");
-
+            
             // Find most overlapping time
             var timeCounts = new Dictionary<DateTime, int>();
             foreach (var pref in timePrefs)

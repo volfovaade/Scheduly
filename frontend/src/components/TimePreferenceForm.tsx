@@ -1,5 +1,5 @@
 // components/TimePreferenceForm.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Clock, X, Plus, Trash2 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
@@ -26,6 +26,13 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
     const [error, setError] = useState("");
     const notify = useNotification();
 
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollToTop = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
     useEffect(() => {
         loadPreference();
     }, [eventId]);
@@ -44,13 +51,16 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
             console.error("Failed to load preference:", err);
         }
     };
-
+    const getDefaultDateTime = () => {
+        const date = new Date(timeRangeFrom);
+        return date;
+    }
     const addTimeSlot = () => {
-        const now = new Date();
+        const date = getDefaultDateTime();
         setTimeSlots([...timeSlots, {
             id: Math.random().toString(),
-            from: now,
-            to: new Date(now.getTime() + 60 * 60 * 1000) // +1 hour
+            from: date,
+            to: new Date(date.getTime() + 60 * 60 * 1000) // +1 hour
         }]);
     };
 
@@ -73,12 +83,14 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
     const validateSlots = () => {
         if (timeSlots.length === 0) {
             setError("Please add at least one time slot");
+            scrollToTop();
             return false;
         }
 
         for (const slot of timeSlots) {
             if (slot.from >= slot.to) {
                 setError("Start time must be before end time");
+                scrollToTop();
                 return false;
             }
 
@@ -87,6 +99,7 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
 
             if (slot.from < eventFrom || slot.to > eventTo) {
                 setError("Time slots must be within event time range");
+                scrollToTop();
                 return false;
             }
         }
@@ -119,7 +132,8 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div ref={scrollContainerRef}
+                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
                     <div className="flex justify-between items-start">
@@ -148,7 +162,8 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
                     {/* Event Time Range Info */}
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                         <p className="text-sm text-blue-800 dark:text-blue-300">
-                            📅 Event time range: {new Date(timeRangeFrom).toLocaleString()} - {new Date(timeRangeTo).toLocaleString()}
+                            📅 Event time range: {new Date(timeRangeFrom).toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} 
+                                                - {new Date(timeRangeTo).toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
                         </p>
                     </div>
 
@@ -198,7 +213,9 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
                                                         onChange={(e) => updateTimeSlot(slot.id, 'from', e.target.value)}
                                                         min={formatDateTime(new Date(timeRangeFrom))}
                                                         max={formatDateTime(new Date(timeRangeTo))}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm"
+                                                        className="w-full px-3 py-2 border border-gray-300 text-sm [color-scheme:light]
+                                                            dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                                                            rounded-lg focus:ring-1"
                                                     />
                                                 </div>
                                                 <div>
@@ -209,9 +226,11 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
                                                         type="datetime-local"
                                                         value={formatDateTime(slot.to)}
                                                         onChange={(e) => updateTimeSlot(slot.id, 'to', e.target.value)}
-                                                        min={formatDateTime(slot.from)}
+                                                        min={formatDateTime(new Date(slot.from))}
                                                         max={formatDateTime(new Date(timeRangeTo))}
-                                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg text-sm"
+                                                        className="w-full px-3 py-2 border border-gray-300 text-sm [color-scheme:light]
+                                                            dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                                                            rounded-lg focus:ring-1"
                                                     />
                                                 </div>
                                             </div>

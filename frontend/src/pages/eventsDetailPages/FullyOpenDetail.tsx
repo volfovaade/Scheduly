@@ -6,7 +6,7 @@ import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import axios from "../../api/axios";
 import LocationPreferenceForm from "../../components/LocationPreferenceForm";
 import TimePreferenceForm from "../../components/TimePreferenceForm";
-import FinalVotingForm from "../../components/FinalVotingForm";
+import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
 
 type Props = {
     event: any;
@@ -31,6 +31,12 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
         loadData();
     }, [eventId]);
 
+    const getDaysInTimeRange = () => {
+        const from = new Date(event.timeRangeFrom);
+        const to = new Date(event.timeRangeTo);
+        const diffDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
+        return diffDays;
+    }
     const loadData = async () => {
         try {
             const [participantsRes, prefsRes, summaryRes, optionsRes, votesRes] = await Promise.all([
@@ -57,7 +63,7 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
     const handleFinalize = async () => {
         if (!window.confirm("Finalize and generate place+time options?")) return;
         try {
-            await axios.post(`/events/${eventId}/finalize?duration=${duration}`);
+            await axios.post(`/events/${eventId}/finalizeFullyOpen?duration=${duration}`);
             window.location.reload();
         } catch (err) {
             notify.error("Failed to finalize");
@@ -79,7 +85,7 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
                             <p className="text-gray-600 dark:text-gray-400 mb-4">
                                 Select your preferred location and available times
                             </p>
-                            <div className="flex gap-2 mb-4">
+                            <div className="flex cols-1 gap-2 mb-4">
                                 <div>
                                     {hasTimePref && (
                                         <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
@@ -189,13 +195,17 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
                                     Finalize Event
                                 </h3>
                                 <label className="block mb-4">
-                                    <span className="text-gray-700 dark:text-gray-300">Duration: {duration} hours</span>
+                                    <span className="text-gray-700 dark:text-gray-300">Duration: {event.isMultiDay ? (duration / 24) : duration} {event.isMultiDay ? "days" : "hours"}</span>
                                     <input
                                         type="range"
                                         min={1}
-                                        max={24}
-                                        value={duration}
-                                        onChange={(e) => setDuration(Number(e.target.value))}
+                                        max={event.isMultiDay ? getDaysInTimeRange() : 12}
+                                        value={event.isMultiDay ? (duration / 24) : duration}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            // Store as hours in both cases
+                                            event.isMultiDay ? setDuration(val * 24) : setDuration(val);
+                                        }}
                                         className="w-full mt-2"
                                     />
                                 </label>
@@ -210,7 +220,12 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
                     </>
                 )}
                 {event.phase === "FinalVoting" && (
-                    <FinalVotingForm  eventId={eventId} />
+                    <GenericVotingForm 
+                        eventId={eventId}
+                        title="Final Voting - Select Your Preferred Option"
+                        voteType="Final"
+                        filterOptions={(opt: VoteOption) => opt.source === "Generated"}
+                    />
                 )}
                 {event.phase === "FinalVoting" && event.currentUserIsOrganizer && (
                     <button

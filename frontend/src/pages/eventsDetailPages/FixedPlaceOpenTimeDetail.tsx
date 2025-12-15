@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Clock, TrendingUp } from "lucide-react";
+import { MapPin, Clock, TrendingUp, Sparkles } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { useNotification } from "../../context/NotificationContext";
@@ -163,9 +163,10 @@ export default function FixedPlaceOpenTimeDetail({
 
                         {/* Organizer Actions */}
                         {event.currentUserIsOrganizer && timeSummary.length > 0 && (
-                            <div className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700 rounded-xl shadow-lg p-6">
+                            <div className="mb-8 bg-gradient-to-r from-pink-50 to-white dark:from-pink-900/20 dark:to-pink-800/20 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg p-6">
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                                    🎯 Ready to Find the Best Time?
+                                    <Sparkles className="w-5 h-5 text-pink-600" />
+                                    Ready to Find the Best Time?
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-400 mb-4">
                                     Click below to calculate the optimal time based on everyone's availability.
@@ -174,9 +175,9 @@ export default function FixedPlaceOpenTimeDetail({
                                 <button
                                     onClick={handleFinalize}
                                     disabled={finalizing}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                                    className="w-full bg-gradient-to-r from-pink-800 to-pink-600 hover:from-pink-900 hover:to-pink-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                                 >
-                                    {finalizing ? "Finding Best Time..." : "⏰ Find Best Time & Close Event"}
+                                    {finalizing ? "Finding Best Time..." : "Find Best Time & Close Event"}
                                 </button>
                             </div>
                         )}

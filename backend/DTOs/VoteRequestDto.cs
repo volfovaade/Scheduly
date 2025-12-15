@@ -1,9 +1,5 @@
 namespace backend.DTOs
 {
-    public class VoteRequestDtoOld
-    {
-        public List<Guid> OptionIds { get; set; } = new();
-    }
     public class VoteRequestDto
     {
         public List<VoteItem> Votes { get; set; } = new();

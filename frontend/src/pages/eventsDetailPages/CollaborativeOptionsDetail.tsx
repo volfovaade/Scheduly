@@ -6,6 +6,7 @@ import OptionsList from "../../components/OptionList";
 import AddOptionForm from "../../components/AddOptionForm";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
+import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
 
 interface Props {
     event: any;
@@ -27,7 +28,6 @@ export default function CollaborativeOptionsDetail({
     const [options, setOptions] = useState([]);
     const [myVotes, setMyVotes] = useState<string[]>([]);
     const [participants, setParticipants] = useState([]);
-    const navigate = useNavigate();
     const notify = useNotification();
 
     useEffect(() => {
@@ -83,15 +83,21 @@ export default function CollaborativeOptionsDetail({
             {/* Phase-specific content */}
             {event.phase === "Proposal" && (
                 <>
-                    {event.allowParticipantOptions && (
-                        <button
-                            onClick={() => setShowAddForm(true)}
-                            className="w-auto px-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white py-4 rounded-lg font-semibold mb-6"
-                        >
-                            + Add Your Option
-                        </button>
-                    )}
-
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                        {event.currentUserIsOrganizer && (
+                            <button onClick={onClose} className="w-auto px-6 bg-gradient-to-r from-green-700 to-green-600 text-white py-4 rounded-lg font-semibold mb-6">
+                                Close Voting
+                            </button>
+                        )}
+                        {event.allowParticipantOptions && (
+                            <button
+                                onClick={() => setShowAddForm(true)}
+                                className="w-auto px-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white py-4 rounded-lg font-semibold mb-6"
+                            >
+                                + Add Your Option
+                            </button>
+                        )}
+                    </div>
                     <AddOptionForm
                         isOpen={showAddForm}
                         onClose={() => setShowAddForm(false)}
@@ -99,13 +105,13 @@ export default function CollaborativeOptionsDetail({
                         eventId={eventId}
                         event={event}
                     />
-                    
-                    <OptionsList 
-                        options={options} 
-                        myVotes={myVotes}
-                        setMyVotes={setMyVotes}
-                        showVoting={true}
+                    <GenericVotingForm 
+                        eventId={eventId}
+                        title="Option Preference Voting"
+                        voteType="Preference"
+                        providedOptions={options}
                     />
+
                     {options.length !== 0 ? (
                         <button onClick={handleVote} className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg">
                             Submit Votes
@@ -115,12 +121,6 @@ export default function CollaborativeOptionsDetail({
                             <p>No options have been added for now.</p>
                             <p className="text-sm mt-2">Please refresh or check options later.</p>
                         </div>
-                    )}
-
-                    {event.currentUserIsOrganizer && (
-                        <button onClick={onClose} className="mt-4 ml-4 bg-green-600 text-white px-6 py-3 rounded-lg">
-                            Close Voting
-                        </button>
                     )}
                 </>
             )}

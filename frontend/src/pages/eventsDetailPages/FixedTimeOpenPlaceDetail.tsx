@@ -54,7 +54,6 @@ export default function FixedTimeOpenPlaceDetail({
             
             setParticipants(participantsRes.data);
             setLocationSummary(summaryRes.data);
-            console.log(summaryRes.data);
             setHasSubmitted(!!myPrefRes.data);
         } catch (err) {
             console.error("Failed to load data:", err);
@@ -187,9 +186,9 @@ export default function FixedTimeOpenPlaceDetail({
 
                         {/* Organizer Actions */}
                         {event.currentUserIsOrganizer && locationSummary.totalSubmissions > 0 && (
-                            <div className="mb-8 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border-2 border-orange-200 dark:border-orange-700 rounded-xl shadow-lg p-6">
+                            <div className="mb-8 bg-gradient-to-r from-pink-50 to-white dark:from-pink-900/20 dark:to-pink-800/20 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg p-6">
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-orange-600" />
+                                    <Sparkles className="w-5 h-5 text-pink-600" />
                                     Ready to Generate Places?
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -199,7 +198,7 @@ export default function FixedTimeOpenPlaceDetail({
                                 <button
                                     onClick={handleFinalize}
                                     disabled={finalizing}
-                                    className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                                    className="w-full bg-gradient-to-r from-pink-800 to-pink-600 hover:from-pink-900 hover:to-pink-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                                 >
                                     {finalizing ? (
                                         <span className="flex items-center justify-center gap-2">
@@ -210,7 +209,7 @@ export default function FixedTimeOpenPlaceDetail({
                                             Generating Places...
                                         </span>
                                     ) : (
-                                        "🎯 Generate Places & Start Voting"
+                                        "Generate Places & Start Voting"
                                     )}
                                 </button>
                             </div>

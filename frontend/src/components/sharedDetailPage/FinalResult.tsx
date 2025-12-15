@@ -1,36 +1,49 @@
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, CheckCircle2 } from "lucide-react";
 
 export const FinalResult = ({ event }: { event: any }) => (
-    <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-900/20 dark:via-emerald-900/20 dark:to-teal-900/20 border-2 border-green-200 dark:border-green-700 rounded-2xl p-8 shadow-2xl">
-        <h2 className="text-3xl font-bold text-green-900 dark:text-green-100 mb-6 flex items-center gap-3">
-            🎉 Event is Finalized!
-        </h2>
-        <div className="space-y-6">
-            <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                <MapPin className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
+    <div className="bg-white dark:bg-gray-900 border border-yellow-200 dark:border-gray-700 rounded-2xl p-8 shadow-xl">
+        
+        <div className="flex items-center gap-3 mb-8">
+            <CheckCircle2 className="w-8 h-8 text-pink-500" />
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Event is Finalized!
+            </h2>
+        </div>
+
+        <div className="space-y-4">
+            <div className="flex items-start gap-4 p-5 bg-gray-50 dark:bg-gray-800/80 rounded-xl border border-gray-100 dark:border-gray-700">
+                <MapPin className="w-6 h-6 mt-1 text-yellow-500 shrink-0" />
                 <div>
-                    <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm">Location</p>
+                    <p className="font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider mb-1">Location</p>
                     <p className="text-xl font-bold text-gray-900 dark:text-white">{event.finalPlaceName}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{event.finalAddress}</p>
+                    {event.finalAddress && (
+                        <p className="text-gray-600 dark:text-gray-300 mt-1 font-medium">{event.finalAddress}</p>
+                    )}
                 </div>
             </div>
-            <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                <Clock className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
+
+            <div className="flex items-start gap-4 p-5 bg-gray-50 dark:bg-gray-800/80 rounded-xl border border-gray-100 dark:border-gray-700">
+                <Clock className="w-6 h-6 mt-1 text-yellow-500 shrink-0" />
                 <div>
-                    <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm">Time</p>
-                    <p className="text-xl font-bold text-gray-900 dark:text-white">
-                        {new Date(event.finalTimeFrom).toLocaleString('cs-CZ', { 
-                            dateStyle: 'full',
-                            timeStyle: 'short'
+                    <p className="font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider mb-1">Time</p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white capitalize">
+                        {new Date(event.finalTimeFrom).toLocaleString('en-US', { 
+                            weekday: 'long',
+                            day: 'numeric',
+                            month: 'long',
+                            hour: '2-digit',
+                            minute: '2-digit'
                         })}
                     </p>
                 </div>
             </div>
         </div>
-        <div className="mt-6 p-4 bg-green-100 dark:bg-green-900/30 rounded-lg">
-            <p className="text-green-800 dark:text-green-200 font-medium text-center">
-                📅 Don't forget to add this to your calendar! See you there! 🎊
+
+        <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-gray-900">
+            <p className="text-yellow-800 dark:text-yellow-100 font-semibold text-center flex items-center justify-center gap-2">
+                <span>📅</span> Don't forget to add this to your calendar!
             </p>
         </div>
     </div>
 );
+export default FinalResult;

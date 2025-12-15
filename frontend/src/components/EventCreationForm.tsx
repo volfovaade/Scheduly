@@ -142,8 +142,10 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     const diffInMs = to.getTime() - from.getTime();
     const diffInHours = diffInMs / (1000 * 60 * 60);
 
-    if (isMultiDay && diffInHours < 24) return "Time range must be at least 24 hours for multiple day events";
-    if (!isMultiDay && diffInHours > 24) return "Time range cannot exceed 24 hours for single day events";
+    if ( selectedType != null && selectedType.requiresFixedTime){
+      if (isMultiDay && diffInHours < 24) return "Event time must be at least 24 hours for multiple day events";
+      if (!isMultiDay && diffInHours > 24) return "Event time cannot exceed 24 hours for single day events";
+    }
     if ( selectedType != null && selectedType.requiresTimeRange && !isMultiDay && diffInHours < 1) 
       return "Time range must be at least 1 hour";
 
@@ -296,7 +298,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                   Choose event type
                 </h3>
                 <button
-                  onClick={() => setStep(1)}
+                  onClick={() => { setStep(1); setError(""); }}
                   className="text-sm text-pink-700 hover:text-pink-800 dark:hover:text-pink-600"
                 >
                   ← Back
@@ -334,7 +336,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                   <p className="text-sm text-gray-500 dark:text-gray-200 mt-1">{selectedType.title}</p>
                 </div>
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => { setStep(2); setError(""); }}
                   className="text-sm text-pink-700 hover:text-pink-800 dark:hover:text-pink-600"
                 >
                   ← Change type
