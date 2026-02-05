@@ -22,6 +22,7 @@ namespace backend.Database
         public DbSet<EventParticipant> EventParticipants { get; set; }
         public DbSet<LocationPreference> LocationPreferences { get; set; }
         public DbSet<TimePreference> TimePreferences { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         /// <summary>
         /// Configures entity relationships and database schema.
@@ -95,6 +96,19 @@ namespace backend.Database
                 .WithMany()
                 .HasForeignKey(tp => tp.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // comment config
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.Event)
+                .WithMany(e => e.Comments)
+                .HasForeignKey(c => c.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Comment>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.Comments)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

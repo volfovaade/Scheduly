@@ -7,6 +7,7 @@ import axios from "../../api/axios";
 import LocationPreferenceForm from "../../components/LocationPreferenceForm";
 import TimePreferenceForm from "../../components/TimePreferenceForm";
 import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
+import CommentSection from "../../components/sharedDetailPage/CommentSection";
 
 type Props = {
     event: any;
@@ -239,6 +240,7 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
                     <FinalResult event={event} />
                 )}
             </div>
+            <CommentSection eventId={eventId} />
         </div>
     )
 }

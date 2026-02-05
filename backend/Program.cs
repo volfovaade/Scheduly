@@ -85,6 +85,7 @@ builder.Services.AddScoped<IEventParticipantRepository, EventParticipantReposito
 builder.Services.AddScoped<ILocationPrefRepository, LocationPrefRepository>();
 builder.Services.AddScoped<ITimePrefRepository, TimePrefRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 // Register Google Places API service:
 // AddHttpClient => provide HttpClient with automatic disposal and configuration
 // AddScoped => service lifetime matches a single HTTP request

@@ -78,6 +78,7 @@ namespace backend.Models
         // Navigation
         public List<EventOption> Options { get; set; } = new List<EventOption>();
         public List<EventParticipant> Participants { get; set; } = new();
+        public List<Comment> Comments { get; set; } = new();
 
         // Final results
         public string? FinalPlaceName { get; set; }

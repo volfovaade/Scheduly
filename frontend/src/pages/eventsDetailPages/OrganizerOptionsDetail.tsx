@@ -8,6 +8,7 @@ import { ParticipantsList } from "../../components/sharedDetailPage/Participants
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import Option from "../../types/option";
 import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
+import CommentSection from "../../components/sharedDetailPage/CommentSection";
 
 interface Props {
     event: any;
@@ -122,6 +123,7 @@ export default function OrganizerOptionsDetail({
             {event.phase === "Closed" && event.finalPlaceName && (
                 <FinalResult event={event} />
             )}
+            <CommentSection eventId={eventId} />
         </div>
     );
 }

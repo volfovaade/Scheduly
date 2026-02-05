@@ -5,6 +5,7 @@ import { ParticipantsList } from "../../components/sharedDetailPage/Participants
 import { useNotification } from "../../context/NotificationContext";
 import TimePreferenceForm from "../../components/TimePreferenceForm";
 import axios from "../../api/axios";
+import CommentSection from "../../components/sharedDetailPage/CommentSection";
 
 interface Props {
     event: any;
@@ -198,6 +199,7 @@ export default function FixedPlaceOpenTimeDetail({
                     />
                 )}
             </div>
+            <CommentSection eventId={eventId} />
         </div>
     );
 }

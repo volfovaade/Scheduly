@@ -7,6 +7,7 @@ import AddOptionForm from "../../components/AddOptionForm";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
+import CommentSection from "../../components/sharedDetailPage/CommentSection";
 
 interface Props {
     event: any;
@@ -128,6 +129,7 @@ export default function CollaborativeOptionsDetail({
             {event.phase === "Closed" && event.finalPlaceName && (
                 <FinalResult event={event} />
             )}
+            <CommentSection eventId={eventId} />
         </div>
     );
 }

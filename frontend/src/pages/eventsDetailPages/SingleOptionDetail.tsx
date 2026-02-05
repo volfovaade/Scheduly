@@ -5,6 +5,7 @@ import axios from "../../api/axios";
 import Event from "../../types/event";
 import OptionsList from "../../components/OptionList";
 import AddOptionForm from "../../components/AddOptionForm";
+import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 
@@ -111,6 +112,7 @@ export default function SingleOptionDetail({
             {event.phase === "Closed" && event.finalPlaceName && (
                 <FinalResult event={event} />
             )}
+            <CommentSection eventId={eventId} />
         </div>
     );
 }

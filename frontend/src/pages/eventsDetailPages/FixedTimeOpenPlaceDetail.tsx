@@ -5,6 +5,7 @@ import { ParticipantsList } from "../../components/sharedDetailPage/Participants
 import { useNotification } from "../../context/NotificationContext";
 import LocationPreferenceForm from "../../components/LocationPreferenceForm";
 import FinalVotingForm from "../../components/FinalVotingForm";
+import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import axios from "../../api/axios";
 
 interface Props {
@@ -255,6 +256,7 @@ export default function FixedTimeOpenPlaceDetail({
                     />
                 )}
             </div>
+            <CommentSection eventId={eventId} />
         </div>
     );
 }

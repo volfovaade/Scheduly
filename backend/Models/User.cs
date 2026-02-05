@@ -3,6 +3,7 @@ namespace backend.Models
 {
     /// <summary>
     /// Application user entity with authentication and authorization data.
+    /// And users comments to events.
     /// </summary>
 
     public class User
@@ -19,5 +20,6 @@ namespace backend.Models
         /// User - Event + Role
         /// </summary>
         public List<EventParticipant> Events { get; set; } = new();
+        public List<Comment> Comments { get; set; } = new();
     }
 }
