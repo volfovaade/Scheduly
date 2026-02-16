@@ -8,6 +8,7 @@ import { ParticipantsList } from "../../components/sharedDetailPage/Participants
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
+import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
 
 interface Props {
     event: any;
@@ -77,59 +78,62 @@ export default function CollaborativeOptionsDetail({
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-8">
-            {/* Participants */}
-            <ParticipantsList participants={participants} />
+        <EventDetailLayout
+                commentSection={<CommentSection eventId={eventId} />}
+            >
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                {/* Participants */}
+                <ParticipantsList participants={participants} />
 
-            {/* Phase-specific content */}
-            {event.phase === "Proposal" && (
-                <>
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-                        {event.currentUserIsOrganizer && (
-                            <button onClick={onClose} className="w-auto px-6 bg-gradient-to-r from-green-700 to-green-600 text-white py-4 rounded-lg font-semibold mb-6">
-                                Close Voting
-                            </button>
-                        )}
-                        {event.allowParticipantOptions && (
-                            <button
-                                onClick={() => setShowAddForm(true)}
-                                className="w-auto px-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white py-4 rounded-lg font-semibold mb-6"
-                            >
-                                + Add Your Option
-                            </button>
-                        )}
-                    </div>
-                    <AddOptionForm
-                        isOpen={showAddForm}
-                        onClose={() => setShowAddForm(false)}
-                        onSubmit={handleAddOption}
-                        eventId={eventId}
-                        event={event}
-                    />
-                    <GenericVotingForm 
-                        eventId={eventId}
-                        title="Option Preference Voting"
-                        voteType="Preference"
-                        providedOptions={options}
-                    />
-
-                    {options.length !== 0 ? (
-                        <button onClick={handleVote} className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg">
-                            Submit Votes
-                        </button>
-                    ) : (
-                        <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-gray-500 dark:text-gray-200">
-                            <p>No options have been added for now.</p>
-                            <p className="text-sm mt-2">Please refresh or check options later.</p>
+                {/* Phase-specific content */}
+                {event.phase === "Proposal" && (
+                    <>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                            {event.currentUserIsOrganizer && (
+                                <button onClick={onClose} className="w-auto px-6 bg-gradient-to-r from-green-700 to-green-600 text-white py-4 rounded-lg font-semibold mb-6">
+                                    Close Voting
+                                </button>
+                            )}
+                            {event.allowParticipantOptions && (
+                                <button
+                                    onClick={() => setShowAddForm(true)}
+                                    className="w-auto px-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white py-4 rounded-lg font-semibold mb-6"
+                                >
+                                    + Add Your Option
+                                </button>
+                            )}
                         </div>
-                    )}
-                </>
-            )}
+                        <AddOptionForm
+                            isOpen={showAddForm}
+                            onClose={() => setShowAddForm(false)}
+                            onSubmit={handleAddOption}
+                            eventId={eventId}
+                            event={event}
+                        />
+                        <GenericVotingForm 
+                            eventId={eventId}
+                            title="Option Preference Voting"
+                            voteType="Preference"
+                            providedOptions={options}
+                        />
 
-            {event.phase === "Closed" && event.finalPlaceName && (
-                <FinalResult event={event} />
-            )}
-            <CommentSection eventId={eventId} />
-        </div>
+                        {options.length !== 0 ? (
+                            <button onClick={handleVote} className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg">
+                                Submit Votes
+                            </button>
+                        ) : (
+                            <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-gray-500 dark:text-gray-200">
+                                <p>No options have been added for now.</p>
+                                <p className="text-sm mt-2">Please refresh or check options later.</p>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {event.phase === "Closed" && event.finalPlaceName && (
+                    <FinalResult event={event} />
+                )}
+            </div>
+        </EventDetailLayout>
     );
 }

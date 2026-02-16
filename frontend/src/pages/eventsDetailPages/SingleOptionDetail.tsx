@@ -6,6 +6,7 @@ import Event from "../../types/event";
 import OptionsList from "../../components/OptionList";
 import AddOptionForm from "../../components/AddOptionForm";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
+import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 
@@ -45,74 +46,77 @@ export default function SingleOptionDetail({
     const formatTime = (date: Date) => date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
     return (
-        <div className="max-w-7xl mx-auto px-6 py-8 dark:bg-gray-900">
-            {/* Phase-specific content */}
-            {event.phase === "Proposal" && (
-                <>
-                    {/* Single option given by organizer during the creation*/}
-                    <div className="mb-6 grid grid-cols-1 gap-6">
-                        <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                            <MapPin className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
-                            <div>
-                                <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm">Location</p>
-                                <p className="text-xl font-bold text-gray-900 dark:text-white">{event.fixedPlaceName}</p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{event.fixedAddress}</p>
+        <EventDetailLayout
+            commentSection={<CommentSection eventId={eventId} />}
+        >
+            <div className="max-w-7xl mx-auto px-6 py-8 dark:bg-gray-900">
+                {/* Phase-specific content */}
+                {event.phase === "Proposal" && (
+                    <>
+                        {/* Single option given by organizer during the creation*/}
+                        <div className="mb-6 grid grid-cols-1 gap-6">
+                            <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                                <MapPin className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
+                                <div>
+                                    <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm">Location</p>
+                                    <p className="text-xl font-bold text-gray-900 dark:text-white">{event.fixedPlaceName}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{event.fixedAddress}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                            <Clock className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
-                            <div className="flex flex-col w-full"> 
-                                <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm mb-1">Time</p>
-                            
-                                <div className="text-gray-900 dark:text-white">
-                                    {isSameDay ? (
-                                    <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-baseline">
-                                        <span className="text-lg font-bold capitalize">
-                                            {formatDate(from)}
-                                        </span>
-                                        <div className="flex items-center gap-1.5 text-lg">
-                                            <span className="font-medium text-gray-600 dark:text-gray-300">
-                                                {formatTime(from)}
+                            <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                                <Clock className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
+                                <div className="flex flex-col w-full"> 
+                                    <p className="font-semibold text-gray-700 dark:text-gray-300 text-sm mb-1">Time</p>
+                                
+                                    <div className="text-gray-900 dark:text-white">
+                                        {isSameDay ? (
+                                        <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-baseline">
+                                            <span className="text-lg font-bold capitalize">
+                                                {formatDate(from)}
                                             </span>
-                                            <span className="text-gray-400">–</span>
-                                            <span className="font-medium text-gray-600 dark:text-gray-300">
-                                                {formatTime(to)}
-                                            </span>
+                                            <div className="flex items-center gap-1.5 text-lg">
+                                                <span className="font-medium text-gray-600 dark:text-gray-300">
+                                                    {formatTime(from)}
+                                                </span>
+                                                <span className="text-gray-400">–</span>
+                                                <span className="font-medium text-gray-600 dark:text-gray-300">
+                                                    {formatTime(to)}
+                                                </span>
+                                            </div>
                                         </div>
+                                        ) : (
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold">{formatDate(from)}</span>
+                                                <span className="text-gray-500">{formatTime(from)}</span>
+                                            </div>
+                                            <div className="text-gray-400 text-sm pl-4">until</div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-bold">{formatDate(to)}</span>
+                                                <span className="text-gray-500">{formatTime(to)}</span>
+                                            </div>
+                                        </div>
+                                        )}
                                     </div>
-                                    ) : (
-                                    <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold">{formatDate(from)}</span>
-                                            <span className="text-gray-500">{formatTime(from)}</span>
-                                        </div>
-                                        <div className="text-gray-400 text-sm pl-4">until</div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-bold">{formatDate(to)}</span>
-                                            <span className="text-gray-500">{formatTime(to)}</span>
-                                        </div>
-                                    </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Participants */}
-                    <ParticipantsList participants={participants} />
+                        {/* Participants */}
+                        <ParticipantsList participants={participants} />
 
-                    {event.currentUserIsOrganizer && (
-                        <button onClick={onClose} className="mt-4 ml-4 bg-green-600 text-white px-6 py-3 rounded-lg">
-                            Close
-                        </button>
-                    )}
-                </>
-            )}
+                        {event.currentUserIsOrganizer && (
+                            <button onClick={onClose} className="mt-4 ml-4 bg-green-600 text-white px-6 py-3 rounded-lg">
+                                Close
+                            </button>
+                        )}
+                    </>
+                )}
 
-            {event.phase === "Closed" && event.finalPlaceName && (
-                <FinalResult event={event} />
-            )}
-            <CommentSection eventId={eventId} />
-        </div>
+                {event.phase === "Closed" && event.finalPlaceName && (
+                    <FinalResult event={event} />
+                )}
+            </div>
+        </EventDetailLayout>
     );
 }
