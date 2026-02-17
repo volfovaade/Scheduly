@@ -52,6 +52,7 @@ namespace backend.Services
                 Description = dto.Description,
                 Mode = dto.Mode,
                 IsMultiDay = dto.IsMultiDay,
+                Code = await GenerateUniqueCodeAsync(),
                 Constraint = dto.Constraint,
                 TimeRangeFrom = dto.TimeRangeFrom,
                 TimeRangeTo = dto.TimeRangeTo,
@@ -115,6 +116,7 @@ namespace backend.Services
                 Description = ev.Description,
                 Mode = ev.Mode,
                 IsMultiDay = ev.IsMultiDay,
+                Code = ev.Code,
                 Constraint = ev.Constraint,
                 TimeRangeFrom = ev.TimeRangeFrom,
                 TimeRangeTo = ev.TimeRangeTo,
@@ -284,6 +286,7 @@ namespace backend.Services
             Description = e.Description,
             Mode = e.Mode,
             IsMultiDay = e.IsMultiDay,
+            Code = e.Code,
             Constraint = e.Constraint,
             TimeRangeFrom = e.TimeRangeFrom,
             TimeRangeTo = e.TimeRangeTo,
@@ -313,5 +316,25 @@ namespace backend.Services
             Role = participant.Role,
             User = ToUserDto(participant.User)
         };
+        /// <summary>
+        /// Generates unique code for each event, so it eliminates possibility of collisions.
+        /// </summary>
+        /// <returns> Unique code for an event </returns>
+        private async Task<string> GenerateUniqueCodeAsync()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // bez 0,O,1,I
+            const int length = 6;
+
+            while (true)
+            {
+                var code = new string(Enumerable.Range(0, length)
+                    .Select(_ => chars[Random.Shared.Next(chars.Length)])
+                    .ToArray());
+
+                var exists = await _eventRepo.HasCodeAsync(code);
+                if (!exists)
+                    return code;
+            }
+        }
     }
 }

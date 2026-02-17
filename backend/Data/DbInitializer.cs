@@ -32,11 +32,11 @@ namespace backend.Data
             // create default admin user if it doesn't exist
             // TODO: Move hardcoded credentials to configuration file for security
             // for now hardcoded in the code, later probably should be in some config file as variables !!!!!!!!!!!!!!!!!!!!!
-            if (!context.Users.Any(u => u.Name == "admin"))
+            if (!context.Users.Any(u => u.Name == "Admin"))
             {
                 var admin = new User
                 {
-                    Name = "admin",
+                    Name = "Admin",
                     Email = "admin@example.com",
                     Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123") 

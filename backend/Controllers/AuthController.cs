@@ -38,7 +38,7 @@ namespace backend.Controllers
             {
                 Id = Guid.NewGuid(),
                 Email = request.Email,
-                Name = request.Email.Split('@')[0],
+                Name = request.Name,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Role = role!
             };

@@ -9,6 +9,7 @@ namespace backend.DTOs
         public string Description { get; set; } = string.Empty;
         public EventMode Mode { get; set; } = EventMode.Fixed;
         public bool IsMultiDay { get; set; }
+        public string Code { get; set; } = null!;
         public ConstraintType Constraint { get; set; }
 
         public DateTime? TimeRangeFrom { get; set; }
@@ -22,7 +23,6 @@ namespace backend.DTOs
 
         public Guid OwnerId { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string Code => Id.ToString("N")[..6];
     }
     public class DetailedEventDto : EventDto
     {

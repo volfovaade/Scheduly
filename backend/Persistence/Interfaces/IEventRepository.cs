@@ -9,6 +9,7 @@ namespace backend.Repositories.Interfaces
         Task<List<Event>> GetOldEventsAsync(DateTime oldDate);
         Task<Event?> GetByIdWithParticipantsAsync(Guid id); // special method with Include
         Task<List<Event>> GetByUserParticipation(Guid userId);
+        Task<bool> HasCodeAsync(string code);
         Task<Event?> GetByCodeAsync(string code);
         Task AddAsync(Event entity);
         Task DeleteAsync(Event entity);

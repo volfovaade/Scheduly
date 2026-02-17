@@ -60,7 +60,26 @@ namespace backend.Controllers
             var myEvents = await _eventService.GetUserEventsAsync(userId);
             return Ok(myEvents);
         }
-
+        // PUT: api/events/{eventID}/description
+        [HttpPut("{eventId}/description")]
+        public async Task<IActionResult> UpdateEvent(Guid eventId, [FromBody] EventUpdateDto dto)
+        {
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                return Unauthorized();
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
+            if (ev == null)
+            {
+                return NotFound();
+            }
+            var isOrganizator = ev.Participants.Any(p => p.UserId == userId && p.Role == EventRoles.Organizator);
+            if (!isOrganizator)
+            {
+                return Forbid();
+            }
+            ev.Description = dto.Description ?? "";
+            await _eventRepo.UpdateAsync(ev);
+            return Ok();
+        }
         // POST: api/events/{eventId}/finalizeFullyOpen?duration=int
         // Organizer finalizes proposal phase — generates top place/time options for voting.
         [HttpPost("{eventId}/finalizeFullyOpen")]

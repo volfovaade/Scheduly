@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     /// <summary>
@@ -40,7 +43,7 @@ namespace backend.Models
     /// <summary>
     /// Main event entity representing a planned gathering or meeting.
     /// </summary>
-
+    [Index(nameof(Code), IsUnique = true)]
     public class Event
     {
         public Guid Id { get; set; }
@@ -50,6 +53,9 @@ namespace backend.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public EventMode Mode { get; set; } = EventMode.Fixed;
         public bool IsMultiDay { get; set; } = false;
+        [Required]
+        [MaxLength(8)]
+        public string Code { get; set; } = null!;
 
         // Constraints
         public ConstraintType Constraint { get; set; } = ConstraintType.None;
@@ -70,11 +76,6 @@ namespace backend.Models
         public int MaxOptionsPerUser { get; set; } = 3;
         public int GeneratedOptionsCount { get; set; } = 3;
 
-        /// <summary>
-        /// Short 6-character code for easy event sharing (first 6 chars of GUID).
-        /// </summary>
-        public string Code => Id.ToString("N")[..6]; // auto-generated based on GUID, first 6 chars
-        
         // Navigation
         public List<EventOption> Options { get; set; } = new List<EventOption>();
         public List<EventParticipant> Participants { get; set; } = new();

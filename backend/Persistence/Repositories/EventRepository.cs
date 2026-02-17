@@ -86,9 +86,14 @@ namespace backend.Persistence.Repositories
             _context.Events.Update(e);
             await _context.SaveChangesAsync();
         }
+        public async Task<bool> HasCodeAsync(string code)
+        {
+            return await _context.Events.AnyAsync(e => e.Code == code);
+        }
         public async Task<Event?> GetByCodeAsync(string code)
         {
-            return await _context.Events.FirstOrDefaultAsync(e => e.Id.ToString().StartsWith(code));
+            return await _context.Events
+                .FirstOrDefaultAsync(e => e.Code == code);
         }
     }
 }
