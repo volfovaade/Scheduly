@@ -94,14 +94,7 @@ export default function CollaborativeOptionsDetail({
                                     Close Voting
                                 </button>
                             )}
-                            {event.allowParticipantOptions && (
-                                <button
-                                    onClick={() => setShowAddForm(true)}
-                                    className="w-auto px-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white py-4 rounded-lg font-semibold mb-6"
-                                >
-                                    + Add Your Option
-                                </button>
-                            )}
+                            
                         </div>
                         <AddOptionForm
                             isOpen={showAddForm}
@@ -110,6 +103,14 @@ export default function CollaborativeOptionsDetail({
                             eventId={eventId}
                             event={event}
                         />
+                        {event.allowParticipantOptions && (
+                                <button
+                                    onClick={() => setShowAddForm(true)}
+                                    className="w-auto px-6 bg-gradient-to-r from-pink-600 to-pink-800 text-white py-4 rounded-lg font-semibold mb-6"
+                                >
+                                    + Add Your Option
+                                </button>
+                            )}
                         <GenericVotingForm 
                             eventId={eventId}
                             title="Option Preference Voting"

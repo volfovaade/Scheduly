@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Pencil, Check, X } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
@@ -26,6 +27,10 @@ export default function EventDetailPage() {
         type: 'not-found' | 'network' | 'unauthorized' | 'unknown';
         message: string;
     } | null>(null);
+
+    const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [editedDescription, setEditedDescription] = useState("");
+
 
     const showPreferenceFormInitially = new URLSearchParams(location.search).get("showPreferenceForm") === "true";
 
@@ -123,6 +128,18 @@ export default function EventDetailPage() {
 
     if (!event) return null;
 
+    const handleSaveDescription = async () => {
+        try {
+            await axios.put(`/events/${eventId}/description`, { description: editedDescription });
+            setEvent({ ...event, description: editedDescription });
+            setIsEditingDescription(false);
+            notify.info("Description updated");
+            await loadEvent(); // refresh to get any changes from the server
+        } catch (err) {
+            notify.error("Failed to update description");
+        }
+    }
+
     // Render appropriate component based on event mode
     const renderEventDetail = () => {
         const commonProps = {
@@ -172,9 +189,62 @@ export default function EventDetailPage() {
                     <div className="flex justify-between items-start">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{event.title}</h1>
-                            {event.description && (
-                                <p className="text-gray-600 dark:text-gray-300 mt-2">{event.description}</p>
-                            )}
+                            <div className="relative mt-3 group">
+                                {isEditingDescription ? (
+                                    <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm transition-all">
+                                        <textarea
+                                            value={editedDescription}
+                                            onChange={(e) => setEditedDescription(e.target.value)}
+                                            rows={3}
+                                            className="w-full resize-none bg-transparent focus:outline-none text-gray-800 dark:text-gray-100"
+                                            placeholder="Enter event description..."
+                                        />
+
+                                        <div className="flex justify-end gap-2 mt-3">
+                                            <button
+                                                onClick={handleSaveDescription}
+                                                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                                            >
+                                                <Check size={16} />
+                                                Save
+                                            </button>
+
+                                            <button
+                                                onClick={() => setIsEditingDescription(false)}
+                                                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition"
+                                            >
+                                                <X size={16} />
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        {event.description ? (
+                                            <p className="text-gray-600 dark:text-gray-300 pr-8">
+                                                {event.description}
+                                            </p>
+                                        ) : (
+                                            <p className="text-gray-400 italic pr-8">
+                                                No description provided.
+                                            </p>
+                                        )}
+
+                                        {event.currentUserIsOrganizer && (
+                                            <button
+                                                onClick={() => {
+                                                    setEditedDescription(event.description || "");
+                                                    setIsEditingDescription(true);
+                                                }}
+                                                className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition text-gray-500 hover:text-blue-600"
+                                            >
+                                                <Pencil size={18} />
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="flex gap-4 mt-3 text-sm">
                                 <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
                                     Code: {event.code}
