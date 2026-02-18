@@ -113,6 +113,7 @@ export default function OrganizerOptionsDetail({
                             eventId={eventId}
                             title="Option Preference Voting"
                             voteType="Preference"
+                            providedOptions={options}
                             filterOptions={(opt: VoteOption) => opt.source === "System"} 
                         />
                         {options.length === 0 && (

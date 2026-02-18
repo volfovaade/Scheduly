@@ -12,6 +12,7 @@ type EventMode = "SingleOption" | "CollaborativeOptions" | "OrganizerOptions"
 type Event = {
     id: string;
     title: string;
+    code: string;
     description: string;
     ownerId: string;
     mode: EventMode;
@@ -194,7 +195,7 @@ export default function DashboardPage() {
                                     key={e.id}
                                     id={e.id}
                                     title={e.title}
-                                    code={e.id.slice(0, 6)}
+                                    code={e.code}
                                     mode={getModeName(e.mode)}
                                     isMultiDay={e.isMultiDay}
                                     onClick={() => handleGoToDetail(e.id, e.mode)}
@@ -224,7 +225,7 @@ export default function DashboardPage() {
                                     key={e.id}
                                     id={e.id}
                                     title={e.title}
-                                    code={e.id.slice(0, 6)}
+                                    code={e.code}
                                     mode={getModeName(e.mode)}
                                     isMultiDay={e.isMultiDay}
                                     onClick={() => handleGoToDetail(e.id, e.mode)}

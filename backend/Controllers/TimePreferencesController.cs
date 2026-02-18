@@ -102,7 +102,7 @@ namespace backend.Controllers
                 {
                     var current = interval.From;
                     var end = interval.To;
-                    while (current <= end)
+                    while (current < end)
                     {
                         allHours.Add((current.Date, current.Hour));
                         current = current.AddHours(1);
@@ -110,18 +110,34 @@ namespace backend.Controllers
                 }
             }
 
-            var summary = allHours
-                .GroupBy(x => new { x.Day, x.Hour })
-                .Select(g => new
-                {
-                    Day = g.Key.Day.ToString("yyyy-MM-dd"),
-                    Hour = g.Key.Hour,
-                    Count = g.Count()
-                })
-                .OrderByDescending(g => g.Count)
-                .ThenBy(g => g.Day)
-                .ThenBy(g => g.Hour)
-                .ToList();
+            var ev = await _eventRepo.GetByIdAsync(eventId);
+            if (ev == null) return NotFound();
+            
+            // based on if multiday or not, if multiday, no need for hour summary, only the days count
+            var summary = ev.IsMultiDay
+                ? allHours
+                    .GroupBy(x => x.Day)
+                    .Select(g => new
+                    {
+                        Day = g.Key.ToString("yyyy-MM-dd"),
+                        Hour = (int?)null,
+                        Count = g.Count()
+                    })
+                    .OrderByDescending(g => g.Count)
+                    .ThenBy(g => g.Day)
+                    .ToList()
+                : allHours
+                    .GroupBy(x => new { x.Day, x.Hour })
+                    .Select(g => new
+                    {
+                        Day = g.Key.Day.ToString("yyyy-MM-dd"),
+                        Hour = (int?)g.Key.Hour,
+                        Count = g.Count()
+                    })
+                    .OrderByDescending(g => g.Count)
+                    .ThenBy(g => g.Day)
+                    .ThenBy(g => g.Hour)
+                    .ToList();
 
             return Ok(summary);
         }

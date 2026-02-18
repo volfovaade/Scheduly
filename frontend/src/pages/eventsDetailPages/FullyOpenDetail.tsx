@@ -9,6 +9,7 @@ import TimePreferenceForm from "../../components/TimePreferenceForm";
 import GenericVotingForm, { VoteOption } from "../../components/sharedDetailPage/GenericVotingForm";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
+import TimeHeatmap from "../../components/sharedDetailPage/TimeHeatmap";
 
 type Props = {
     event: any;
@@ -71,6 +72,9 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
             notify.error("Failed to finalize");
         }
     };
+    const best = summary?.time?.length ? summary.time.reduce((prev: any, current: any) =>
+        current.count > prev.count ? current : prev
+    ) : null;
 
     return (
         <EventDetailLayout 
@@ -155,43 +159,25 @@ export default function FullyOpenDetail({ event, eventId, onClose, showPreferenc
                                 </div>
                             </div>
                     
-                            {summary?.location && (
-                                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-                                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <MapPin className="w-5 h-5 text-blue-600" />
-                                        Location Summary
-                                    </h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">Submissions</p>
-                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                                {summary.location.totalSubmissions}
-                                            </p>
-                                        </div>
-                                        {summary.location.typeCounts.map((tc: any, i: number) => (
-                                            <div key={i} className="bg-gray-50 dark:bg-gray-700 p-4 rounded">
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">{tc.type}</p>
-                                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{tc.count}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            
                             {summary?.time && (
                                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                         <Calendar className="w-5 h-5 text-purple-600" />
-                                        Time Preference Summary
+                                        Time Preference
                                     </h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        {summary.time.slice(0, 8).map((item: any, i: number) => (
-                                            <div key={i} className="bg-gray-50 dark:bg-gray-700 p-3 rounded">
-                                                <p className="text-sm text-gray-600 dark:text-gray-400">{item.day}</p>
-                                                <p className="font-bold text-gray-900 dark:text-white">{item.hour}:00</p>
-                                                <p className="text-xs text-gray-500">{item.count} votes</p>
-                                            </div>
-                                        ))}
-                                    </div>
+
+                                    <TimeHeatmap 
+                                        data={summary.time} 
+                                        totalParticipants={participants.length}
+                                        isMultiDay={event.isMultiDay}
+                                    />
+    
+                                    {best && (
+                                        <p className="mt-4 text-sm text-purple-700 dark:text-purple-300">
+                                            Most preferred: {best.day} {best.hour}:00 ({best.count} votes)
+                                        </p>
+                                    )}
                                 </div>
                             )}
                             {event.currentUserIsOrganizer && (

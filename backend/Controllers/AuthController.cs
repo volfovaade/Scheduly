@@ -27,7 +27,7 @@ namespace backend.Controllers
         // POST: api/auth/register
         // Registers a new user, hashes the password, assigns default "User" role, and returns a JWT token.
         [HttpPost("register")]
-        public async Task<ActionResult<AuthResponse>> Register(AuthRequest request)
+        public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
         {
             bool alreadyTaken = await _userRepo.Contains(request.Email);
             if (alreadyTaken)
@@ -56,7 +56,7 @@ namespace backend.Controllers
         // POST: api/auth/login
         // Authenticates a user by email/password, returns JWT token on success.
         [HttpPost("login")]
-        public async Task<ActionResult<AuthResponse>> Login(AuthRequest request)
+        public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
         {
             var user = await _userRepo.GetUserWithRole(request.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
@@ -73,7 +73,7 @@ namespace backend.Controllers
 
         // Updates password for given email's account. Through email sender.
         [HttpPut("updatePassword")]
-        public async Task<ActionResult> UpdatePassword(AuthRequest request)
+        public async Task<ActionResult> UpdatePassword(LoginRequest request)
         {
             var user = await _userRepo.GetUserWithRole(request.Email);
             if (user == null)

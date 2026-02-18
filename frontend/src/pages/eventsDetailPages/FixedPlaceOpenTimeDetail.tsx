@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Clock, TrendingUp, Sparkles } from "lucide-react";
+import { MapPin, Clock, TrendingUp, Sparkles, Calendar } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { useNotification } from "../../context/NotificationContext";
@@ -7,6 +7,7 @@ import TimePreferenceForm from "../../components/TimePreferenceForm";
 import axios from "../../api/axios";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
+import TimeHeatmap from "../../components/sharedDetailPage/TimeHeatmap";
 
 interface Props {
     event: any;
@@ -65,6 +66,11 @@ export default function FixedPlaceOpenTimeDetail({
             setFinalizing(false);
         }
     };
+    const best = timeSummary?.length
+        ? timeSummary.reduce((prev, current) =>
+            current.count > prev.count ? current : prev
+        )
+        : null;
 
     return (
         <EventDetailLayout
@@ -128,49 +134,25 @@ export default function FixedPlaceOpenTimeDetail({
 
                             {/* Time Summary */}
                             {timeSummary && timeSummary.length > 0 && (
-                                <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <TrendingUp className="w-5 h-5 text-blue-600" />
-                                        Most Popular Times
+                                        <Calendar className="w-5 h-5 text-purple-600" />
+                                        Time Preference
                                     </h3>
-                                    <div className="space-y-2">
-                                        {timeSummary.slice(0, 10).map((slot, index) => {
-                                            const maxCount = timeSummary[0]?.count || 1;
-                                            const percentage = (slot.count / maxCount) * 100;
-                                            
-                                            return (
-                                                <div key={index} className="relative">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            {slot.day} at {slot.hour}:00
-                                                        </span>
-                                                        <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                                                            {slot.count} {slot.count === 1 ? 'person' : 'people'}
-                                                        </span>
-                                                    </div>
-                                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-                                                        <div
-                                                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-500"
-                                                            style={{ width: `${percentage}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    {timeSummary.length > 10 && (
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                                            Showing top 10 of {timeSummary.length} time slots
+                                    <TimeHeatmap data={timeSummary} totalParticipants={event.participantCount} isMultiDay={event.isMultiDay} />
+                                    {best && (
+                                        <p className="mt-4 text-sm text-purple-700 dark:text-purple-300">
+                                            Most preferred: {best.day} {best.hour}:00 ({best.count} votes)
                                         </p>
                                     )}
                                 </div>
                             )}
+                            
 
                             {/* Organizer Actions */}
                             {event.currentUserIsOrganizer && timeSummary.length > 0 && (
                                 <div className="mb-8 bg-gradient-to-r from-pink-50 to-white dark:from-pink-900/20 dark:to-pink-800/20 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg p-6">
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                                        <Sparkles className="w-5 h-5 text-pink-600" />
                                         Ready to Find the Best Time?
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-400 mb-4">

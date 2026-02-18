@@ -146,8 +146,10 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
       if (isMultiDay && diffInHours < 24) return "Event time must be at least 24 hours for multiple day events";
       if (!isMultiDay && diffInHours > 24) return "Event time cannot exceed 24 hours for single day events";
     }
-    if ( selectedType != null && selectedType.requiresTimeRange && !isMultiDay && diffInHours < 1) 
-      return "Time range must be at least 1 hour";
+    if (selectedType != null && selectedType.requiresTimeRange) {
+      if (isMultiDay && diffInHours < 24) return "Time range must be at least 24 hours for multiday events";
+      if (!isMultiDay && diffInHours < 1) return "Time range must be at least 1 hour for single day events";
+    }
 
     return "";
   };
@@ -166,8 +168,18 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     setTitle("");
     setDescription("");
     setError("");
-    setRangeFrom(getDefaultDate(8));
-    setRangeTo(getDefaultDate(16));
+    if (isMultiDay) {
+      // multiday: from tomorrow 9:00 till 2 days later 16
+      const from = getDefaultDate(9);
+      const to = new Date(from);
+      to.setDate(from.getDate() + 2);
+      to.setHours(16, 0, 0, 0);
+      setRangeFrom(from);
+      setRangeTo(to);
+    } else {
+      setRangeFrom(getDefaultDate(9));
+      setRangeTo(getDefaultDate(16));
+    }
     setFixedPlace("");
     setFixedAddress("");
     setFixedTimeFrom(getDefaultDate(8));
@@ -187,8 +199,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
       return;
     }
 
-    if (selectedType?.requiresTimeRange)
-   {
+    if (selectedType?.requiresTimeRange) {
       const validationError = validateTimeRange(rangeFrom, rangeTo);
       if (validationError) {
         setError(validationError);
@@ -216,17 +227,17 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
       return;
     }
     onCreate({
-    title,
-    description,
-    mode: eventType,
-    isMultiDay,
-    timeRangeFrom: rangeFrom,
-    timeRangeTo: rangeTo,
-    fixedPlace,
-    fixedAddress,
-    fixedTimeFrom,
-    fixedTimeTo,
-    allowParticipantOptions: selectedType?.allowsParticipantOptions
+      title,
+      description,
+      mode: eventType,
+      isMultiDay,
+      timeRangeFrom: rangeFrom,
+      timeRangeTo: rangeTo,
+      fixedPlace,
+      fixedAddress,
+      fixedTimeFrom,
+      fixedTimeTo,
+      allowParticipantOptions: selectedType?.allowsParticipantOptions
     });
 
     handleReset();
@@ -268,6 +279,8 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                 <button
                   onClick={() => {
                     setIsMultiDay(false);
+                    setRangeFrom(getDefaultDate(9));
+                    setRangeTo(getDefaultDate(16));
                     setStep(2);
                   }}
                   className="p-6 border-2 border-gray-200 rounded-xl hover:border-pink-600 hover:bg-pink-50 dark:border-gray-700 dark:hover:bg-gray-600 transition-all group"
@@ -279,6 +292,11 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                 <button
                   onClick={() => {
                     setIsMultiDay(true);
+                    const from = getDefaultDate(9);
+                    const to = new Date(from);
+                    to.setDate(from.getDate() + 2);
+                    setRangeFrom(from);
+                    setRangeTo(to);
                     setStep(2);
                   }}
                   className="p-6 border-2 border-gray-200 rounded-xl hover:border-pink-600 hover:bg-pink-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-all group"

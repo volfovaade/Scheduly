@@ -118,11 +118,7 @@ export default function CollaborativeOptionsDetail({
                             providedOptions={options}
                         />
 
-                        {options.length !== 0 ? (
-                            <button onClick={handleVote} className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg">
-                                Submit Votes
-                            </button>
-                        ) : (
+                        {options.length === 0 && (
                             <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-gray-500 dark:text-gray-200">
                                 <p>No options have been added for now.</p>
                                 <p className="text-sm mt-2">Please refresh or check options later.</p>
