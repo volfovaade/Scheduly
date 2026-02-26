@@ -24,6 +24,14 @@ namespace backend.Models
         public string Name { get; set; } = "";
         public string Vicinity { get; set; } = "";
         public Geometry Geometry { get; set; } = new();
+        public double Rating { get; set; }
+        public int? Price_Level { get; set; }
+        public int User_Ratings_Total { get; set; }
+        public OpeningHours? Opening_Hours { get; set; }
+    }
+    public class OpeningHours
+    {
+        public bool Open_Now { get; set; }
     }
     /// <summary>
     /// Geometry information containing location coordinates.

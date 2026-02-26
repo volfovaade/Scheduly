@@ -31,7 +31,29 @@ function LocationMarker({ latitude, longitude, setLatitude, setLongitude }: any)
     />
   );
 }
-type PlaceType = "Parc" | "Cafe" | "Restaurant" | "Other";
+type PlaceType = "Cafe" | "Restaurant" | "Bar" | "Hotel" | "Camping" | "Parc" | "Museum" | "Cinema" | "ShoppingMall" | "SportsCenter";
+type PriceLevel = 0 | 1 | 2 | 3 | 4;
+
+const PLACE_TYPES: { id: PlaceType; label: string; emoji: string }[] = [
+    { id: "Cafe", label: "Café", emoji: "☕" },
+    { id: "Restaurant", label: "Restaurant", emoji: "🍽️" },
+    { id: "Bar", label: "Bar", emoji: "🍺" },
+    { id: "Hotel", label: "Hotel", emoji: "🏨" },
+    { id: "Camping", label: "Camping", emoji: "⛺" },
+    { id: "Parc", label: "Parc", emoji: "🌳" },
+    { id: "Museum", label: "Museum", emoji: "🏛️" },
+    { id: "Cinema", label: "Cinema", emoji: "🎬" },
+    { id: "ShoppingMall", label: "Shopping", emoji: "🛍️" },
+    { id: "SportsCenter", label: "Sports", emoji: "🏋️" },
+];
+
+const PRICE_LEVELS = [
+    { value: 0, label: "Any", symbol: "–" },
+    { value: 1, label: "Budget", symbol: "€" },
+    { value: 2, label: "Moderate", symbol: "€€" },
+    { value: 3, label: "Upscale", symbol: "€€€" },
+    { value: 4, label: "Luxury", symbol: "€€€€" },
+];
 
 export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, onSubmit }: Props) {
     const endpoint = apiEndpoint || `/events/${eventId}/locationPreferences`;
@@ -42,6 +64,8 @@ export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, 
     const [zoom, setZoom] = useState(13);
     const [loading, setLoading] = useState(false);
     const [locating, setLocating] = useState(false);
+    const [priceLevel, setPriceLevel] = useState<PriceLevel>(0);
+    const [minRating, setMinRating] = useState<number>(0);
 
     // Load existing preference
     useEffect(() => {
@@ -52,6 +76,8 @@ export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, 
                     setPlaceType(res.data.type);
                     setLatitude(res.data.latitude);
                     setLongitude(res.data.longitude);
+                    setPriceLevel(res.data.preferredPriceLevel ?? 0);
+                    setMinRating(res.data.minRating ?? 0);
                 }
             } catch (err) {
                 console.error("Failed to load preference:", err);
@@ -87,7 +113,9 @@ export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, 
             await axios.post(endpoint, {
                 type: placeType,
                 latitude,
-                longitude
+                longitude,
+                preferredPriceLevel: priceLevel,
+                minRating
             });
             notify.info("Location preference saved!");
             await onSubmit();
@@ -123,32 +151,63 @@ export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, 
 
                 <div className="p-6 space-y-6">
                     {/* Place Type Selection */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {PLACE_TYPES.map(({ id, label, emoji }) => (
+                            <button
+                                key={id}
+                                onClick={() => setPlaceType(id)}
+                                className={`p-3 rounded-lg border-2 transition-all text-center ${
+                                    placeType === id
+                                        ? "border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg"
+                                        : "border-gray-200 dark:border-gray-700 hover:border-green-300"
+                                }`}
+                            >
+                                <div className="text-2xl mb-1">{emoji}</div>
+                                <p className="text-xs font-medium text-gray-900 dark:text-white">{label}</p>
+                            </button>
+                        ))}
+                    </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                            What type of place do you prefer?
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Price level preference
                         </label>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            {["Parc", "Cafe", "Restaurant", "Other"].map((type) => (
+                        <div className="flex gap-2">
+                            {PRICE_LEVELS.map(({ value, label, symbol }) => (
                                 <button
-                                    key={type}
-                                    onClick={() => setPlaceType(type as PlaceType)}
-                                    className={`p-4 rounded-lg border-2 transition-all ${
-                                        placeType === type
-                                            ? "border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg"
-                                            : "border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600"
+                                    key={value}
+                                    onClick={() => setPriceLevel(value as PriceLevel)}
+                                    className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                                        priceLevel === value
+                                            ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                                            : "border-gray-200 dark:border-gray-700 hover:border-green-300"
                                     }`}
                                 >
-                                    <div className="text-3xl mb-2">
-                                        {type === "Parc" && "🌳"}
-                                        {type === "Cafe" && "☕"}
-                                        {type === "Restaurant" && "🍽️"}
-                                        {type === "Other" && "📍"}
-                                    </div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {type}
-                                    </p>
+                                    <div>{symbol}</div>
+                                    <div className="text-xs text-gray-500">{label}</div>
                                 </button>
                             ))}
+                        </div>
+                    </div>
+
+                    {/* Minimální rating */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Minimum rating: <span className="text-green-600 font-bold">{minRating > 0 ? `${minRating} ⭐` : "Any"}</span>
+                        </label>
+                        <input
+                            type="range"
+                            min={0}
+                            max={5}
+                            step={0.5}
+                            value={minRating}
+                            onChange={e => setMinRating(Number(e.target.value))}
+                            className="w-full accent-green-500"
+                        />
+                        <div className="flex justify-between text-xs text-gray-400 mt-1">
+                            <span>Any</span>
+                            <span>3.0</span>
+                            <span>4.0</span>
+                            <span>5.0 ⭐</span>
                         </div>
                     </div>
 

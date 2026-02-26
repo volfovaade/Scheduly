@@ -30,6 +30,18 @@ namespace backend.Controllers
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
+            var ev = await _eventRepo.GetByIdAsync(eventId);
+            if (ev == null) return NotFound("Event not found");
+
+            if (ev.IsMultiDay)
+            {
+                var days = await _timePrefRepo.GetDates(eventId, userId);
+
+                return Ok(new
+                {
+                    Time = new { Dates = days }
+                });
+            }
 
             var pref = await _timePrefRepo.GetWithIntervalsAsync(eventId, userId);
 
@@ -40,15 +52,15 @@ namespace backend.Controllers
             {
                 TimeIntervals = pref.TimeIntervals.Select(t => new TimeIntervalDto
                 {
-                    From = DateTime.SpecifyKind(t.From, DateTimeKind.Utc),
-                    To = DateTime.SpecifyKind(t.To, DateTimeKind.Utc)
+                    From = t.From,
+                    To = t.To,
                 }).ToList()
             });
         }
 
         // POST: api/events/{eventId}/timePreferences
         [HttpPost]
-        public async Task<IActionResult> SubmitTimePreference(Guid eventId, [FromBody] TimePreferenceDto dto)
+        public async Task<IActionResult> SubmitTimePreference(Guid eventId, [FromBody] SubmitTimeDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -58,7 +70,16 @@ namespace backend.Controllers
 
             if (ev.Mode != EventMode.FixedPlaceOpenTime)
                 return BadRequest("This endpoint is only for open time events");
-
+            
+            if (ev.IsMultiDay)
+            {
+                await _timePrefRepo.RemoveOldVotes(eventId, userId);
+                foreach (var date in dto.Dates!)
+                {
+                    await _timePrefRepo.AddDayPreference(eventId, userId, date);
+                }
+                return Ok();
+            }
             // Delete existing preference
             var existing = await _timePrefRepo.GetWithIntervalsAsync(eventId, userId);
 
@@ -74,14 +95,16 @@ namespace backend.Controllers
                 Id = prefId,
                 EventId = eventId,
                 UserId = userId,
-                TimeIntervals = dto.TimeIntervals.Select(t => new TimeInterval
+                TimeIntervals = dto.TimeIntervals!.Select(t => new TimeInterval
                 {
                     Id = Guid.NewGuid(),
-                    From = DateTime.SpecifyKind(t.From, DateTimeKind.Utc),
-                    To = DateTime.SpecifyKind(t.To, DateTimeKind.Utc),
+                    From = t.From, 
+                    To = t.To,
                     TimePreferenceId = prefId
                 }).ToList()
             };
+            
+            Console.WriteLine(pref);
 
             await _timePrefRepo.AddAsync(pref);
 
@@ -92,54 +115,53 @@ namespace backend.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetTimeSummary(Guid eventId)
         {
-            var preferences = await _eventRepo.GetTimePreferencesWithIntervalsAsync(eventId);
-
-            var allHours = new List<(DateTime Day, int Hour)>();
-
-            foreach (var pref in preferences)
-            {
-                foreach (var interval in pref.TimeIntervals)
-                {
-                    var current = interval.From;
-                    var end = interval.To;
-                    while (current < end)
-                    {
-                        allHours.Add((current.Date, current.Hour));
-                        current = current.AddHours(1);
-                    }
-                }
-            }
-
             var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) return NotFound();
-            
-            // based on if multiday or not, if multiday, no need for hour summary, only the days count
-            var summary = ev.IsMultiDay
-                ? allHours
-                    .GroupBy(x => x.Day)
+
+            if (ev.IsMultiDay)
+            {
+                var dayPrefs = await _timePrefRepo.GetAllDayVotes(eventId);
+                var result = dayPrefs
+                    .GroupBy(x => x.Date)
                     .Select(g => new
                     {
-                        Day = g.Key.ToString("yyyy-MM-dd"),
-                        Hour = (int?)null,
+                        Day = g.Key,
                         Count = g.Count()
                     })
-                    .OrderByDescending(g => g.Count)
-                    .ThenBy(g => g.Day)
-                    .ToList()
-                : allHours
-                    .GroupBy(x => new { x.Day, x.Hour })
-                    .Select(g => new
-                    {
-                        Day = g.Key.Day.ToString("yyyy-MM-dd"),
-                        Hour = (int?)g.Key.Hour,
-                        Count = g.Count()
-                    })
-                    .OrderByDescending(g => g.Count)
-                    .ThenBy(g => g.Day)
-                    .ThenBy(g => g.Hour)
+                    .OrderByDescending(x => x.Count)
                     .ToList();
 
-            return Ok(summary);
+                return Ok(new {Time = result });
+            }
+            var timePrefs = await _eventRepo.GetTimePreferencesWithIntervalsAsync(eventId);
+
+            var hours = timePrefs
+                .SelectMany(p =>
+                    p.TimeIntervals.SelectMany(interval =>
+                    {
+                        var list = new List<(DateOnly Day, int Hour)>();
+                        var current = interval.From;
+
+                        while (current < interval.To)
+                        {
+                            list.Add((DateOnly.FromDateTime(current.DateTime), current.Hour));
+                            current = current.AddHours(1);
+                        }
+
+                        return list;
+                    })
+                )
+                .GroupBy(x => x)
+                .Select(g => new
+                {
+                    Day = g.Key.Day,
+                    Hour = g.Key.Hour,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+
+            return Ok(new {Time = hours });
         }
     }
 }

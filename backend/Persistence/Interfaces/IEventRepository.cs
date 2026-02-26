@@ -6,7 +6,7 @@ namespace backend.Repositories.Interfaces
     {
         Task<IEnumerable<Event>> GetAllAsync();
         Task<Event?> GetByIdAsync(Guid id);
-        Task<List<Event>> GetOldEventsAsync(DateTime oldDate);
+        Task<List<Event>> GetOldEventsAsync(DateTimeOffset oldDate);
         Task<Event?> GetByIdWithParticipantsAsync(Guid id); // special method with Include
         Task<List<Event>> GetByUserParticipation(Guid userId);
         Task<bool> HasCodeAsync(string code);

@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { MapPin, Clock, X } from "lucide-react";
 import Option from "../types/option";
 import Event from "../types/event";
+import { formatLocalDateTime } from "../utils/dateUtils";
 
 interface Props {
     eventId: string;
@@ -26,12 +27,13 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
             scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
+
     const formatDateTime = (date: Date | null) => {
         if (!date) return "";
-        return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-            .toISOString()
-            .replace("T", " ")
-            .slice(0, 16);
+
+        const pad = (n: number) => n.toString().padStart(2, "0");
+
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
     };
 
     const validateTimeRange = (from: Date | null, to: Date | null): string => {
@@ -50,7 +52,7 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
             const eventTo = new Date(event.timeRangeTo);
             
             if (from < eventFrom || to > eventTo) {
-                return `Time must be within event range: ${formatDateTime(eventFrom).toLocaleString()} - ${formatDateTime(eventTo).toLocaleString()}`;
+                return `Time must be within event range: ${formatLocalDateTime(eventFrom)} - ${formatLocalDateTime(eventTo)}`;
             }
         }
         
@@ -185,7 +187,7 @@ export default function AddOptionForm({ eventId, event, onSubmit, onClose, isOpe
                             {event.timeRangeFrom && event.timeRangeTo && (
                                 <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                                     <p className="text-sm text-blue-800 dark:text-blue-300">
-                                        📅 Event time range: {formatDateTime(new Date(event.timeRangeFrom)).toLocaleString()} - {formatDateTime(new Date(event.timeRangeTo)).toLocaleString()}
+                                        📅 Event time range: {formatLocalDateTime(new Date(event.timeRangeFrom))} - {formatLocalDateTime(new Date(event.timeRangeTo))}
                                     </p>
                                 </div>
                             )}

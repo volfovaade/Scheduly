@@ -39,7 +39,7 @@ namespace backend.Data
                     Name = "Admin",
                     Email = "admin@example.com",
                     Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123") 
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123")
                 };
 
                 context.Users.Add(admin);

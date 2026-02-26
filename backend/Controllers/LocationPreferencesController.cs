@@ -81,6 +81,30 @@ namespace backend.Controllers
 
             return Ok();
         }
+
+        //GET: api/events/{eventId}/locationPreferences/topTypes
+        [HttpGet("topTypes")]
+        public async Task<IActionResult> GetTopLocationTypes(Guid eventId)
+        {
+            var prefs = await _eventRepo.GetLocationPreferencesAsync(eventId);
+            if (!prefs.Any()) return Ok(new { HasTie = false, TopType = (string?)null, TiedTypes = new List<string>() });
+
+            var grouped = prefs.GroupBy(p => p.Type)
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .OrderByDescending(g => g.Count)
+                .ToList();
+            var maxCount = grouped.First().Count;
+            var tied = grouped.Where(g => g.Count == maxCount).ToList();
+
+            return Ok(new
+            {
+                HasTie = tied.Count > 1,
+                TopType = tied.Count == 1 ? tied.First().Type.ToString() : null,
+                TiedTypes = tied.Select(t => t.Type.ToString()).ToList(),
+                Counts = grouped.Select(g => new { Type = g.Type.ToString(), g.Count }).ToList()
+            });
+        }
+
         // GET: api/events/{eventId}/locationPreferences/summary
         [HttpGet("summary")]
         public async Task<IActionResult> GetLocationSummary(Guid eventId)

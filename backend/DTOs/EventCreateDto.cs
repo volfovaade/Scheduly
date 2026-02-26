@@ -11,16 +11,16 @@ namespace backend.DTOs
 
             // Constraints
             public ConstraintType Constraint { get; set; } = ConstraintType.None;
-            public DateTime? TimeRangeFrom { get; set; }
-            public DateTime? TimeRangeTo { get; set; }
+            public DateTimeOffset? TimeRangeFrom { get; set; }
+            public DateTimeOffset? TimeRangeTo { get; set; }
 
             // For Fixed place/time modes
             public string? FixedPlaceName { get; set; }
             public string? FixedAddress { get; set; }
             public double? FixedLatitude { get; set; }
             public double? FixedLongitude { get; set; }
-            public DateTime? FixedTimeFrom { get; set; }
-            public DateTime? FixedTimeTo { get; set; }
+            public DateTimeOffset? FixedTimeFrom { get; set; }
+            public DateTimeOffset? FixedTimeTo { get; set; }
 
             // Permissions
             public bool AllowParticipantOptions { get; set; } = false;

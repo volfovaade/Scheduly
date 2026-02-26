@@ -28,9 +28,13 @@ namespace backend.Services {
         /// <param name="eventId">Event ID to associate with found places</param>
         /// <param name="fromTime">Start time for the place option</param>
         /// <param name="toTime">End time for the place option</param>
+        /// <param name="minRating">Minimal rating for the place location</param>
+        /// <param name="priceLevel">Chosen price category</param>
         /// <returns>List of generated place options</returns>
         public async Task<List<EventOption>> SearchPlacesAsync(
-            string type, double lat, double lng, Guid eventId, DateTime fromTime, DateTime toTime)
+            string type, double lat, double lng, Guid eventId, 
+            DateTimeOffset fromTime, DateTimeOffset toTime,
+            PriceLevel priceLevel = PriceLevel.Any, double minRating = 0.0)
         {
 
             // build Google Places API URL - using distance ranking
@@ -39,6 +43,10 @@ namespace backend.Services {
                       $"&type={type}" +
                       $"&rankby=distance" +
                       $"&key={_apiKey}";
+                
+            if (priceLevel != PriceLevel.Any)
+                url += $"&maxprice={(int)priceLevel}";
+
             var response = await _httpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {

@@ -12,17 +12,17 @@ namespace backend.DTOs
         public string Code { get; set; } = null!;
         public ConstraintType Constraint { get; set; }
 
-        public DateTime? TimeRangeFrom { get; set; }
-        public DateTime? TimeRangeTo { get; set; }
+        public DateTimeOffset? TimeRangeFrom { get; set; }
+        public DateTimeOffset? TimeRangeTo { get; set; }
 
         public string? FixedPlaceName { get; set; }
         public string? FixedAddress { get; set; }
 
-        public DateTime? FixedTimeFrom { get; set; }
-        public DateTime? FixedTimeTo { get; set; }
+        public DateTimeOffset? FixedTimeFrom { get; set; }
+        public DateTimeOffset? FixedTimeTo { get; set; }
 
         public Guid OwnerId { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
     }
     public class DetailedEventDto : EventDto
     {
@@ -32,7 +32,7 @@ namespace backend.DTOs
         public List<EventParticipantDto> Participants { get; set; } = new();
         public string? FinalPlaceName { get; set; }
         public string? FinalAddress { get; set; }
-        public DateTime? FinalTimeFrom { get; set; }
-        public DateTime? FinalTimeTo { get; set; }
+        public DateTimeOffset? FinalTimeFrom { get; set; }
+        public DateTimeOffset? FinalTimeTo { get; set; }
     }
 }

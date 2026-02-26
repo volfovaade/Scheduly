@@ -80,10 +80,11 @@ namespace backend.Controllers
             await _eventRepo.UpdateAsync(ev);
             return Ok();
         }
-        // POST: api/events/{eventId}/finalizeFullyOpen?duration=int
+        
+        // POST: api/events/{eventId}/finalizeFullyOpen
         // Organizer finalizes proposal phase — generates top place/time options for voting.
         [HttpPost("{eventId}/finalizeFullyOpen")]
-        public async Task<IActionResult> FinalizeProposal(Guid eventId, [FromQuery] int duration)
+        public async Task<IActionResult> FinalizeProposal(Guid eventId, FinalizeWithPlaceDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
@@ -101,7 +102,7 @@ namespace backend.Controllers
             }
             // calling algorithm for top options
             try {
-                var selectedOptions = await _eventService.FinalizeFullyOpen(eventId, duration);
+                var selectedOptions = await _eventService.FinalizeFullyOpen(eventId, dto.Duration, dto.OrganizerPlaceTypeChoice);
 
                 return Ok(selectedOptions);
 
@@ -111,7 +112,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("{eventId}/finalizeFixedTimeOpenPlace")]
-        public async Task<IActionResult> FinalizeFixedTimeOpenPlace(Guid eventId)
+        public async Task<IActionResult> FinalizeFixedTimeOpenPlace(Guid eventId, FinalizeWithPlaceDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -125,7 +126,7 @@ namespace backend.Controllers
 
             try
             {
-                var options = await _eventService.FinalizeFixedTimeOpenPlace(eventId);
+                var options = await _eventService.FinalizeFixedTimeOpenPlace(eventId, dto.OrganizerPlaceTypeChoice);
                 return Ok(options);
             }
             catch (Exception err)
@@ -133,9 +134,9 @@ namespace backend.Controllers
                 return BadRequest(err.Message);
             }
         }
-
+        // POST: api/events/{eventId}/finalizeFixedPlaceOpenTime
         [HttpPost("{eventId}/finalizeFixedPlaceOpenTime")]
-        public async Task<IActionResult> FinalizeFixedPlaceOpenTime(Guid eventId)
+        public async Task<IActionResult> FinalizeFixedPlaceOpenTime(Guid eventId, [FromBody] int duration)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -149,7 +150,7 @@ namespace backend.Controllers
 
             try
             {
-                var bestTime = await _eventService.FinalizeFixedPlaceOpenTime(eventId);
+                var bestTime = await _eventService.FinalizeFixedPlaceOpenTime(ev, duration);
 
                 return Ok(new { bestTime, place = ev.FixedPlaceName });
             }

@@ -1,7 +1,10 @@
-using backend.Models;
 using backend.Database;
+using backend.DTOs;
+using backend.Models;
 using backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace backend.Persistence.Repositories
 {
@@ -22,6 +25,36 @@ namespace backend.Persistence.Repositories
             return await _context.TimePreferences
                 .Where(p => p.EventId == eventId && p.UserId == userId)
                 .ToListAsync();
+        }
+        public async Task<List<DayPreference>> GetAllDayVotes(Guid eventId)
+        {
+            return await _context.DayPreferences.Where(x => x.EventId == eventId).ToListAsync();
+        }
+        public async Task<List<DateOnly>> GetDates(Guid eventId, Guid userId)
+        {
+            return await _context.DayPreferences
+                .Where(p => p.EventId == eventId && p.UserId == userId)
+                .Select(x => x.Date)
+                .ToListAsync();
+        }
+        public async Task RemoveOldVotes(Guid eventId, Guid userId)
+        {
+            var oldVotes = _context.DayPreferences
+                    .Where(x => x.EventId == eventId && x.UserId == userId);
+
+            _context.DayPreferences.RemoveRange(oldVotes);
+            await _context.SaveChangesAsync();
+        }
+        public async Task AddDayPreference(Guid eventId, Guid userId, DateOnly date)
+        {
+            await _context.DayPreferences.AddAsync(new DayPreference
+            {
+                Id = Guid.NewGuid(),
+                EventId = eventId,
+                UserId = userId,
+                Date = date
+            });
+            await _context.SaveChangesAsync();
         }
         public async Task<TimePreference?> GetWithIntervalsAsync(Guid eventId, Guid userId)
         {

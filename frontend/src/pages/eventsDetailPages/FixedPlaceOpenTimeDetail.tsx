@@ -31,6 +31,7 @@ export default function FixedPlaceOpenTimeDetail({
     const [timeSummary, setTimeSummary] = useState<any[]>([]);
     const [hasSubmitted, setHasSubmitted] = useState(false);
     const [finalizing, setFinalizing] = useState(false);
+    const [duration, setDuration] = useState(2);
 
     useEffect(() => {
         loadData();
@@ -45,19 +46,30 @@ export default function FixedPlaceOpenTimeDetail({
             ]);
             
             setParticipants(participantsRes.data);
-            setTimeSummary(summaryRes.data);
-            setHasSubmitted(!!myPrefRes.data && myPrefRes.data.timeIntervals?.length > 0);
+            setTimeSummary(summaryRes.data?.time ?? []);
+            const myPref = myPrefRes.data;
+            const submitted = event.isMultiDay
+                ? (myPref?.time?.dates?.length > 0)
+                : (myPref?.timeIntervals?.length > 0);
+            setHasSubmitted(submitted);
         } catch (err) {
             console.error("Failed to load data:", err);
         }
     };
+    
+    const getDaysInTimeRange = () => {
+        const from = new Date(event.timeRangeFrom);
+        const to = new Date(event.timeRangeTo);
+        const diffDays = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
+        return diffDays;
+    }
 
     const handleFinalize = async () => {
         if (!window.confirm("Find the best time based on everyone's availability?")) return;
         
         setFinalizing(true);
         try {
-            await axios.post(`/events/${eventId}/finalizeFixedPlaceOpenTime`);
+            await axios.post(`/events/${eventId}/finalizeFixedPlaceOpenTime?duration=${duration}`);
             onReload();
             notify.info("Best time found! Event is now closed.");
         } catch (err: any) {
@@ -77,29 +89,28 @@ export default function FixedPlaceOpenTimeDetail({
                 commentSection={<CommentSection eventId={eventId} />}
             >
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-                <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="max-w-7xl mx-auto px-6">
                     <ParticipantsList participants={participants} />
-
-                    {/* Event Info Card */}
-                    <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                            <MapPin className="w-6 h-6 text-green-600 dark:text-green-400" />
-                            Fixed Event Location
-                        </h3>
-                        <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {event.fixedPlaceName}
-                            </p>
-                            {event.fixedAddress && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                    📍 {event.fixedAddress}
-                                </p>
-                            )}
-                        </div>
-                    </div>
 
                     {event.phase === "Proposal" && (
                         <>
+                            {/* Event Info Card */}
+                            <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <MapPin className="w-6 h-6 text-green-600 dark:text-green-400" />
+                                    Fixed Event Location
+                                </h3>
+                                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {event.fixedPlaceName}
+                                    </p>
+                                    {event.fixedAddress && (
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                            📍 {event.fixedAddress}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                             {/* Preference Submission */}
                             <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -139,10 +150,10 @@ export default function FixedPlaceOpenTimeDetail({
                                         <Calendar className="w-5 h-5 text-purple-600" />
                                         Time Preference
                                     </h3>
-                                    <TimeHeatmap data={timeSummary} totalParticipants={event.participantCount} isMultiDay={event.isMultiDay} />
+                                    <TimeHeatmap data={timeSummary} totalParticipants={participants.length} isMultiDay={event.isMultiDay} />
                                     {best && (
                                         <p className="mt-4 text-sm text-purple-700 dark:text-purple-300">
-                                            Most preferred: {best.day} {best.hour}:00 ({best.count} votes)
+                                            Most preferred: {best.day} {event.isMultiDay ? undefined : `${best.hour}:00`} ({best.count} votes)
                                         </p>
                                     )}
                                 </div>
@@ -159,6 +170,17 @@ export default function FixedPlaceOpenTimeDetail({
                                         Click below to calculate the optimal time based on everyone's availability.
                                         The event will be automatically finalized.
                                     </p>
+                                    <label className="block mb-4">
+                                        <span className="text-gray-700 dark:text-gray-300">Duration: {duration} {event.isMultiDay ? "days" : "hours"}</span>
+                                        <input
+                                            type="range"
+                                            min={1}
+                                            max={event.isMultiDay ? getDaysInTimeRange() : 12}
+                                            value={duration}
+                                            onChange={(e) => setDuration(Number(e.target.value))}
+                                            className="w-full mt-2"
+                                        />
+                                    </label>
                                     <button
                                         onClick={handleFinalize}
                                         disabled={finalizing}
@@ -180,6 +202,7 @@ export default function FixedPlaceOpenTimeDetail({
                             eventId={eventId}
                             timeRangeFrom={event.timeRangeFrom}
                             timeRangeTo={event.timeRangeTo}
+                            isMultiDay={event.isMultiDay}
                             onClose={() => setShowPreferenceForm(false)}
                             onSubmit={loadData}
                         />

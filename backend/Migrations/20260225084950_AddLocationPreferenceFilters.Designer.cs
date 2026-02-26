@@ -12,8 +12,8 @@ using backend.Database;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251124152434_InitialRecreate")]
-    partial class InitialRecreate
+    [Migration("20260225084950_AddLocationPreferenceFilters")]
+    partial class AddLocationPreferenceFilters
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,62 @@ namespace backend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("backend.Models.Comment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("backend.Models.DayPreference", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("EventId", "UserId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("DayPreferences");
+                });
+
             modelBuilder.Entity("backend.Models.Event", b =>
                 {
                     b.Property<Guid>("Id")
@@ -34,10 +90,15 @@ namespace backend.Migrations
                     b.Property<bool>("AllowParticipantOptions")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
                     b.Property<int>("Constraint")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("CreatedAt")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -50,10 +111,10 @@ namespace backend.Migrations
                     b.Property<string>("FinalPlaceName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("FinalTimeFrom")
+                    b.Property<DateTimeOffset?>("FinalTimeFrom")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("FinalTimeTo")
+                    b.Property<DateTimeOffset?>("FinalTimeTo")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FixedAddress")
@@ -68,10 +129,10 @@ namespace backend.Migrations
                     b.Property<string>("FixedPlaceName")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("FixedTimeFrom")
+                    b.Property<DateTimeOffset?>("FixedTimeFrom")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("FixedTimeTo")
+                    b.Property<DateTimeOffset?>("FixedTimeTo")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("GeneratedOptionsCount")
@@ -92,10 +153,10 @@ namespace backend.Migrations
                     b.Property<int>("Phase")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime?>("TimeRangeFrom")
+                    b.Property<DateTimeOffset?>("TimeRangeFrom")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("TimeRangeTo")
+                    b.Property<DateTimeOffset?>("TimeRangeTo")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
@@ -103,6 +164,9 @@ namespace backend.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
 
                     b.ToTable("Events");
                 });
@@ -138,10 +202,10 @@ namespace backend.Migrations
                     b.Property<int>("Source")
                         .HasColumnType("integer");
 
-                    b.Property<DateTime>("TimeFrom")
+                    b.Property<DateTimeOffset>("TimeFrom")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("TimeTo")
+                    b.Property<DateTimeOffset>("TimeTo")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -187,10 +251,10 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("TimeFrom")
+                    b.Property<DateTimeOffset>("TimeFrom")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("TimeTo")
+                    b.Property<DateTimeOffset>("TimeTo")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -212,6 +276,12 @@ namespace backend.Migrations
 
                     b.Property<double>("Longitude")
                         .HasColumnType("double precision");
+
+                    b.Property<double>("MinRating")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("PreferredPriceLevel")
+                        .HasColumnType("integer");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -249,13 +319,13 @@ namespace backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("From")
+                    b.Property<DateTimeOffset>("From")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("TimePreferenceId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("To")
+                    b.Property<DateTimeOffset>("To")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -332,7 +402,7 @@ namespace backend.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("VotedAt")
+                    b.Property<DateTimeOffset>("VotedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -342,6 +412,44 @@ namespace backend.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Votes");
+                });
+
+            modelBuilder.Entity("backend.Models.Comment", b =>
+                {
+                    b.HasOne("backend.Models.Event", "Event")
+                        .WithMany("Comments")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.User", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.DayPreference", b =>
+                {
+                    b.HasOne("backend.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("backend.Models.EventOption", b =>
@@ -478,6 +586,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.Event", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Options");
 
                     b.Navigation("Participants");
@@ -495,6 +605,8 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Models.User", b =>
                 {
+                    b.Navigation("Comments");
+
                     b.Navigation("Events");
                 });
 #pragma warning restore 612, 618

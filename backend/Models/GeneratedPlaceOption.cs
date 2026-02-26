@@ -11,7 +11,7 @@ namespace backend.Models
         public string PlaceName { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty; 
         public Location Location { get; set; } = new(); // GPS coordinates
-        public DateTime TimeFrom { get; set; }
-        public DateTime TimeTo { get; set; }
+        public DateTimeOffset TimeFrom { get; set; }
+        public DateTimeOffset TimeTo { get; set; }
     }
 }

@@ -6,7 +6,7 @@ namespace backend.DTOs
         public string? Address { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
-        public required DateTime TimeFrom { get; set; }
-        public required DateTime TimeTo { get; set; }
+        public required DateTimeOffset TimeFrom { get; set; }
+        public required DateTimeOffset TimeTo { get; set; }
     }
 }

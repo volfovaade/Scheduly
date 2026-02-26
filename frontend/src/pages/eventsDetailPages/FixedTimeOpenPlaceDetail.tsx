@@ -41,11 +41,22 @@ export default function FixedTimeOpenPlaceDetail({
     });
     const [hasSubmitted, setHasSubmitted] = useState(false);
     const [finalizing, setFinalizing] = useState(false);
+    const [tieData, setTieData] = useState<{hasTie: boolean, tiedTypes: string[],topType: string} | null>(null);
+    const [organizerChoice, setOrganizerChoice] = useState<string | null>(null);
 
     useEffect(() => {
         loadData();
     }, [eventId]);
 
+    const checkForTie = async () => {
+        try {
+            const res = await axios.get(`/events/${eventId}/locationPreferences/topTypes`);
+            setTieData(res.data);
+            if(!res.data.hasTie) setOrganizerChoice(res.data.topType);
+        } catch (err) {
+            console.error("Failed to check for tie:", err);
+        }
+    };
     const loadData = async () => {
         try {
             const [participantsRes, summaryRes, myPrefRes] = await Promise.all([
@@ -56,6 +67,7 @@ export default function FixedTimeOpenPlaceDetail({
             
             setParticipants(participantsRes.data);
             setLocationSummary(summaryRes.data);
+            await checkForTie();
             setHasSubmitted(!!myPrefRes.data);
         } catch (err) {
             console.error("Failed to load data:", err);
@@ -67,11 +79,17 @@ export default function FixedTimeOpenPlaceDetail({
         
         setFinalizing(true);
         try {
-            await axios.post(`/events/${eventId}/finalizeFixedTimeOpenPlace`);
+            await axios.post(`/events/${eventId}/finalizeFixedTimeOpenPlace`,{
+                organizerPlaceTypeChoice: organizerChoice
+            });
             onReload();
             notify.info("Places generated! Voting phase started.");
         } catch (err: any) {
-            notify.error(err.response?.data || "Failed to finalize");
+            const data = err.response?.data;
+            const message = typeof data === "string"
+                ? data
+                : data?.title ?? data?.detail ?? "Failed to finalize";
+            notify.error(message);
         } finally {
             setFinalizing(false);
         }
@@ -89,35 +107,36 @@ export default function FixedTimeOpenPlaceDetail({
                 commentSection={<CommentSection eventId={eventId} />}
             >
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-                <div className="max-w-7xl mx-auto px-6 py-8">
+                <div className="max-w-7xl mx-auto px-6">
                     <ParticipantsList participants={participants} />
 
-                    {/* Event Info Card */}
-                    <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                            <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                            Fixed Event Time
-                        </h3>
-                        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                📅 Event will take place at:
-                            </p>
-                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                {event.fixedTimeFrom && new Date(event.fixedTimeFrom).toLocaleString('en-US', {
-                                    dateStyle: 'full',
-                                    timeStyle: 'short'
-                                })}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Duration: {event.fixedTimeFrom && event.fixedTimeTo && 
-                                    Math.round((new Date(event.fixedTimeTo).getTime() - new Date(event.fixedTimeFrom).getTime()) / (1000 * 60 * 60))
-                                } hours
-                            </p>
-                        </div>
-                    </div>
-
+                    
                     {event.phase === "Proposal" && (
                         <>
+                            {/* Event Info Card */}
+                            <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                    Fixed Event Time
+                                </h3>
+                                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                        📅 Event will take place at:
+                                    </p>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {event.fixedTimeFrom && new Date(event.fixedTimeFrom).toLocaleString('en-US', {
+                                            dateStyle: 'full',
+                                            timeStyle: 'short'
+                                        })}
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                        Duration: {event.fixedTimeFrom && event.fixedTimeTo && 
+                                            Math.round((new Date(event.fixedTimeTo).getTime() - new Date(event.fixedTimeFrom).getTime()) / (1000 * 60 * 60))
+                                        } hours
+                                    </p>
+                                </div>
+                            </div>
+
                             {/* Preference Submission */}
                             <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -154,16 +173,38 @@ export default function FixedTimeOpenPlaceDetail({
                             {event.currentUserIsOrganizer && locationSummary.totalSubmissions > 0 && (
                                 <div className="mb-8 bg-gradient-to-r from-pink-50 to-white dark:from-pink-900/20 dark:to-pink-800/20 border border-gray-100 dark:border-gray-700 rounded-xl shadow-lg p-6">
                                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                        <Sparkles className="w-5 h-5 text-pink-600" />
                                         Ready to Generate Places?
                                     </h3>
                                     <p className="text-gray-600 dark:text-gray-400 mb-4">
                                         {locationSummary.totalSubmissions} participant{locationSummary.totalSubmissions !== 1 && 's'} submitted their preferences.
                                         Click below to generate 3 optimal locations and start voting.
                                     </p>
+                                    {/* Tie-breaker UI */}
+                                    {tieData?.hasTie && (
+                                        <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                                            <p className="text-yellow-800 dark:text-yellow-300 font-medium mb-3">
+                                                ⚖️ There's a tie! Please choose which place type to use:
+                                            </p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {tieData.tiedTypes.map(type => (
+                                                    <button
+                                                        key={type}
+                                                        onClick={() => setOrganizerChoice(type)}
+                                                        className={`px-4 py-2 rounded-lg border-2 font-medium transition-all ${
+                                                            organizerChoice === type
+                                                                ? "border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-700"
+                                                                : "border-gray-300 hover:border-pink-400"
+                                                        }`}
+                                                    >
+                                                        {type}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                     <button
                                         onClick={handleFinalize}
-                                        disabled={finalizing}
+                                        disabled={finalizing || (tieData?.hasTie && !organizerChoice)}
                                         className="w-full bg-gradient-to-r from-pink-800 to-pink-600 hover:from-pink-900 hover:to-pink-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                                     >
                                         {finalizing ? (

@@ -75,7 +75,7 @@ namespace backend.Persistence.Repositories
                 .Where(e => e.Participants.Any(p => p.UserId == userId))
                 .ToListAsync();
         }
-        public async Task<List<Event>> GetOldEventsAsync(DateTime oldDate)
+        public async Task<List<Event>> GetOldEventsAsync(DateTimeOffset oldDate)
         {
             return await _context.Events
                     .Where(e => e.CreatedAt < oldDate)

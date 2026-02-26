@@ -22,7 +22,7 @@ namespace backend.Models
 
         public VoteType Type { get; set; }
         public int Score { get; set; }  // voting score (higher = more preferred)
-        public DateTime VotedAt { get; set; } = DateTime.UtcNow;  // zatím nepoužíváno
+        public DateTimeOffset VotedAt { get; set; } = DateTimeOffset.UtcNow;  // zatím nepoužíváno
 
     }
 }

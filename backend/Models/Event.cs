@@ -50,7 +50,7 @@ namespace backend.Models
         public required string Title { get; set; }
         public string Description { get; set; } = string.Empty;
         public Guid OwnerId { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public EventMode Mode { get; set; } = EventMode.Fixed;
         public bool IsMultiDay { get; set; } = false;
         [Required]
@@ -59,15 +59,15 @@ namespace backend.Models
 
         // Constraints
         public ConstraintType Constraint { get; set; } = ConstraintType.None;
-        public DateTime? TimeRangeFrom { get; set; }
-        public DateTime? TimeRangeTo { get; set; }
+        public DateTimeOffset? TimeRangeFrom { get; set; }
+        public DateTimeOffset? TimeRangeTo { get; set; }
         public string? FixedPlaceName { get; set; }
         public string? FixedAddress { get; set; }
         public double? FixedLatitude { get; set; }
         public double? FixedLongitude { get; set; }
 
-        public DateTime? FixedTimeFrom { get; set; }
-        public DateTime? FixedTimeTo { get; set; }
+        public DateTimeOffset? FixedTimeFrom { get; set; }
+        public DateTimeOffset? FixedTimeTo { get; set; }
 
         public EventPhase Phase { get; set; } = EventPhase.Proposal;
 
@@ -84,7 +84,7 @@ namespace backend.Models
         // Final results
         public string? FinalPlaceName { get; set; }
         public string? FinalAddress { get; set; }
-        public DateTime? FinalTimeFrom { get; set; }
-        public DateTime? FinalTimeTo { get; set; }
+        public DateTimeOffset? FinalTimeFrom { get; set; }
+        public DateTimeOffset? FinalTimeTo { get; set; }
     }
 }

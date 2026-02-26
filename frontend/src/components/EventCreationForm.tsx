@@ -135,30 +135,32 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     date.setHours(hour, 0, 0, 0);
     return date;
   };
-  const validateTimeRange = (from: Date | null, to: Date | null): string => {
+  
+  const validateTimeRange = (from: Date | null, to: Date | null, isFixedTime = false): string => {
     if (!from || !to) return "";
     if (from >= to) return "Start time must be before end time";
-    
+
     const diffInMs = to.getTime() - from.getTime();
     const diffInHours = diffInMs / (1000 * 60 * 60);
 
-    if ( selectedType != null && selectedType.requiresFixedTime){
-      if (isMultiDay && diffInHours < 24) return "Event time must be at least 24 hours for multiple day events";
-      if (!isMultiDay && diffInHours > 24) return "Event time cannot exceed 24 hours for single day events";
-    }
-    if (selectedType != null && selectedType.requiresTimeRange) {
-      if (isMultiDay && diffInHours < 24) return "Time range must be at least 24 hours for multiday events";
-      if (!isMultiDay && diffInHours < 1) return "Time range must be at least 1 hour for single day events";
+    if (isFixedTime) {
+        if (isMultiDay && diffInHours < 24) return "Event time must be at least 24 hours for multiday events";
+        if (!isMultiDay && diffInHours > 24) return "Event time cannot exceed 24 hours for single day events";
+    } else {
+        // timeRange
+        if (isMultiDay && diffInHours < 24) return "Time range must be at least 24 hours for multiday events";
+        if (!isMultiDay && diffInHours < 1) return "Time range must be at least 1 hour";
     }
 
     return "";
-  };
+};
 
   const formatDateTime = (date: Date | null) => {
     if (!date) return "";
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
+
+    const pad = (n: number) => n.toString().padStart(2, "0");
+
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
   const handleReset = () => {
@@ -182,8 +184,8 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     }
     setFixedPlace("");
     setFixedAddress("");
-    setFixedTimeFrom(getDefaultDate(8));
-    setFixedTimeTo(getDefaultDate(10));
+    setFixedTimeFrom(getDefaultDate(9));
+    setFixedTimeTo(getDefaultDate(16));
   };
 
   const handleSubmit = () => {
@@ -200,7 +202,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
     }
 
     if (selectedType?.requiresTimeRange) {
-      const validationError = validateTimeRange(rangeFrom, rangeTo);
+      const validationError = validateTimeRange(rangeFrom, rangeTo, false);
       if (validationError) {
         setError(validationError);
         scrollToTop();
@@ -208,7 +210,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
       }
     }
     if (selectedType?.requiresFixedTime && (fixedTimeFrom && fixedTimeTo)) {
-      const validationError = validateTimeRange(fixedTimeFrom, fixedTimeTo);
+      const validationError = validateTimeRange(fixedTimeFrom, fixedTimeTo, true);
       if (validationError) {
         setError(validationError);
         scrollToTop();
@@ -231,12 +233,12 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
       description,
       mode: eventType,
       isMultiDay,
-      timeRangeFrom: rangeFrom,
-      timeRangeTo: rangeTo,
+      timeRangeFrom: rangeFrom?.toISOString(),
+      timeRangeTo: rangeTo?.toISOString(),
       fixedPlace,
       fixedAddress,
-      fixedTimeFrom,
-      fixedTimeTo,
+      fixedTimeFrom: fixedTimeFrom?.toISOString(),
+      fixedTimeTo: fixedTimeTo?.toISOString(),
       allowParticipantOptions: selectedType?.allowsParticipantOptions
     });
 
@@ -403,7 +405,7 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                     />
                     <input
                       type="datetime-local"
-                      min={getMinDateTime()}
+                      min={rangeFrom ? formatDateTime(rangeFrom) : getMinDateTime()}
                       value={formatDateTime(rangeTo)}
                       onChange={(e) => setRangeTo(new Date(e.target.value))}
                       className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
@@ -464,7 +466,10 @@ export default function CreateEventDialog({isOpen, onClose, onCreate}: Props){
                       <label className="text-xs text-gray-500 mb-1 block">To</label>
                       <input
                         type="datetime-local"
-                        min={getMinDateTime()}
+                        min={fixedTimeFrom ? formatDateTime(fixedTimeFrom) : getMinDateTime()}
+                        max={!isMultiDay && fixedTimeFrom
+                            ? formatDateTime(new Date(fixedTimeFrom.getTime() + 24 * 60 * 60 * 1000))
+                            : undefined}
                         value={formatDateTime(fixedTimeTo)}
                         onChange={(e) => setFixedTimeTo(new Date(e.target.value))}
                         className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]

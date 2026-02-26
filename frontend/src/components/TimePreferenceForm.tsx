@@ -1,14 +1,15 @@
-// components/TimePreferenceForm.tsx
 import { useState, useEffect, useRef } from "react";
 import { Clock, X, Plus, Trash2 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
+import { toLocalDateTimeString } from "../utils/dateUtils";
 
 interface Props {
     eventId: string;
     timeRangeFrom: string;
     timeRangeTo: string;
     apiEndpoint?: string;
+    isMultiDay?: boolean;
     onClose: () => void;
     onSubmit: () => void;
 }
@@ -19,19 +20,121 @@ interface TimeSlot {
     to: Date;
 }
 
-export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo, apiEndpoint, onClose, onSubmit }: Props) {
+export default function TimePreferenceForm({
+    eventId,
+    timeRangeFrom,
+    timeRangeTo,
+    apiEndpoint,
+    isMultiDay = false,
+    onClose,
+    onSubmit
+}: Props) {
+
     const endpoint = apiEndpoint || `/events/${eventId}/timePreferences`;
+
     const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+    const [days, setDays] = useState<string[]>([]);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const notify = useNotification();
 
+    const notify = useNotification();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+
     const scrollToTop = () => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    };  
+    // helper funcions for validation
+    const isOutOfRange = (date: Date) => {
+        const from = new Date(timeRangeFrom);
+        const to = new Date(timeRangeTo);
+        return date < from || date > to;
+    };
+
+    const slotsOverlap = (a: TimeSlot, b: TimeSlot) => {
+        return a.from < b.to && b.from < a.to;
+    };
+
+    const getSlotErrors = (): Record<string, string> => {
+        const errors: Record<string, string> = {};
+
+        timeSlots.forEach((slot, i) => {
+            if (slot.from >= slot.to) {
+                errors[slot.id] = "End must be after start";
+                return;
+            }
+            // Max 24h na jeden slot pro single day
+            const diffInHours = (slot.to.getTime() - slot.from.getTime()) / (1000 * 60 * 60);
+            if (diffInHours > 24) {
+                errors[slot.id] = "A single time slot cannot exceed 24 hours";
+                return;
+            }
+            if (isOutOfRange(slot.from) || isOutOfRange(slot.to)) {
+                errors[slot.id] = "Slot is outside the allowed time range";
+                return;
+            }
+            // check overlapping with other slots
+            for (let j = 0; j < timeSlots.length; j++) {
+                if (i !== j && slotsOverlap(slot, timeSlots[j])) {
+                    errors[slot.id] = "Overlaps with another slot";
+                    break;
+                }
+            }
+        });
+
+        return errors;
+    };
+
+    const validate = () => {
+        if (isMultiDay && days.length === 0) {
+            setError("Select at least one day");
+            scrollToTop();
+            return false;
         }
-    }
+        if (!isMultiDay && timeSlots.length === 0) {
+            setError("Add at least one time slot");
+            scrollToTop();
+            return false;
+        }
+        if (!isMultiDay) {
+            const slotErrors = getSlotErrors();
+            if (Object.keys(slotErrors).length > 0) {
+                setError("Please fix the errors in your time slots");
+                scrollToTop();
+                return false;
+            }
+        }
+        setError("");
+        return true;
+    };
+
+    const updateTimeSlot = (id: string, field: "from" | "to", value: string) => {
+        const rangeStart = new Date(timeRangeFrom);
+        const rangeEnd = new Date(timeRangeTo);
+
+        setTimeSlots(
+            timeSlots.map(slot => {
+                if (slot.id !== id) return slot;
+
+                let newDate = new Date(value);
+                // Clamp do rozsahu
+                if (newDate < rangeStart) newDate = rangeStart;
+                if (newDate > rangeEnd) newDate = rangeEnd;
+
+                const updated = { ...slot, [field]: newDate };
+                // Auto-shift to if from >= to
+                if (field === "from" && updated.from >= updated.to) {
+                    updated.to = new Date(updated.from.getTime() + 60 * 60 * 1000);
+                    if (updated.to > rangeEnd) updated.to = rangeEnd;
+                }
+                if (field === "to") {
+                    const maxTo = new Date(updated.from.getTime() + 24 * 60 * 60 * 1000);
+                    if (updated.to > maxTo) updated.to = maxTo;
+                }
+                return updated;
+            })
+        );
+    };
 
     useEffect(() => {
         loadPreference();
@@ -40,90 +143,85 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
     const loadPreference = async () => {
         try {
             const res = await axios.get(`/events/${eventId}/timePreferences/my`);
-            if (res.data && res.data.timeIntervals) {
-                setTimeSlots(res.data.timeIntervals.map((interval: any) => ({
-                    id: Math.random().toString(),
-                    from: new Date(interval.from),
-                    to: new Date(interval.to)
-                })));
+
+            if (isMultiDay) {
+                setDays(res.data?.time?.dates ?? []);
+            } else if (res.data?.timeIntervals) {
+                setTimeSlots(
+                    res.data.timeIntervals.map((i: any) => ({
+                        id: crypto.randomUUID(),
+                        from: new Date(i.from),
+                        to: new Date(i.to)
+                    }))
+                );
             }
         } catch (err) {
-            console.error("Failed to load preference:", err);
+            console.error(err);
         }
     };
-    const getDefaultDateTime = () => {
-        const date = new Date(timeRangeFrom);
-        return date;
-    }
+
+    const getDaysInRange = () => {
+        const result: string[] = [];
+        const start = new Date(timeRangeFrom);
+        const end = new Date(timeRangeTo);
+
+        const current = new Date(start);
+
+        while (current <= end) {
+            result.push(current.toISOString().slice(0, 10));
+            current.setDate(current.getDate() + 1);
+        }
+
+        return result;
+    };
+
+    const toggleDay = (day: string) => {
+        if (days.includes(day)) {
+            setDays(days.filter(d => d !== day));
+        } else {
+            setDays([...days, day]);
+        }
+    };
+
     const addTimeSlot = () => {
-        const date = getDefaultDateTime();
-        setTimeSlots([...timeSlots, {
-            id: Math.random().toString(),
-            from: date,
-            to: new Date(date.getTime() + 60 * 60 * 1000) // +1 hour
-        }]);
+        const start = new Date(timeRangeFrom);
+
+        setTimeSlots([
+            ...timeSlots,
+            {
+                id: crypto.randomUUID(),
+                from: start,
+                to: new Date(start.getTime() + 60 * 60 * 1000)
+            }
+        ]);
     };
 
     const removeTimeSlot = (id: string) => {
-        setTimeSlots(timeSlots.filter(slot => slot.id !== id));
-    };
-
-    const updateTimeSlot = (id: string, field: 'from' | 'to', value: string) => {
-        setTimeSlots(timeSlots.map(slot =>
-            slot.id === id ? { ...slot, [field]: new Date(value) } : slot
-        ));
-    };
-
-    const formatDateTime = (date: Date) => {
-        return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 16);
-    };
-
-    const validateSlots = () => {
-        if (timeSlots.length === 0) {
-            setError("Please add at least one time slot");
-            scrollToTop();
-            return false;
-        }
-
-        for (const slot of timeSlots) {
-            if (slot.from >= slot.to) {
-                setError("Start time must be before end time");
-                scrollToTop();
-                return false;
-            }
-
-            const eventFrom = new Date(timeRangeFrom);
-            const eventTo = new Date(timeRangeTo);
-
-            if (slot.from < eventFrom || slot.to > eventTo) {
-                setError("Time slots must be within event time range");
-                scrollToTop();
-                return false;
-            }
-        }
-
-        setError("");
-        return true;
+        setTimeSlots(timeSlots.filter(s => s.id !== id));
     };
 
     const handleSubmit = async () => {
-        if (!validateSlots()) return;
+        if (!validate()) return;
 
         setLoading(true);
         try {
-            await axios.post(endpoint, {
-                timeIntervals: timeSlots.map(slot => ({
-                    from: slot.from.toISOString(),
-                    to: slot.to.toISOString()
-                }))
-            });
-            notify.info("Time preferences saved!");
+            if (isMultiDay) {
+                await axios.post(endpoint, { dates: days });
+            } else {
+                await axios.post(endpoint, {
+                    timeIntervals: timeSlots.map(s => ({
+                        from: s.from.toISOString(),
+                        to: s.to.toISOString()
+                    }))
+                });
+            }
+            console.log(days, timeSlots);
+            notify.info("Preferences saved");
             onSubmit();
             onClose();
-        } catch (err) {
-            notify.error("Failed to save preferences");
+
+        } catch {
+            notify.error("Failed to save");
         } finally {
             setLoading(false);
         }
@@ -131,152 +229,137 @@ export default function TimePreferenceForm({ eventId, timeRangeFrom, timeRangeTo
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div ref={scrollContainerRef}
-                className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h2 className="text-2xl font-bold flex items-center gap-2">
-                                <Clock className="w-6 h-6" />
-                                Select Your Available Times
-                            </h2>
-                            <p className="text-blue-100 text-sm mt-1">
-                                Add all time slots when you're available
-                            </p>
-                        </div>
-                        <button onClick={onClose} className="text-white/80 hover:text-white">
-                            <X className="w-6 h-6" />
-                        </button>
-                    </div>
+            <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+
+            <div
+                ref={scrollContainerRef}
+                className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+            >
+
+                <div className="p-6 border-b flex justify-between">
+                    <h2 className="text-xl font-semibold flex gap-2 items-center">
+                        <Clock className="w-5 h-5" />
+                        {isMultiDay ? "Select Days" : "Select Times"}
+                    </h2>
+
+                    <button onClick={onClose}>
+                        <X />
+                    </button>
                 </div>
 
                 <div className="p-6 space-y-6">
+
                     {error && (
-                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded">
-                            {error}
-                        </div>
+                        <div className="text-red-600">{error}</div>
                     )}
 
-                    {/* Event Time Range Info */}
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                        <p className="text-sm text-blue-800 dark:text-blue-300">
-                            📅 Event time range: {new Date(timeRangeFrom).toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })} 
-                                                - {new Date(timeRangeTo).toLocaleString('en-US', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                    </div>
+                    {isMultiDay ? (
 
-                    {/* Time Slots */}
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Your Available Time Slots ({timeSlots.length})
-                            </label>
+                        <div className="space-y-2">
+
+                            {getDaysInRange().map(day => {
+
+                                const checked = days.includes(day);
+
+                                return (
+                                    <label key={day} className="flex gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => toggleDay(day)}
+                                        />
+                                        {new Date(day).toLocaleDateString()}
+                                    </label>
+                                );
+                            })}
+
+                        </div>
+
+                    ) : (
+
+                        <>
+                            <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-600">
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Allowed range: </span>
+                                {new Date(timeRangeFrom).toLocaleString(undefined, {
+                                    month: "short", day: "numeric",
+                                    hour: "2-digit", minute: "2-digit"
+                                })}
+                                {" → "}
+                                {new Date(timeRangeTo).toLocaleString(undefined, {
+                                    month: "short", day: "numeric",
+                                    hour: "2-digit", minute: "2-digit"
+                                })}
+                                <span className="ml-2 text-xs text-gray-400">(Single day =&gt; max 24h per slot)</span>
+                            </div>
+
                             <button
                                 onClick={addTimeSlot}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                                className="px-4 py-2 bg-blue-600 text-white rounded"
                             >
-                                <Plus className="w-4 h-4" />
-                                Add Time Slot
+                                <Plus className="w-4 h-4 inline mr-1" />
+                                Add Slot
                             </button>
-                        </div>
 
-                        {timeSlots.length === 0 ? (
-                            <div className="p-8 text-center bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                                <Clock className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                                <p className="text-gray-600 dark:text-gray-400">No time slots added yet</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                                    Click "Add Time Slot" to start
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {timeSlots.map((slot, index) => (
-                                    <div
-                                        key={slot.id}
-                                        className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                                                {index + 1}
-                                            </span>
-                                            
-                                            <div className="flex-1 grid grid-cols-2 gap-3">
-                                                <div>
-                                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                                                        From
-                                                    </label>
-                                                    <input
-                                                        type="datetime-local"
-                                                        value={formatDateTime(slot.from)}
-                                                        onChange={(e) => updateTimeSlot(slot.id, 'from', e.target.value)}
-                                                        min={formatDateTime(new Date(timeRangeFrom))}
-                                                        max={formatDateTime(new Date(timeRangeTo))}
-                                                        className="w-full px-3 py-2 border border-gray-300 text-sm [color-scheme:light]
-                                                            dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
-                                                            rounded-lg focus:ring-1"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
-                                                        To
-                                                    </label>
-                                                    <input
-                                                        type="datetime-local"
-                                                        value={formatDateTime(slot.to)}
-                                                        onChange={(e) => updateTimeSlot(slot.id, 'to', e.target.value)}
-                                                        min={formatDateTime(new Date(slot.from))}
-                                                        max={formatDateTime(new Date(timeRangeTo))}
-                                                        className="w-full px-3 py-2 border border-gray-300 text-sm [color-scheme:light]
-                                                            dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
-                                                            rounded-lg focus:ring-1"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <button
-                                                onClick={() => removeTimeSlot(slot.id)}
-                                                className="flex-shrink-0 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
+                            {(() => {
+                                const slotErrors = getSlotErrors();
+                                return timeSlots.map(slot => (
+                                    <div key={slot.id} className="space-y-1">
+                                        <div className="flex gap-2 items-center">
+                                            <input
+                                                type="datetime-local"
+                                                min={toLocalDateTimeString(new Date(timeRangeFrom))}
+                                                max={toLocalDateTimeString(new Date(timeRangeTo))}
+                                                value={toLocalDateTimeString(slot.from)}
+                                                onChange={e => updateTimeSlot(slot.id, "from", e.target.value)}
+                                                className={`border rounded px-2 py-1 ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300"}`}
+                                            />
+                                            <span className="text-gray-400">→</span>
+                                            <input
+                                                type="datetime-local"
+                                                min={toLocalDateTimeString(slot.from)}
+                                                max={toLocalDateTimeString(
+                                                    new Date(Math.min(
+                                                        slot.from.getTime() + 24 * 60 * 60 * 1000,
+                                                        new Date(timeRangeTo).getTime()
+                                                    ))
+                                                )}
+                                                value={toLocalDateTimeString(slot.to)}
+                                                onChange={e => updateTimeSlot(slot.id, "to", e.target.value)}
+                                                className={`border rounded px-2 py-1 ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300"}`}
+                                            />
+                                            <button onClick={() => removeTimeSlot(slot.id)}>
+                                                <Trash2 className="w-5 h-5 text-red-600" />
                                             </button>
                                         </div>
+                                        {slotErrors[slot.id] && (
+                                            <p className="text-red-500 text-sm ml-1">{slotErrors[slot.id]}</p>
+                                        )}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                ));
+                            })()}
 
-                    {/* Summary */}
-                    {timeSlots.length > 0 && (
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                Summary:
-                            </h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                You've added <strong>{timeSlots.length}</strong> time slot{timeSlots.length !== 1 && 's'} when you're available
-                            </p>
-                        </div>
+                        </>
+
                     )}
 
-                    {/* Actions */}
-                    <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex gap-3 pt-4 border-t">
+
                         <button
                             onClick={onClose}
-                            disabled={loading}
-                            className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium"
+                            className="flex-1 bg-gray-200 py-2 rounded"
                         >
                             Cancel
                         </button>
+
                         <button
                             onClick={handleSubmit}
-                            disabled={loading || timeSlots.length === 0}
-                            className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium shadow-lg disabled:opacity-50"
+                            className="flex-1 bg-blue-600 text-white py-2 rounded"
                         >
-                            {loading ? "Saving..." : "Save Preferences"}
+                            {loading ? "Saving..." : "Save"}
                         </button>
+
                     </div>
+
                 </div>
             </div>
         </div>

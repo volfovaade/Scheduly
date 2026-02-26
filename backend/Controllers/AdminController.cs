@@ -47,7 +47,7 @@ namespace backend.Controllers
         [HttpGet("events/cleanup")]
         public async Task<IActionResult> GetEventsForCleanup([FromQuery] int daysOld = 365)
         {
-            var thresholdDate = DateTime.UtcNow.AddDays(-daysOld);
+            var thresholdDate = DateTimeOffset.UtcNow.AddDays(-daysOld);
             var oldEvents = await _eventRepo.GetOldEventsAsync(thresholdDate);
             return Ok(oldEvents);
         }
@@ -59,7 +59,7 @@ namespace backend.Controllers
         [HttpDelete("events/cleanup")]
         public async Task<IActionResult> CleanupOldEvents([FromQuery] int daysOld = 365)
         {
-            var thresholdDate = DateTime.UtcNow.AddDays(-daysOld);
+            var thresholdDate = DateTimeOffset.UtcNow.AddDays(-daysOld);
             var oldEvents = await _eventRepo.GetOldEventsAsync(thresholdDate);
             await _eventRepo.DeleteAsync(oldEvents);
             return Ok(new { deletedCount = oldEvents.Count });

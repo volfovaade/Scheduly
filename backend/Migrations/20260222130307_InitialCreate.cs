@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialRecreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,26 +19,27 @@ namespace backend.Migrations
                     Title = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Mode = table.Column<int>(type: "integer", nullable: false),
                     IsMultiDay = table.Column<bool>(type: "boolean", nullable: false),
+                    Code = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
                     Constraint = table.Column<int>(type: "integer", nullable: false),
-                    TimeRangeFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    TimeRangeTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TimeRangeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    TimeRangeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     FixedPlaceName = table.Column<string>(type: "text", nullable: true),
                     FixedAddress = table.Column<string>(type: "text", nullable: true),
                     FixedLatitude = table.Column<double>(type: "double precision", nullable: true),
                     FixedLongitude = table.Column<double>(type: "double precision", nullable: true),
-                    FixedTimeFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FixedTimeTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    FixedTimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    FixedTimeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     Phase = table.Column<int>(type: "integer", nullable: false),
                     AllowParticipantOptions = table.Column<bool>(type: "boolean", nullable: false),
                     MaxOptionsPerUser = table.Column<int>(type: "integer", nullable: false),
                     GeneratedOptionsCount = table.Column<int>(type: "integer", nullable: false),
                     FinalPlaceName = table.Column<string>(type: "text", nullable: true),
                     FinalAddress = table.Column<string>(type: "text", nullable: true),
-                    FinalTimeFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    FinalTimeTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    FinalTimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    FinalTimeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -55,8 +56,8 @@ namespace backend.Migrations
                     Address = table.Column<string>(type: "text", nullable: false),
                     Location_Lat = table.Column<double>(type: "double precision", nullable: false),
                     Location_Lng = table.Column<double>(type: "double precision", nullable: false),
-                    TimeFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TimeTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    TimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    TimeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -87,8 +88,8 @@ namespace backend.Migrations
                     Address = table.Column<string>(type: "text", nullable: true),
                     Latitude = table.Column<double>(type: "double precision", nullable: true),
                     Longitude = table.Column<double>(type: "double precision", nullable: true),
-                    TimeFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TimeTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    TimeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     IsSelected = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -119,6 +120,60 @@ namespace backend.Migrations
                         name: "FK_Users_Roles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Content = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comments_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DayPreferences",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DayPreferences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DayPreferences_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DayPreferences_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -210,7 +265,7 @@ namespace backend.Migrations
                     OptionId = table.Column<Guid>(type: "uuid", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     Score = table.Column<int>(type: "integer", nullable: false),
-                    VotedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    VotedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -235,8 +290,8 @@ namespace backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TimePreferenceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    From = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    To = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    From = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    To = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -250,6 +305,27 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comments_EventId",
+                table: "Comments",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_UserId",
+                table: "Comments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DayPreferences_EventId_UserId_Date",
+                table: "DayPreferences",
+                columns: new[] { "EventId", "UserId", "Date" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DayPreferences_UserId",
+                table: "DayPreferences",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_EventOptions_EventId",
                 table: "EventOptions",
                 column: "EventId");
@@ -258,6 +334,12 @@ namespace backend.Migrations
                 name: "IX_EventParticipants_EventId",
                 table: "EventParticipants",
                 column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Events_Code",
+                table: "Events",
+                column: "Code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_LocationPreferences_EventId",
@@ -303,6 +385,12 @@ namespace backend.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Comments");
+
+            migrationBuilder.DropTable(
+                name: "DayPreferences");
+
             migrationBuilder.DropTable(
                 name: "EventParticipants");
 

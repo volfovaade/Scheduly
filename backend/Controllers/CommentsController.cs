@@ -82,7 +82,7 @@ namespace backend.Controllers
                 EventId = eventId,
                 UserId = userId,
                 Content = dto.Content.Trim(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             await _commentRepo.AddCommentAsync(comment);
@@ -127,7 +127,7 @@ namespace backend.Controllers
                 return BadRequest("Comment is too long (max 2000 characters)");
 
             comment.Content = dto.Content.Trim();
-            comment.UpdatedAt = DateTime.UtcNow;
+            comment.UpdatedAt = DateTimeOffset.UtcNow;
             await _commentRepo.UpdateAsync(comment);
 
             return Ok(new { message = "Comment updated successfully" });

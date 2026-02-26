@@ -22,6 +22,7 @@ namespace backend.Database
         public DbSet<EventParticipant> EventParticipants { get; set; }
         public DbSet<LocationPreference> LocationPreferences { get; set; }
         public DbSet<TimePreference> TimePreferences { get; set; }
+        public DbSet<DayPreference> DayPreferences { get; set; }
         public DbSet<Comment> Comments { get; set; }
 
         /// <summary>
@@ -57,32 +58,6 @@ namespace backend.Database
             modelBuilder.Entity<GeneratedPlaceOption>()
                 .OwnsOne(g => g.Location);
 
-            // ensure all DateTime properties are stored and retrieved as UTC
-            // conversion for timestamp, dates should have specified type 
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                foreach (var property in entityType.GetProperties())
-                {
-                    if (property.ClrType == typeof(DateTime))
-                    {
-                        modelBuilder.Entity(entityType.ClrType)
-                            .Property<DateTime>(property.Name)
-                            .HasConversion(
-                                v => v.ToUniversalTime(),
-                                v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-                    }
-                    // handle nullable DateTime
-                    else if (property.ClrType == typeof(DateTime?))
-                    {
-                        modelBuilder.Entity(entityType.ClrType)
-                            .Property<DateTime?>(property.Name)
-                            .HasConversion(
-                                v => v.HasValue ? v.Value.ToUniversalTime() : v,
-                                v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
-                    }
-                }
-            }
-
             // kaskádové mazání pro TimeIntervals pøi smazání TimePreference
             modelBuilder.Entity<TimeInterval>()
                 .HasOne(ti => ti.TimePreference)
@@ -109,6 +84,10 @@ namespace backend.Database
                 .WithMany(u => u.Comments)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DayPreference>()
+               .HasIndex(p => new { p.EventId, p.UserId, p.Date })
+               .IsUnique();
         }
     }
 }

@@ -1,4 +1,5 @@
 import { MapPin, Clock, CheckCircle2 } from "lucide-react";
+import { formatLocalDate, formatLocalDateTime } from "../../utils/dateUtils";
 
 export const FinalResult = ({ event }: { event: any }) => (
     <div className="bg-white dark:bg-gray-900 border border-yellow-200 dark:border-gray-700 rounded-2xl p-8 shadow-xl">
@@ -27,13 +28,10 @@ export const FinalResult = ({ event }: { event: any }) => (
                 <div>
                     <p className="font-medium text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider mb-1">Time</p>
                     <p className="text-xl font-bold text-gray-900 dark:text-white capitalize">
-                        {new Date(event.finalTimeFrom).toLocaleString('en-US', { 
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        })}
+                        From: {event.isMultiDay ? formatLocalDate(event.finalTimeFrom) : formatLocalDateTime(event.finalTimeFrom)}
+                    </p>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white capitalize">
+                        To: {event.isMultiDay ? formatLocalDate(event.finalTimeTo) : formatLocalDateTime(event.finalTimeTo)}
                     </p>
                 </div>
             </div>

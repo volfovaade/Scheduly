@@ -49,7 +49,9 @@ export default function SingleOptionDetail({
         <EventDetailLayout
             commentSection={<CommentSection eventId={eventId} />}
         >
-            <div className="max-w-7xl mx-auto px-6 py-8 dark:bg-gray-900">
+            <div className="max-w-7xl mx-auto px-6 dark:bg-gray-900">
+                {/* Participants */}
+                <ParticipantsList participants={participants} />
                 {/* Phase-specific content */}
                 {event.phase === "Proposal" && (
                     <>
@@ -101,9 +103,6 @@ export default function SingleOptionDetail({
                                 </div>
                             </div>
                         </div>
-
-                        {/* Participants */}
-                        <ParticipantsList participants={participants} />
 
                         {event.currentUserIsOrganizer && (
                             <button onClick={onClose} className="mt-4 ml-4 bg-green-600 text-white px-6 py-3 rounded-lg">

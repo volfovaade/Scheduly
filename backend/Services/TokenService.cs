@@ -50,7 +50,7 @@ namespace backend.Services
             // generate the token
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddDays(1),
+                expires: DateTime.UtcNow.AddDays(1),
                 signingCredentials: creds);
 
             // serialization of token to string

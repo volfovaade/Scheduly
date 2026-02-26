@@ -12,7 +12,7 @@ namespace backend.Models
         public Guid TimePreferenceId { get; set; }
         public TimePreference TimePreference { get; set; } = null!;
 
-        public DateTime From { get; set; }
-        public DateTime To { get; set; }
+        public DateTimeOffset From { get; set; }
+        public DateTimeOffset To { get; set; }
     }
 }
