@@ -1,6 +1,6 @@
 using backend.Models;
 
-namespace backend.Repositories.Interfaces
+namespace backend.Persistence.Interfaces
 {
     public interface IVoteRepository
     {

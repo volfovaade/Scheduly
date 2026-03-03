@@ -1,6 +1,6 @@
 using backend.Models;
 using backend.Database;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Persistence.Repositories

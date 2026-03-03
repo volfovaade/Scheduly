@@ -24,6 +24,7 @@ namespace backend.Database
         public DbSet<TimePreference> TimePreferences { get; set; }
         public DbSet<DayPreference> DayPreferences { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
 
         /// <summary>
         /// Configures entity relationships and database schema.

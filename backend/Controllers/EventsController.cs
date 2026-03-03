@@ -1,7 +1,8 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
+using backend.Services.Interfaces;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,21 @@ namespace backend.Controllers
         private readonly IEventRepository _eventRepo;
         private readonly IEventOptionRepository _eventOptionRepo;
         private readonly IVoteRepository _voteRepo;
+        private readonly IEventParticipantRepository _eventParticipantRepo;
+        private readonly IEmailService _emailService;
 
-        public EventsController(IEventService eventService, IEventRepository eventRepo, IEventOptionRepository eventOptionRepo, IVoteRepository voteRepo)
+        public EventsController(
+            IEventService eventService, IEventRepository eventRepo, 
+            IEventOptionRepository eventOptionRepo, IVoteRepository voteRepo,
+            IEventParticipantRepository eventParticipantRepo, IEmailService emailService
+            )
         {
             _eventService = eventService;
             _eventRepo = eventRepo;
             _eventOptionRepo = eventOptionRepo;
             _voteRepo = voteRepo;
+            _eventParticipantRepo = eventParticipantRepo;
+            _emailService = emailService;
         }
 
         // GET: api/events
@@ -182,6 +191,8 @@ namespace backend.Controllers
             {
                 return Forbid();
             }
+            // for notification of all participants
+            var participants = await _eventParticipantRepo.GetEventParticipantsWithUser(eventId);
 
             if (ev.Mode == EventMode.SingleOption)
             {
@@ -192,7 +203,13 @@ namespace backend.Controllers
                 ev.FinalTimeTo = ev.FixedTimeTo;
 
                 await _eventRepo.UpdateAsync(ev);
-
+                await Task.WhenAll(participants.Select(p =>
+                    _emailService.SendEventClosedAsync(
+                        p.User.Email, p.User.Name,
+                        ev.Title,
+                        ev.FinalPlaceName!, ev.FinalAddress ?? "",
+                        ev.FinalTimeFrom!.Value, ev.FinalTimeTo!.Value
+                    )));
                 return Ok(new { empty = false });  // no votes for this type of the event, never empty
             }
 
@@ -222,6 +239,13 @@ namespace backend.Controllers
 
             await _eventRepo.UpdateAsync(ev);
             await _eventOptionRepo.UpdateAsync(winningOption);
+            await Task.WhenAll(participants.Select(p =>
+                _emailService.SendEventClosedAsync(
+                    p.User.Email, p.User.Name,
+                    ev.Title,
+                    ev.FinalPlaceName!, ev.FinalAddress ?? "",
+                    ev.FinalTimeFrom!.Value, ev.FinalTimeTo!.Value
+                )));
 
             return Ok(winningOption);
         }

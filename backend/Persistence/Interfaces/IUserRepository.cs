@@ -1,10 +1,11 @@
 using backend.Models;
 
-namespace backend.Repositories.Interfaces
+namespace backend.Persistence.Interfaces
 {
     public interface IUserRepository
     {
         Task<User?> GetByIdAsync(Guid id);
+        Task<User?> GetByEmailAsync(string email);
         Task<List<User>> GetSuspiciousUsersAsync();
         Task<bool> Contains(string email);
         Task AddAsync(User user);

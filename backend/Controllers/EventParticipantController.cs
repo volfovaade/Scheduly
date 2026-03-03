@@ -1,6 +1,6 @@
 using backend.Database;
 using backend.Models;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +26,7 @@ namespace backend.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetParticipants(Guid eventId)
         {
-            var participants = (await _eventParticipantRepo.GetEventParticipantsWithUsername(eventId))
+            var participants = (await _eventParticipantRepo.GetEventParticipantsWithUser(eventId))
                 .Select(p => new
                 {
                     p.UserId,

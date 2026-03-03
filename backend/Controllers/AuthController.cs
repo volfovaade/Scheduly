@@ -1,11 +1,13 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
+using backend.Persistence.Interfaces;
 using backend.Services;
+using backend.Services.Interfaces;
+using BCrypt.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
-using backend.Repositories.Interfaces;
 
 namespace backend.Controllers
 {
@@ -15,13 +17,21 @@ namespace backend.Controllers
     {
         private readonly IUserRepository _userRepo;
         private readonly IRoleRepository _roleRepo;
+        private readonly IEmailService _emailService;
+        private readonly IPasswordResetTokenRepository _passwordRepo;
         private readonly ITokenService _tokenService;
 
-        public AuthController(IUserRepository userRepo, IRoleRepository roleRepo, ITokenService tokenService)
+        public AuthController(
+            IUserRepository userRepo, IRoleRepository roleRepo, 
+            IPasswordResetTokenRepository passwordRepo, ITokenService tokenService,
+            IEmailService emailService
+            )
         {
             _userRepo = userRepo;
             _roleRepo = roleRepo;
+            _passwordRepo = passwordRepo;
             _tokenService = tokenService;
+            _emailService = emailService;
         }
 
         // POST: api/auth/register
@@ -43,6 +53,8 @@ namespace backend.Controllers
                 Role = role!
             };
             await _userRepo.AddAsync(user);
+
+            await _emailService.SendRegistrationConfirmationAsync(user.Email, user.Name);
 
             return new AuthResponse
             {
@@ -71,17 +83,46 @@ namespace backend.Controllers
             };
         }
 
-        // Updates password for given email's account. Through email sender.
-        [HttpPut("updatePassword")]
-        public async Task<ActionResult> UpdatePassword(LoginRequest request)
+        // Forgot password for user
+        // POST: api/auth/forgotPassword
+        [HttpPost("forgotPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
-            var user = await _userRepo.GetUserWithRole(request.Email);
-            if (user == null)
+            var user = await _userRepo.GetByEmailAsync(dto.Email);
+            if (user == null) return Ok();  //Ok because we do not want to say if email exists
+
+            var oldTokens = await _passwordRepo.GetOldTokensByUserIdAsync(user.Id);
+            await _passwordRepo.DeleteAsync(oldTokens);
+
+            var token = Guid.NewGuid().ToString("N");
+            await _passwordRepo.AddAsync(new PasswordResetToken
             {
-                return BadRequest("No account under this email.");
-            }
-            await _userRepo.UpdatePassword(request.Email, request.Password);
-            return Ok("Password was updated");
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Token = token,
+                ExpiresAt = DateTimeOffset.UtcNow.AddHours(1),
+                Used = false
+            });
+            await _emailService.SendPasswordResetAsync(user.Email, user.Name, token);
+            return Ok();
+        }
+        // Reset users password if needed
+        // POST: api/auth/resetPassword
+        [HttpPost("resetPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var resetToken = await _passwordRepo.GetResetTokenWithUser(dto);
+
+            if (resetToken == null)
+                return BadRequest("Invalid or expired token");
+
+            resetToken.User.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            resetToken.Used = true;
+
+            await _passwordRepo.UpdateAsync(resetToken);
+            return Ok();
         }
     }
 }

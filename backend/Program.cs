@@ -1,14 +1,15 @@
 using backend.Data;
 using backend.Database;
+using backend.Persistence.Interfaces;
+using backend.Persistence.Repositories;
 using backend.Services;
-using backend.Repositories.Interfaces;
+using backend.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Text;
 using System.Text.Json.Serialization;
-using backend.Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +87,10 @@ builder.Services.AddScoped<ILocationPrefRepository, LocationPrefRepository>();
 builder.Services.AddScoped<ITimePrefRepository, TimePrefRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddHostedService<ReminderBackgroundService>();
 // Register Google Places API service:
 // AddHttpClient => provide HttpClient with automatic disposal and configuration
 // AddScoped => service lifetime matches a single HTTP request

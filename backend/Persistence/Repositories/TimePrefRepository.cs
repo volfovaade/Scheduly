@@ -1,7 +1,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using static System.Runtime.InteropServices.JavaScript.JSType;

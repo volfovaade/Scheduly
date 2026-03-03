@@ -1,6 +1,6 @@
 using backend.Models;
 using backend.Database;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Persistence.Repositories
@@ -18,6 +18,11 @@ namespace backend.Persistence.Repositories
             return await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
         public async Task<List<User>> GetSuspiciousUsersAsync()
         {

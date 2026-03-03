@@ -2,7 +2,7 @@
 using backend.Database;
 using backend.DTOs;
 using backend.Models;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

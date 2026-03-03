@@ -1,6 +1,6 @@
 using backend.Models;
 using backend.Database;
-using backend.Repositories.Interfaces;
+using backend.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Persistence.Repositories
@@ -24,7 +24,7 @@ namespace backend.Persistence.Repositories
             _context.EventParticipants.Remove(participant);
             await _context.SaveChangesAsync();
         }
-        public async Task<List<EventParticipant>> GetEventParticipantsWithUsername(Guid eventId)
+        public async Task<List<EventParticipant>> GetEventParticipantsWithUser(Guid eventId)
         {
             return await _context.EventParticipants
                 .Include(p => p.User)
