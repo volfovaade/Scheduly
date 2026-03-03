@@ -12,7 +12,7 @@ export function Sidebar({ isOpen, toggleSidebar}: Props) {
     const {user, isAuthenticated, isAdmin, logout} = useAuth();
     const navigate = useNavigate();
     const menuItems = [
-        {icon: Home, label: 'Home', href: '/'},
+        {icon: Home, label: 'Home & Join', href: '/'},
         {icon: Calendar, label: 'My events', href: '/dashboard'},
         {icon: Settings, label: 'Settings', href: '/settings'}
     ];
