@@ -7,7 +7,8 @@ import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import DashboardPage from "./pages/DashboardPage";
-import EventDetailPage from "./pages/EventDetailPage";  
+import EventDetailPage from "./pages/EventDetailPage";
+import SettingsPage from "./pages/SettingsPage";
 import SuspiciousActivityPage from "./pages/SuspiciousActivityPage";
 import DataCleanupPage from "./pages/DataCleanupPage";
 
@@ -15,7 +16,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<Layout/>}>
+        <Route element={<Layout />}>
           <Route path="/" element={<MainPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -24,7 +25,11 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:eventId" element={<EventDetailPage />} />
-          <Route path="/admin/suspicious" element={<SuspiciousActivityPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/admin/suspicious"
+            element={<SuspiciousActivityPage />}
+          />
           <Route path="/admin/cleanup" element={<DataCleanupPage />} />
         </Route>
       </Routes>
