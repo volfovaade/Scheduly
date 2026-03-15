@@ -105,7 +105,7 @@ namespace backend.Controllers
                     Source = o.Source,
                     CreatedByUserId = o.CreatedByUserId,
                     IsSelected = o.IsSelected,
-                    VoteCount = o.Votes.Count(v => v.Type == voteType), 
+                    VoteCount = o.Votes.Count(v => v.Type == voteType),
                     TotalScore = o.Votes.Where(v => v.Type == voteType).Sum(v => v.Score)
                 });
             return Ok(options);

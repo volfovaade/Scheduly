@@ -22,7 +22,6 @@ namespace backend.Controllers
             await _emailService.SendRegistrationConfirmationAsync("volfova.adela133@gmail.com", "Test User");
             return Ok("Registration email sent!");
         }
-
         [HttpGet("email/reset")]
         public async Task<IActionResult> TestPasswordReset()
         {

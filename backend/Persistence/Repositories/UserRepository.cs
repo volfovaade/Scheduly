@@ -2,6 +2,7 @@ using backend.Models;
 using backend.Database;
 using backend.Persistence.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using backend.DTOs;
 
 namespace backend.Persistence.Repositories
 {
@@ -39,6 +40,11 @@ namespace backend.Persistence.Repositories
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateAsync(User u)
+        {
+            _context.Users.Update(u);
+            await _context.SaveChangesAsync();
+        }
         public async Task<User?> GetUserWithRole(string email)
         {
             return await _context.Users
@@ -60,5 +66,27 @@ namespace backend.Persistence.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-    }
+        public async Task<UserStatsDto> GetUserStatsAsync(Guid userId)
+        {
+            var organized = await _context.Events
+                .Where(e => e.OwnerId == userId)
+                .ToListAsync();
+
+            var participating = await _context.EventParticipants
+                .Include(p => p.Event)
+                .Where(p => p.UserId == userId && p.Event.OwnerId != userId)
+                .Select(p => p.Event)
+                .ToListAsync();
+
+            return new UserStatsDto
+            {
+                OrganizedTotal = organized.Count,
+                OrganizedActive = organized.Count(e => e.Phase != EventPhase.Closed),
+                ParticipatingTotal = participating.Count,
+                ParticipatingActive = participating.Count(e => e.Phase != EventPhase.Closed),
+                ClosedEvents = organized.Count(e => e.Phase == EventPhase.Closed)
+                             + participating.Count(e => e.Phase == EventPhase.Closed)
+            };
+        }
+        }
 }

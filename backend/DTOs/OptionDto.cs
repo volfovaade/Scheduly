@@ -10,7 +10,7 @@ namespace backend.DTOs
         public string? Address { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
-        public DateTimeOffset TimeFrom { get; set; } 
+        public DateTimeOffset TimeFrom { get; set; }
         public DateTimeOffset TimeTo { get; set; }
         public OptionSource Source { get; set; }
         public Guid? CreatedByUserId { get; set; }

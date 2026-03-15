@@ -70,7 +70,7 @@ namespace backend.Controllers
 
             if (ev.Mode != EventMode.FixedPlaceOpenTime)
                 return BadRequest("This endpoint is only for open time events");
-            
+
             if (ev.IsMultiDay)
             {
                 await _timePrefRepo.RemoveOldVotes(eventId, userId);
@@ -98,12 +98,12 @@ namespace backend.Controllers
                 TimeIntervals = dto.TimeIntervals!.Select(t => new TimeInterval
                 {
                     Id = Guid.NewGuid(),
-                    From = t.From, 
+                    From = t.From,
                     To = t.To,
                     TimePreferenceId = prefId
                 }).ToList()
             };
-            
+
             Console.WriteLine(pref);
 
             await _timePrefRepo.AddAsync(pref);
@@ -131,7 +131,7 @@ namespace backend.Controllers
                     .OrderByDescending(x => x.Count)
                     .ToList();
 
-                return Ok(new {Time = result });
+                return Ok(new { Time = result });
             }
             var timePrefs = await _eventRepo.GetTimePreferencesWithIntervalsAsync(eventId);
 
@@ -161,7 +161,7 @@ namespace backend.Controllers
                 .OrderByDescending(x => x.Count)
                 .ToList();
 
-            return Ok(new {Time = hours });
+            return Ok(new { Time = hours });
         }
     }
 }

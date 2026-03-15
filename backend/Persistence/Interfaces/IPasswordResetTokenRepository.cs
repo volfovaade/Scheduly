@@ -8,7 +8,7 @@ namespace backend.Persistence.Interfaces
         Task<List<PasswordResetToken>> GetOldTokensByUserIdAsync(Guid userId);
         Task DeleteAsync(List<PasswordResetToken> tokens);
         Task AddAsync(PasswordResetToken newToken);
-        Task<PasswordResetToken> GetResetTokenWithUser(ResetPasswordDto dto);
+        Task<PasswordResetToken?> GetResetTokenWithUser(ResetPasswordDto dto);
         Task UpdateAsync(PasswordResetToken token);
     }
 }

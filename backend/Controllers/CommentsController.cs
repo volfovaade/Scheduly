@@ -145,7 +145,7 @@ namespace backend.Controllers
                 return NotFound("Comment wasn't found");
 
             var eventWithParticipants = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
-            if (eventWithParticipants == null) 
+            if (eventWithParticipants == null)
                 return NotFound("Event wasn't found");
 
             var isOrganizer = eventWithParticipants.Participants

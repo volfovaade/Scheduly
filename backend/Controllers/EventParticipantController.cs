@@ -64,7 +64,7 @@ namespace backend.Controllers
         // DELETE: api/events/{eventId}/participants/leave
         // Allows the logged-in user to leave the event.
         [HttpDelete("leave")]
-        public async Task<IActionResult> LeaveEvent (Guid eventId)
+        public async Task<IActionResult> LeaveEvent(Guid eventId)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();

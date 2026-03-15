@@ -1,7 +1,7 @@
 interface NewOption {
-    placeName: string;
-    location: string;
-    timeFrom: Date;
-    timeTo: Date;
+  placeName: string;
+  location: string;
+  timeFrom: Date;
+  timeTo: Date;
 }
 export default NewOption;

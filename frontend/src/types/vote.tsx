@@ -1,5 +1,5 @@
 interface Vote {
-    id: string;
-    voteCount: number;
+  id: string;
+  voteCount: number;
 }
 export default Vote;

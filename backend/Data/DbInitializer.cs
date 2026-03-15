@@ -20,7 +20,7 @@ namespace backend.Data
             await context.Database.MigrateAsync();
 
             // seed default roles if none exist
-            if (!context.Roles.Any())  
+            if (!context.Roles.Any())
             {
                 context.Roles.AddRange(
                     new Role { Name = Roles.Admin },
@@ -30,16 +30,21 @@ namespace backend.Data
             }
 
             // create default admin user if it doesn't exist
-            // TODO: Move hardcoded credentials to configuration file for security
-            // for now hardcoded in the code, later probably should be in some config file as variables !!!!!!!!!!!!!!!!!!!!!
+            var adminName = Environment.GetEnvironmentVariable("ADMIN_NAME") ?? "Admin";
+            var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? "admin@example.com";
+            var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "admin123";
+            var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == Roles.Admin)
+                ?? throw new InvalidOperationException("Admin role not found. Roles were not seeded correctly.");
+
+
             if (!context.Users.Any(u => u.Name == "Admin"))
             {
                 var admin = new User
                 {
-                    Name = "Admin",
-                    Email = "admin@example.com",
-                    Role = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin"),
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123")
+                    Name = adminName,
+                    Email = adminEmail,
+                    Role = adminRole,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword)
                 };
 
                 context.Users.Add(admin);

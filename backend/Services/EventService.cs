@@ -20,7 +20,7 @@ namespace backend.Services
         private readonly IEventParticipantRepository _eventParticipantRepo;
         private readonly ITimePrefRepository _timePrefRepo;
         private readonly GooglePlacesService _googlePlacesService;
-        public EventService(IEventRepository eventRepo, IEventOptionRepository eventOptionRepo, 
+        public EventService(IEventRepository eventRepo, IEventOptionRepository eventOptionRepo,
             IEventParticipantRepository eventPaarticipantRepo, GooglePlacesService googlePlacesService,
             ITimePrefRepository timePrefRepo)
         {
@@ -131,7 +131,7 @@ namespace backend.Services
         /// </summary>
         public async Task<IEnumerable<EventDto>> GetUserEventsAsync(Guid userId)
         {
-            var userEvents =(await _eventRepo.GetByUserParticipation(userId))
+            var userEvents = (await _eventRepo.GetByUserParticipation(userId))
                     .Select(e => ToDto(e))
                     .ToList();
             return userEvents;
@@ -143,7 +143,7 @@ namespace backend.Services
         /// <param name="eventId">The event's id that is being finalized</param>
         /// <param name="duration"> Organizator sets the duration of the event either in hours for single day events or in days for multiday. </param>
         /// <param name="organizerTypeChoice">If there is a tie of preffered types, it is up to organizer to choose one of them.</param>
-    
+
         public async Task<List<EventOption>> FinalizeFullyOpen(Guid eventId, int? duration = 2, string? organizerTypeChoice = null)
         {
             var ev = await _eventRepo.GetByIdAsync(eventId);
@@ -192,7 +192,7 @@ namespace backend.Services
             // generate place suggestions using Google Places API
             var generated = await _googlePlacesService
                 .SearchPlacesAsync(ConvertPlaceTypeToString(topType), avgLat, avgLng, eventId,
-                                                            fromTime, toTime,priceLevel, minRating);
+                                                            fromTime, toTime, priceLevel, minRating);
 
             await _eventOptionRepo.AddOptionsAsync(generated);
 
@@ -206,7 +206,7 @@ namespace backend.Services
         {
             var ev = await _eventRepo.GetByIdAsync(eventId);
             if (ev == null) throw new Exception("Event not found");
-            
+
             var locationPrefs = await _eventRepo.GetLocationPreferencesAsync(eventId);
 
             if (locationPrefs.Count == 0)
@@ -283,7 +283,7 @@ namespace backend.Services
 
                 var rangeStart = new DateTimeOffset(ev.TimeRangeFrom!.Value.Year, ev.TimeRangeFrom!.Value.Month,
                                                     ev.TimeRangeFrom!.Value.Day, 0, 0, 0, TimeSpan.Zero);
-                var rangeEnd = new DateTimeOffset(ev.TimeRangeTo!.Value.Year, ev.TimeRangeTo!.Value.Month, 
+                var rangeEnd = new DateTimeOffset(ev.TimeRangeTo!.Value.Year, ev.TimeRangeTo!.Value.Month,
                                                   ev.TimeRangeTo!.Value.Day, 0, 0, 0, TimeSpan.Zero);
 
                 var from = bestTime.AddDays(-duration / 2.0);
@@ -292,7 +292,7 @@ namespace backend.Services
                 // if it exceeds the lower limit, move forward
                 if (from < rangeStart)
                 {
-                    
+
                     from = rangeStart;
                     to = rangeStart.AddDays(duration);
                 }
@@ -306,7 +306,9 @@ namespace backend.Services
                 ev.FinalTimeFrom = from;
                 ev.FinalTimeTo = to;
 
-            } else {
+            }
+            else
+            {
                 var timePrefs = await _eventRepo.GetTimePreferencesWithIntervalsAsync(ev.Id);
 
                 if (timePrefs.Count == 0)

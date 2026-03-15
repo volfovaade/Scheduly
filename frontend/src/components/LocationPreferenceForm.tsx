@@ -8,12 +8,17 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 interface Props {
-    eventId: string;
-    apiEndpoint?: string;
-    onClose: () => void;
-    onSubmit: () => void;
+  eventId: string;
+  apiEndpoint?: string;
+  onClose: () => void;
+  onSubmit: () => void;
 }
-function LocationMarker({ latitude, longitude, setLatitude, setLongitude }: any) {
+function LocationMarker({
+  latitude,
+  longitude,
+  setLatitude,
+  setLongitude,
+}: any) {
   useMapEvents({
     click(e) {
       setLatitude(e.latlng.lat);
@@ -26,277 +31,328 @@ function LocationMarker({ latitude, longitude, setLatitude, setLongitude }: any)
       position={[latitude, longitude]}
       icon={L.icon({
         iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
       })}
     />
   );
 }
-type PlaceType = "Cafe" | "Restaurant" | "Bar" | "Hotel" | "Camping" | "Parc" | "Museum" | "Cinema" | "ShoppingMall" | "SportsCenter";
+type PlaceType =
+  | "Cafe"
+  | "Restaurant"
+  | "Bar"
+  | "Hotel"
+  | "Camping"
+  | "Parc"
+  | "Museum"
+  | "Cinema"
+  | "ShoppingMall"
+  | "SportsCenter";
 type PriceLevel = 0 | 1 | 2 | 3 | 4;
 
 const PLACE_TYPES: { id: PlaceType; label: string; emoji: string }[] = [
-    { id: "Cafe", label: "Café", emoji: "☕" },
-    { id: "Restaurant", label: "Restaurant", emoji: "🍽️" },
-    { id: "Bar", label: "Bar", emoji: "🍺" },
-    { id: "Hotel", label: "Hotel", emoji: "🏨" },
-    { id: "Camping", label: "Camping", emoji: "⛺" },
-    { id: "Parc", label: "Parc", emoji: "🌳" },
-    { id: "Museum", label: "Museum", emoji: "🏛️" },
-    { id: "Cinema", label: "Cinema", emoji: "🎬" },
-    { id: "ShoppingMall", label: "Shopping", emoji: "🛍️" },
-    { id: "SportsCenter", label: "Sports", emoji: "🏋️" },
+  { id: "Cafe", label: "Café", emoji: "☕" },
+  { id: "Restaurant", label: "Restaurant", emoji: "🍽️" },
+  { id: "Bar", label: "Bar", emoji: "🍺" },
+  { id: "Hotel", label: "Hotel", emoji: "🏨" },
+  { id: "Camping", label: "Camping", emoji: "⛺" },
+  { id: "Parc", label: "Parc", emoji: "🌳" },
+  { id: "Museum", label: "Museum", emoji: "🏛️" },
+  { id: "Cinema", label: "Cinema", emoji: "🎬" },
+  { id: "ShoppingMall", label: "Shopping", emoji: "🛍️" },
+  { id: "SportsCenter", label: "Sports", emoji: "🏋️" },
 ];
 
 const PRICE_LEVELS = [
-    { value: 0, label: "Any", symbol: "–" },
-    { value: 1, label: "Budget", symbol: "€" },
-    { value: 2, label: "Moderate", symbol: "€€" },
-    { value: 3, label: "Upscale", symbol: "€€€" },
-    { value: 4, label: "Luxury", symbol: "€€€€" },
+  { value: 0, label: "Any", symbol: "–" },
+  { value: 1, label: "Budget", symbol: "€" },
+  { value: 2, label: "Moderate", symbol: "€€" },
+  { value: 3, label: "Upscale", symbol: "€€€" },
+  { value: 4, label: "Luxury", symbol: "€€€€" },
 ];
 
-export default function LocationPreferenceForm({ eventId, apiEndpoint, onClose, onSubmit }: Props) {
-    const endpoint = apiEndpoint || `/events/${eventId}/locationPreferences`;
-    const notify = useNotification();
-    const [placeType, setPlaceType] = useState<PlaceType>("Cafe");
-    const [latitude, setLatitude] = useState<number>(50.0755); // Prague default
-    const [longitude, setLongitude] = useState<number>(14.4378);
-    const [zoom, setZoom] = useState(13);
-    const [loading, setLoading] = useState(false);
-    const [locating, setLocating] = useState(false);
-    const [priceLevel, setPriceLevel] = useState<PriceLevel>(0);
-    const [minRating, setMinRating] = useState<number>(0);
+export default function LocationPreferenceForm({
+  eventId,
+  apiEndpoint,
+  onClose,
+  onSubmit,
+}: Props) {
+  const endpoint = apiEndpoint || `/events/${eventId}/locationPreferences`;
+  const notify = useNotification();
+  const [placeType, setPlaceType] = useState<PlaceType>("Cafe");
+  const [latitude, setLatitude] = useState<number>(50.0755); // Prague default
+  const [longitude, setLongitude] = useState<number>(14.4378);
+  const [zoom, setZoom] = useState(13);
+  const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [priceLevel, setPriceLevel] = useState<PriceLevel>(0);
+  const [minRating, setMinRating] = useState<number>(0);
 
-    // Load existing preference
-    useEffect(() => {
-        const loadPreference = async () => {
-            try {
-                const res = await axios.get(`/events/${eventId}/locationPreferences/my`);
-                if (res.data) {
-                    setPlaceType(res.data.type);
-                    setLatitude(res.data.latitude);
-                    setLongitude(res.data.longitude);
-                    setPriceLevel(res.data.preferredPriceLevel ?? 0);
-                    setMinRating(res.data.minRating ?? 0);
-                }
-            } catch (err) {
-                console.error("Failed to load preference:", err);
-            }
-        };
-        loadPreference();
-    }, [eventId]);
-
-    const handleGetCurrentLocation = () => {
-        if (navigator.geolocation) {
-            setLocating(true);
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    setLatitude(position.coords.latitude);
-                    setLongitude(position.coords.longitude);
-                    setZoom(15);
-                    setLocating(false);
-                },
-                (error) => {
-                    console.error("Geolocation error:", error);
-                    notify.error("Could not get your location");
-                    setLocating(false);
-                }
-            );
-        } else {
-            notify.warning("Geolocation is not supported by your browser");
+  // Load existing preference
+  useEffect(() => {
+    const loadPreference = async () => {
+      try {
+        const res = await axios.get(
+          `/events/${eventId}/locationPreferences/my`,
+        );
+        if (res.data) {
+          setPlaceType(res.data.type);
+          setLatitude(res.data.latitude);
+          setLongitude(res.data.longitude);
+          setPriceLevel(res.data.preferredPriceLevel ?? 0);
+          setMinRating(res.data.minRating ?? 0);
         }
+      } catch (err) {
+        console.error("Failed to load preference:", err);
+      }
     };
+    loadPreference();
+  }, [eventId]);
 
-    const handleSubmit = async () => {
-        setLoading(true);
-        try {
-            await axios.post(endpoint, {
-                type: placeType,
-                latitude,
-                longitude,
-                preferredPriceLevel: priceLevel,
-                minRating
-            });
-            notify.info("Location preference saved!");
-            await onSubmit();
-            onClose();
-        } catch (err) {
-            notify.error("Failed to save preference");
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleGetCurrentLocation = () => {
+    if (navigator.geolocation) {
+      setLocating(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+          setZoom(15);
+          setLocating(false);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          notify.error("Could not get your location");
+          setLocating(false);
+        },
+      );
+    } else {
+      notify.warning("Geolocation is not supported by your browser");
+    }
+  };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-                {/* Header */}
-                <div className="sticky top-0 bg-gradient-to-r from-green-600 to-teal-600 text-white p-6 rounded-t-2xl z-10">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h2 className="text-2xl font-bold flex items-center gap-2">
-                                <MapPin className="w-6 h-6" />
-                                Select Your Preferred Location
-                            </h2>
-                            <p className="text-green-100 text-sm mt-1">
-                                Click on the map or adjust coordinates below
-                            </p>
-                        </div>
-                        <button onClick={onClose} className="text-white/80 hover:text-white transition-colors">
-                            <X className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      await axios.post(endpoint, {
+        type: placeType,
+        latitude,
+        longitude,
+        preferredPriceLevel: priceLevel,
+        minRating,
+      });
+      notify.info("Location preference saved!");
+      await onSubmit();
+      onClose();
+    } catch (err) {
+      notify.error("Failed to save preference");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                <div className="p-6 space-y-6">
-                    {/* Place Type Selection */}
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        {PLACE_TYPES.map(({ id, label, emoji }) => (
-                            <button
-                                key={id}
-                                onClick={() => setPlaceType(id)}
-                                className={`p-3 rounded-lg border-2 transition-all text-center ${
-                                    placeType === id
-                                        ? "border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg"
-                                        : "border-gray-200 dark:border-gray-700 hover:border-green-300"
-                                }`}
-                            >
-                                <div className="text-2xl mb-1">{emoji}</div>
-                                <p className="text-xs font-medium text-gray-900 dark:text-white">{label}</p>
-                            </button>
-                        ))}
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Price level preference
-                        </label>
-                        <div className="flex gap-2">
-                            {PRICE_LEVELS.map(({ value, label, symbol }) => (
-                                <button
-                                    key={value}
-                                    onClick={() => setPriceLevel(value as PriceLevel)}
-                                    className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                                        priceLevel === value
-                                            ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                                            : "border-gray-200 dark:border-gray-700 hover:border-green-300"
-                                    }`}
-                                >
-                                    <div>{symbol}</div>
-                                    <div className="text-xs text-gray-500">{label}</div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Minimální rating */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Minimum rating: <span className="text-green-600 font-bold">{minRating > 0 ? `${minRating} ⭐` : "Any"}</span>
-                        </label>
-                        <input
-                            type="range"
-                            min={0}
-                            max={5}
-                            step={0.5}
-                            value={minRating}
-                            onChange={e => setMinRating(Number(e.target.value))}
-                            className="w-full accent-green-500"
-                        />
-                        <div className="flex justify-between text-xs text-gray-400 mt-1">
-                            <span>Any</span>
-                            <span>3.0</span>
-                            <span>4.0</span>
-                            <span>5.0 ⭐</span>
-                        </div>
-                    </div>
-
-                    {/* OpenStreetMap */}
-                    <div>
-                        <div className="flex justify-between items-center mb-3">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Select location on map
-                            </label>
-                            <button
-                                onClick={handleGetCurrentLocation}
-                                disabled={locating}
-                                className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
-                            >
-                                <Locate className="w-4 h-4" />
-                                {locating ? "Locating..." : "Use My Location"}
-                            </button>
-                        </div>
-                        
-                        <div className="relative w-full h-96 bg-gray-100 dark:bg-gray-700 rounded-xl border-2 border-gray-300 dark:border-gray-600 overflow-hidden shadow-inner">
-
-                            <MapContainer
-                                center={[latitude, longitude]}
-                                zoom={zoom}
-                                className="w-full h-full rounded-xl"
-                            >
-                                <TileLayer
-                                attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                />
-                                <LocationMarker
-                                latitude={latitude}
-                                longitude={longitude}
-                                setLatitude={setLatitude}
-                                setLongitude={setLongitude}
-                                />
-                            </MapContainer>
-
-                            <div className="absolute bottom-3 left-3 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-                                <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                    📍 {latitude.toFixed(4)}, {longitude.toFixed(4)}
-                                </p>
-                            </div>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            💡 Tip: You can click on "Use My Location" to set your current position as preffered location.
-                        </p>
-                    </div>
-
-                    {/* Preview */}
-                    <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Your Preference:
-                        </h4>
-                        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                            <p>📍 Place Type: <strong className="text-gray-900 dark:text-white">{placeType}</strong></p>
-                            <p>🌍 Location: <strong className="text-gray-900 dark:text-white font-mono">{latitude.toFixed(4)}, {longitude.toFixed(4)}</strong></p>
-                        </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <button
-                            onClick={onClose}
-                            disabled={loading}
-                            className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors disabled:opacity-50"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={loading}
-                            className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                                    </svg>
-                                    Saving...
-                                </span>
-                            ) : (
-                                "Save Location"
-                            )}
-                        </button>
-                    </div>
-                </div>
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-gradient-to-r from-green-600 to-teal-600 text-white p-6 rounded-t-2xl z-10">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <MapPin className="w-6 h-6" />
+                Select Your Preferred Location
+              </h2>
+              <p className="text-green-100 text-sm mt-1">
+                Click on the map or adjust coordinates below
+              </p>
             </div>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
-    );
+
+        <div className="p-6 space-y-6">
+          {/* Place Type Selection */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            {PLACE_TYPES.map(({ id, label, emoji }) => (
+              <button
+                key={id}
+                onClick={() => setPlaceType(id)}
+                className={`p-3 rounded-lg border-2 transition-all text-center ${
+                  placeType === id
+                    ? "border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg"
+                    : "border-gray-200 dark:border-gray-700 hover:border-green-300"
+                }`}
+              >
+                <div className="text-2xl mb-1">{emoji}</div>
+                <p className="text-xs font-medium text-gray-900 dark:text-white">
+                  {label}
+                </p>
+              </button>
+            ))}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Price level preference
+            </label>
+            <div className="flex gap-2">
+              {PRICE_LEVELS.map(({ value, label, symbol }) => (
+                <button
+                  key={value}
+                  onClick={() => setPriceLevel(value as PriceLevel)}
+                  className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                    priceLevel === value
+                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                      : "border-gray-200 dark:border-gray-700 hover:border-green-300"
+                  }`}
+                >
+                  <div>{symbol}</div>
+                  <div className="text-xs text-gray-500">{label}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Minimální rating */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Minimum rating:{" "}
+              <span className="text-green-600 font-bold">
+                {minRating > 0 ? `${minRating} ⭐` : "Any"}
+              </span>
+            </label>
+            <input
+              type="range"
+              min={0}
+              max={5}
+              step={0.5}
+              value={minRating}
+              onChange={(e) => setMinRating(Number(e.target.value))}
+              className="w-full accent-green-500"
+            />
+            <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <span>Any</span>
+              <span>3.0</span>
+              <span>4.0</span>
+              <span>5.0 ⭐</span>
+            </div>
+          </div>
+
+          {/* OpenStreetMap */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Select location on map
+              </label>
+              <button
+                onClick={handleGetCurrentLocation}
+                disabled={locating}
+                className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+              >
+                <Locate className="w-4 h-4" />
+                {locating ? "Locating..." : "Use My Location"}
+              </button>
+            </div>
+
+            <div className="relative w-full h-96 bg-gray-100 dark:bg-gray-700 rounded-xl border-2 border-gray-300 dark:border-gray-600 overflow-hidden shadow-inner">
+              <MapContainer
+                center={[latitude, longitude]}
+                zoom={zoom}
+                className="w-full h-full rounded-xl"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <LocationMarker
+                  latitude={latitude}
+                  longitude={longitude}
+                  setLatitude={setLatitude}
+                  setLongitude={setLongitude}
+                />
+              </MapContainer>
+
+              <div className="absolute bottom-3 left-3 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  📍 {latitude.toFixed(4)}, {longitude.toFixed(4)}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              💡 Tip: You can click on "Use My Location" to set your current
+              position as preffered location.
+            </p>
+          </div>
+
+          {/* Preview */}
+          <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 dark:from-green-900/20 dark:to-teal-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              Your Preference:
+            </h4>
+            <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+              <p>
+                📍 Place Type:{" "}
+                <strong className="text-gray-900 dark:text-white">
+                  {placeType}
+                </strong>
+              </p>
+              <p>
+                🌍 Location:{" "}
+                <strong className="text-gray-900 dark:text-white font-mono">
+                  {latitude.toFixed(4)}, {longitude.toFixed(4)}
+                </strong>
+              </p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 font-medium shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Saving...
+                </span>
+              ) : (
+                "Save Location"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

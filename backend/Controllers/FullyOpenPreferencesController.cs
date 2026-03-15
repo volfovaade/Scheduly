@@ -75,7 +75,7 @@ namespace backend.Controllers
 
         // POST: api/events/{eventId}/fullyOpenPreference/location
         [HttpPost("location")]
-        public async Task<IActionResult> SubmitLocationPreference(Guid eventId, [FromBody]LocationPreferenceDto dto)
+        public async Task<IActionResult> SubmitLocationPreference(Guid eventId, [FromBody] LocationPreferenceDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -110,7 +110,7 @@ namespace backend.Controllers
 
         // POST: api/events/{eventId}/fullyOpenPreference/time
         [HttpPost("time")]
-        public async Task<IActionResult> SubmitTimePreferences(Guid eventId, [FromBody]SubmitTimeDto dto)
+        public async Task<IActionResult> SubmitTimePreferences(Guid eventId, [FromBody] SubmitTimeDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -228,7 +228,7 @@ namespace backend.Controllers
 
             return Ok(new { Location = locationSummary, Time = hours });
         }
-        
+
     }
 
 }

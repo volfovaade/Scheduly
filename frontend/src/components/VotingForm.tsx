@@ -1,3 +1,1 @@
-export default function VotingForm() {
-
-}
+export default function VotingForm() {}

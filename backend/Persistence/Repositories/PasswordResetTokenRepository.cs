@@ -9,7 +9,7 @@ namespace backend.Persistence.Repositories
     public class PasswordResetTokenRepository : IPasswordResetTokenRepository
     {
         private readonly AppDbContext _context;
-        public PasswordResetTokenRepository(AppDbContext context) 
+        public PasswordResetTokenRepository(AppDbContext context)
         {
             _context = context;
         }
@@ -30,7 +30,7 @@ namespace backend.Persistence.Repositories
             await _context.PasswordResetTokens.AddAsync(token);
             await _context.SaveChangesAsync();
         }
-        public async Task<PasswordResetToken> GetResetTokenWithUser(ResetPasswordDto dto)
+        public async Task<PasswordResetToken?> GetResetTokenWithUser(ResetPasswordDto dto)
         {
             return await _context.PasswordResetTokens
                 .Include(t => t.User)

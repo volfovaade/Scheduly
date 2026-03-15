@@ -49,7 +49,8 @@ namespace backend.Persistence.Repositories
             return await _context.Votes
                 .Where(v => v.Option.EventId == eventId && v.Type == voteType)
                 .GroupBy(v => v.OptionId)
-                .Select(g => new {
+                .Select(g => new
+                {
                     OptionId = g.Key,
                     Count = g.Count(),
                     TotalScore = g.Sum(v => v.Score)

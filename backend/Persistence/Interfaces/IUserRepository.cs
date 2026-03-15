@@ -1,3 +1,4 @@
+using backend.DTOs;
 using backend.Models;
 
 namespace backend.Persistence.Interfaces
@@ -9,8 +10,10 @@ namespace backend.Persistence.Interfaces
         Task<List<User>> GetSuspiciousUsersAsync();
         Task<bool> Contains(string email);
         Task AddAsync(User user);
+        Task UpdateAsync(User user);
         Task UpdatePassword(string email, string newPassword);
         Task<User?> GetUserWithRole(string email);
         Task<int> GetNumberOfUsersEvents(Guid userId);
+        Task<UserStatsDto> GetUserStatsAsync(Guid userId);
     }
 }

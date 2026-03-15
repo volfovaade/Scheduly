@@ -24,7 +24,7 @@ namespace backend.Controllers
         private readonly IEmailService _emailService;
 
         public EventsController(
-            IEventService eventService, IEventRepository eventRepo, 
+            IEventService eventService, IEventRepository eventRepo,
             IEventOptionRepository eventOptionRepo, IVoteRepository voteRepo,
             IEventParticipantRepository eventParticipantRepo, IEmailService emailService
             )
@@ -89,7 +89,7 @@ namespace backend.Controllers
             await _eventRepo.UpdateAsync(ev);
             return Ok();
         }
-        
+
         // POST: api/events/{eventId}/finalizeFullyOpen
         // Organizer finalizes proposal phase — generates top place/time options for voting.
         [HttpPost("{eventId}/finalizeFullyOpen")]
@@ -110,12 +110,15 @@ namespace backend.Controllers
                 return Forbid();
             }
             // calling algorithm for top options
-            try {
+            try
+            {
                 var selectedOptions = await _eventService.FinalizeFullyOpen(eventId, dto.Duration, dto.OrganizerPlaceTypeChoice);
 
                 return Ok(selectedOptions);
 
-            } catch (Exception err) {
+            }
+            catch (Exception err)
+            {
                 return BadRequest(err.Message);
             }
         }

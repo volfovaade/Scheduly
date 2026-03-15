@@ -10,6 +10,6 @@ namespace backend.Models
         public User User { get; set; } = null!;
         public Guid EventId { get; set; }
         public Event Event { get; set; } = null!;
-        public string Role {  get; set; } = EventRoles.Participant; // default
+        public string Role { get; set; } = EventRoles.Participant; // default
     }
 }

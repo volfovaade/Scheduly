@@ -115,7 +115,7 @@ namespace backend.Controllers
                 return Ok(new
                 {
                     TotalSubmissions = 0,
-                    AverageLatitude = 0.0, 
+                    AverageLatitude = 0.0,
                     AverageLongitude = 0.0,
                     TypeCounts = new List<object>()
                 });

@@ -3,16 +3,17 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Text.Json;
 
-namespace backend.Services {
+namespace backend.Services
+{
     /// <summary>
     /// Service for searching nearby places using Google Places API.
     /// </summary>
     public class GooglePlacesService
     {
         private readonly HttpClient _httpClient;
-        private readonly string _apiKey; 
+        private readonly string _apiKey;
 
-        public GooglePlacesService (HttpClient httpClient)
+        public GooglePlacesService(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _apiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")!;  // already validated in Program.cs
@@ -32,7 +33,7 @@ namespace backend.Services {
         /// <param name="priceLevel">Chosen price category</param>
         /// <returns>List of generated place options</returns>
         public async Task<List<EventOption>> SearchPlacesAsync(
-            string type, double lat, double lng, Guid eventId, 
+            string type, double lat, double lng, Guid eventId,
             DateTimeOffset fromTime, DateTimeOffset toTime,
             PriceLevel priceLevel = PriceLevel.Any, double minRating = 0.0)
         {
@@ -43,7 +44,7 @@ namespace backend.Services {
                       $"&type={type}" +
                       $"&rankby=distance" +
                       $"&key={_apiKey}";
-                
+
             if (priceLevel != PriceLevel.Any)
                 url += $"&maxprice={(int)priceLevel}";
 
@@ -66,7 +67,7 @@ namespace backend.Services {
                 {
                     Id = Guid.NewGuid(),
                     EventId = eventId,
-                    Source = OptionSource.Generated, 
+                    Source = OptionSource.Generated,
                     PlaceName = r.Name,
                     Address = r.Vicinity,
                     Latitude = r.Geometry.Location.Lat,

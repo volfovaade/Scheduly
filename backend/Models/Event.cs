@@ -10,7 +10,7 @@ namespace backend.Models
     {
         Proposal,     // collection of proposals and preferences
         FinalVoting,  // final voting
-        Closed        
+        Closed
     }
     /// <summary>
     /// Defines how the event handles place and time selection.
@@ -33,11 +33,11 @@ namespace backend.Models
     /// </summary>
     public enum ConstraintType
     {
-        None,        
-        TimeRange,      
-        FixedPlace,     
-        FixedTime,      
-        MultiDay        
+        None,
+        TimeRange,
+        FixedPlace,
+        FixedTime,
+        MultiDay
     }
 
     /// <summary>

@@ -33,7 +33,7 @@ var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username=
 // JsonStringEnumConverter => serialize enums as strings (e.g. "cafe") instead of numeric values
 builder.Services.AddControllers().AddJsonOptions(opts =>
 {
-    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); 
+    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 // API documentation and Swagger UI setup
@@ -65,7 +65,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Configure JWT authentication (Bearer token in the Authorization header)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options => {
+    .AddJwtBearer(options =>
+    {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,  // verify token signature

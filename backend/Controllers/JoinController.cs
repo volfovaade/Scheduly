@@ -26,7 +26,7 @@ namespace backend.Controllers
         // POST: api/join/{code}
         // Allows a user to join an event using a short code (prefix of event GUID).
         [HttpPost("{code}")]
-        public async Task<IActionResult> JoinEvent(string code) 
+        public async Task<IActionResult> JoinEvent(string code)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -44,7 +44,7 @@ namespace backend.Controllers
             {
                 return BadRequest("This event is already closed.");
             }
-                
+
             var existingParticipant = await _eventParticipantRepo.GetParticipantAsync(ev.Id, userId);
             if (existingParticipant == null)
             {
@@ -55,7 +55,8 @@ namespace backend.Controllers
                     Role = EventRoles.Participant
                 });
             }
-            return Ok(new {
+            return Ok(new
+            {
                 id = ev.Id,
                 mode = ev.Mode,
                 phase = ev.Phase,

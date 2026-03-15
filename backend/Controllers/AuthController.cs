@@ -22,7 +22,7 @@ namespace backend.Controllers
         private readonly ITokenService _tokenService;
 
         public AuthController(
-            IUserRepository userRepo, IRoleRepository roleRepo, 
+            IUserRepository userRepo, IRoleRepository roleRepo,
             IPasswordResetTokenRepository passwordRepo, ITokenService tokenService,
             IEmailService emailService
             )

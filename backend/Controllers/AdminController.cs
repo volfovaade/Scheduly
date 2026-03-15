@@ -55,7 +55,7 @@ namespace backend.Controllers
         // DELETE: api/admin/events/cleanup?daysOld=365
         // Deletes events created from query days ago
         // Returns number of deleted events
-         
+
         [HttpDelete("events/cleanup")]
         public async Task<IActionResult> CleanupOldEvents([FromQuery] int daysOld = 365)
         {
