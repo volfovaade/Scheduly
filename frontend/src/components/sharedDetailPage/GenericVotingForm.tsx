@@ -70,7 +70,7 @@ export default function GenericVotingForm({
       loadOptions();
     }
     loadMyVote();
-  }, [loadMyVote, providedOptions]);
+  }, [loadMyVote, loadOptions, providedOptions]);
 
   const filteredOptions = filterOptions
     ? optionsToRender.filter(filterOptions)

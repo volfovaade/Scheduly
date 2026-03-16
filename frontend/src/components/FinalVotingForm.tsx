@@ -36,7 +36,7 @@ export default function FinalVotingForm({ eventId }: Props) {
       console.error("Failed to load options:", err);
       notify.error("Failed to load voting options");
     }
-  }, [notify]);
+  }, [notify, eventId]);
   // load already sent vote
   const loadMyVote = useCallback(async () => {
     try {

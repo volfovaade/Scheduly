@@ -53,7 +53,7 @@ export default function FullyOpenDetail({
     );
     return diffDays;
   };
-  const checkForTie = async () => {
+  const checkForTie = useCallback(async () => {
     try {
       const res = await axios.get(
         `/events/${eventId}/locationPreferences/topTypes`,
@@ -64,7 +64,7 @@ export default function FullyOpenDetail({
     } catch (err) {
       console.error("Failed to check for tie:", err);
     }
-  };
+  }, [eventId]);
   const loadData = useCallback(async () => {
     try {
       const [participantsRes, prefsRes, summaryRes] =
@@ -82,7 +82,7 @@ export default function FullyOpenDetail({
     } catch (err) {
       console.error(err);
     }
-  }, [eventId, event.isMultiDay]);
+  }, [eventId, checkForTie]);
 
   useEffect(() => {
     loadData();

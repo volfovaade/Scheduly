@@ -154,7 +154,7 @@ export default function TimePreferenceForm({
     } catch (err) {
       console.error(err);
     }
-  }, [eventId]);
+  }, [eventId, isMultiDay]);
 
   useEffect(() => {
     loadPreference();

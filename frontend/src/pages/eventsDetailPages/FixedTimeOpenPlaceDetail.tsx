@@ -50,7 +50,7 @@ export default function FixedTimeOpenPlaceDetail({
   } | null>(null);
   const [organizerChoice, setOrganizerChoice] = useState<string | null>(null);
 
-  const checkForTie = async () => {
+  const checkForTie = useCallback(async () => {
     try {
       const res = await axios.get(
         `/events/${eventId}/locationPreferences/topTypes`,
@@ -60,7 +60,8 @@ export default function FixedTimeOpenPlaceDetail({
     } catch (err) {
       console.error("Failed to check for tie:", err);
     }
-  };
+  }, [eventId]);
+
   const loadData = useCallback(async () => {
     try {
       const [participantsRes, summaryRes, myPrefRes] = await Promise.all([
@@ -76,7 +77,7 @@ export default function FixedTimeOpenPlaceDetail({
     } catch (err) {
       console.error("Failed to load data:", err);
     }
-  }, [eventId, event.isMultiDay]);
+  }, [eventId, checkForTie]);
   
   useEffect(() => {
     loadData();

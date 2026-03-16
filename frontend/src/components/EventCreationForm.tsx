@@ -155,7 +155,7 @@ export default function CreateEventDialog({
     setFixedAddress("");
     setFixedTimeFrom(getDefaultDate(9));
     setFixedTimeTo(getDefaultDate(16));
-  }, [setRangeFrom, setRangeTo, setFixedPlace, setFixedAddress, setFixedTimeFrom, setFixedTimeTo]);
+  }, [setRangeFrom, setRangeTo, setFixedPlace, setFixedAddress, setFixedTimeFrom, setFixedTimeTo, isMultiDay]);
 
 
   useEffect(() => {
