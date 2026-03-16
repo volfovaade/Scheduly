@@ -77,7 +77,7 @@ export default function CommentSection({ eventId }: Props) {
   const handleEdit = async (commentId: string) => {
     if (!editingContent.trim()) return;
     try {
-      const response = await axios.put(
+      await axios.put(
         `/events/${eventId}/comments/${commentId}`,
         {
           content: editingContent.trim(),

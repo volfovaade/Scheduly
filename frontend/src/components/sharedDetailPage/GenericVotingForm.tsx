@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "../../api/axios";
 import { useNotification } from "../../context/NotificationContext";
-import { MapPin } from "lucide-react";
 
 export interface VoteOption {
   id: string;

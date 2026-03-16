@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useNotification } from "../../context/NotificationContext";
 import axios from "../../api/axios";
-import OptionsList from "../../components/OptionList";
 import AddOptionForm from "../../components/AddOptionForm";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
-import GenericVotingForm, {
-  VoteOption,
-} from "../../components/sharedDetailPage/GenericVotingForm";
+import GenericVotingForm from "../../components/sharedDetailPage/GenericVotingForm";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
 
@@ -30,7 +26,6 @@ export default function CollaborativeOptionsDetail({
 }: Props) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [options, setOptions] = useState([]);
-  const [myVotes, setMyVotes] = useState<string[]>([]);
   const [participants, setParticipants] = useState([]);
   const notify = useNotification();
 
@@ -40,14 +35,12 @@ export default function CollaborativeOptionsDetail({
 
   const loadData = async () => {
     try {
-      const [optionsRes, votesRes, participantsRes] = await Promise.all([
+      const [optionsRes, participantsRes] = await Promise.all([
         axios.get(`/events/${eventId}/options`),
-        axios.get(`/events/${eventId}/votes/my`),
         axios.get(`/events/${eventId}/participants`),
       ]);
 
       setOptions(optionsRes.data);
-      setMyVotes(votesRes.data.map((v: any) => v.optionId));
       setParticipants(participantsRes.data);
     } catch (err) {
       console.error("Failed to load data:", err);
@@ -64,18 +57,6 @@ export default function CollaborativeOptionsDetail({
       } else {
         notify.error("Failed to add option");
       }
-    }
-  };
-
-  const handleVote = async () => {
-    try {
-      await axios.post(`/events/${eventId}/votes`, {
-        votes: myVotes.map((id) => ({ optionId: id, score: 1 })),
-      });
-      notify.info("Vote saved");
-      await loadData();
-    } catch (err) {
-      notify.error("Failed to save vote");
     }
   };
 

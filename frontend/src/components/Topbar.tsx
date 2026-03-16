@@ -1,6 +1,5 @@
 import { Search, Menu, Sun, Moon } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
-import { useEffect, useState } from "react";
 
 type Props = {
   toggleSidebar: () => void;

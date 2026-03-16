@@ -36,8 +36,6 @@ export default function FullyOpenDetail({
   );
   const [summary, setSummary] = useState<any>(null);
   const [duration, setDuration] = useState(2);
-  const [generatedOptions, setGeneratedOptions] = useState([]);
-  const [myVote, setMyVote] = useState<string | null>(null);
   const [hasLocationPref, setHasLocationPref] = useState(false);
   const [hasTimePref, setHasTimePref] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
@@ -73,13 +71,11 @@ export default function FullyOpenDetail({
   };
   const loadData = async () => {
     try {
-      const [participantsRes, prefsRes, summaryRes, optionsRes, votesRes] =
+      const [participantsRes, prefsRes, summaryRes] =
         await Promise.all([
           axios.get(`/events/${eventId}/participants`),
           axios.get(`/events/${eventId}/fullyOpenPreferences/my`),
           axios.get(`/events/${eventId}/fullyOpenPreferences/summary`),
-          axios.get(`/events/${eventId}/options`),
-          axios.get(`/events/${eventId}/votes/my`),
         ]);
 
       setParticipants(participantsRes.data);
@@ -87,12 +83,6 @@ export default function FullyOpenDetail({
       setHasTimePref(!!prefsRes.data.time);
       setSummary(summaryRes.data);
       await checkForTie();
-      setGeneratedOptions(
-        optionsRes.data.filter((o: any) => o.source === "Generated"),
-      );
-
-      const finalVote = votesRes.data.find((v: any) => v.type === "Final");
-      if (finalVote) setMyVote(finalVote.optionId);
     } catch (err) {
       console.error(err);
     }

@@ -47,8 +47,8 @@ namespace backend.Services
                 : SecureSocketOptions.StartTls;
 
             await client.ConnectAsync(_host, _port, socketOptions);
-            //await client.AuthenticateAsync(_user, _password);
-            //await client.SendAsync(message);
+            await client.AuthenticateAsync(_user, _password);
+            await client.SendAsync(message);
             await client.DisconnectAsync(true);
         }
         private string BaseTemplate(string title, string color, string content)

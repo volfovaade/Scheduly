@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Users, Clock, Sparkles } from "lucide-react";
+import { MapPin, Clock } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { useNotification } from "../../context/NotificationContext";

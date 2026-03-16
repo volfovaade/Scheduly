@@ -1,10 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { MapPin, Clock } from "lucide-react";
 import axios from "../../api/axios";
 import Event from "../../types/event";
-import OptionsList from "../../components/OptionList";
-import AddOptionForm from "../../components/AddOptionForm";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
