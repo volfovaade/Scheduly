@@ -28,7 +28,7 @@ export default function SuspiciousActivityPage() {
       }
     };
     loadSuspicious();
-  }, []);
+  }, [notify]);
 
   const handleBanUser = (userId: string) => {
     if (!window.confirm("Do you really want to ban this user?")) return;

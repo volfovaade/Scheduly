@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNotification } from "../../context/NotificationContext";
 import axios from "../../api/axios";
 import AddOptionForm from "../../components/AddOptionForm";
@@ -29,11 +29,7 @@ export default function CollaborativeOptionsDetail({
   const [participants, setParticipants] = useState([]);
   const notify = useNotification();
 
-  useEffect(() => {
-    loadData();
-  }, [eventId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [optionsRes, participantsRes] = await Promise.all([
         axios.get(`/events/${eventId}/options`),
@@ -45,7 +41,11 @@ export default function CollaborativeOptionsDetail({
     } catch (err) {
       console.error("Failed to load data:", err);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleAddOption = async (optionData: any) => {
     try {

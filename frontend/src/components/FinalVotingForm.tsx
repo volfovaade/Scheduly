@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../api/axios";
 import { useNotification } from "../context/NotificationContext";
 
@@ -24,12 +24,7 @@ export default function FinalVotingForm({ eventId }: Props) {
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadOptions();
-    loadMyVote();
-  }, [eventId]);
-
-  const loadOptions = async () => {
+  const loadOptions = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/options`);
       // filter out just generated options
@@ -41,9 +36,9 @@ export default function FinalVotingForm({ eventId }: Props) {
       console.error("Failed to load options:", err);
       notify.error("Failed to load voting options");
     }
-  };
+  }, [notify]);
   // load already sent vote
-  const loadMyVote = async () => {
+  const loadMyVote = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/votes/my`);
       // find vote of type Final
@@ -54,7 +49,13 @@ export default function FinalVotingForm({ eventId }: Props) {
     } catch (err) {
       console.error("Failed to load my vote:", err);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    loadOptions();
+    loadMyVote();
+  }, [loadOptions, loadMyVote]);
+
 
   const handleVote = async () => {
     if (!selected) return notify.warning("Please select an option.");

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MapPin, Clock, Calendar } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
@@ -35,11 +35,7 @@ export default function FixedPlaceOpenTimeDetail({
   const [finalizing, setFinalizing] = useState(false);
   const [duration, setDuration] = useState(2);
 
-  useEffect(() => {
-    loadData();
-  }, [eventId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [participantsRes, summaryRes, myPrefRes] = await Promise.all([
         axios.get(`/events/${eventId}/participants`),
@@ -57,7 +53,11 @@ export default function FixedPlaceOpenTimeDetail({
     } catch (err) {
       console.error("Failed to load data:", err);
     }
-  };
+  }, [eventId, event.isMultiDay]);
+  
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const getDaysInTimeRange = () => {
     const from = new Date(event.timeRangeFrom);

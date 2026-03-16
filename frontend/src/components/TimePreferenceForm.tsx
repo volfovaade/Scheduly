@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Clock, X, Plus, Trash2 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
@@ -136,11 +136,7 @@ export default function TimePreferenceForm({
     );
   };
 
-  useEffect(() => {
-    loadPreference();
-  }, [eventId]);
-
-  const loadPreference = async () => {
+  const loadPreference = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/timePreferences/my`);
 
@@ -158,7 +154,11 @@ export default function TimePreferenceForm({
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    loadPreference();
+  }, [loadPreference]);
 
   const getDaysInRange = () => {
     const result: string[] = [];

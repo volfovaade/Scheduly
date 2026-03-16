@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MapPin, Clock } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
@@ -50,10 +50,6 @@ export default function FixedTimeOpenPlaceDetail({
   } | null>(null);
   const [organizerChoice, setOrganizerChoice] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [eventId]);
-
   const checkForTie = async () => {
     try {
       const res = await axios.get(
@@ -65,7 +61,7 @@ export default function FixedTimeOpenPlaceDetail({
       console.error("Failed to check for tie:", err);
     }
   };
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [participantsRes, summaryRes, myPrefRes] = await Promise.all([
         axios.get(`/events/${eventId}/participants`),
@@ -80,7 +76,11 @@ export default function FixedTimeOpenPlaceDetail({
     } catch (err) {
       console.error("Failed to load data:", err);
     }
-  };
+  }, [eventId, event.isMultiDay]);
+  
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleFinalize = async () => {
     if (!window.confirm("Generate 3 best place options from user preferences?"))

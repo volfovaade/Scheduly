@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MapPin, Clock } from "lucide-react";
 import axios from "../../api/axios";
 import Event from "../../types/event";
@@ -19,11 +19,7 @@ interface Props {
 export default function SingleOptionDetail({ event, eventId, onClose }: Props) {
   const [participants, setParticipants] = useState([]);
 
-  useEffect(() => {
-    loadData();
-  }, [eventId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const participantsRes = await axios.get(
         `/events/${eventId}/participants`,
@@ -32,7 +28,11 @@ export default function SingleOptionDetail({ event, eventId, onClose }: Props) {
     } catch (err) {
       console.error("Failed to load data:", err);
     }
-  };
+  }, [eventId]);
+  
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const from = new Date(event.fixedTimeFrom!);
   const to = new Date(event.fixedTimeTo!);

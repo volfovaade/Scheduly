@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { MessageCircle, Send, Edit2, Trash2, X, Check } from "lucide-react";
 import axios from "../../api/axios";
 import { useAuth } from "../../context/AuthContext";
@@ -31,19 +31,7 @@ export default function CommentSection({ eventId }: Props) {
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    loadComments();
-  }, [eventId]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [comments]);
-
-  const scrollToBottom = () => {
-    commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`/events/${eventId}/comments`);
@@ -54,7 +42,20 @@ export default function CommentSection({ eventId }: Props) {
     } finally {
       setLoading(false);
     }
+  }, [eventId]);
+
+  useEffect(() => {
+    loadComments();
+  }, [loadComments]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [comments]);
+
+  const scrollToBottom = () => {
+    commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || submitting) return;

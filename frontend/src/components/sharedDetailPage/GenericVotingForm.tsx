@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../../api/axios";
 import { useNotification } from "../../context/NotificationContext";
 
@@ -40,28 +40,7 @@ export default function GenericVotingForm({
 
   const isMultiSelect = voteType !== "Final";
 
-  useEffect(() => {
-    if (!providedOptions) {
-      loadOptions();
-    }
-    loadMyVote();
-  }, [eventId, voteType, providedOptions]);
-
-  const loadOptions = async () => {
-    try {
-      const res = await axios.get(`/events/${eventId}/options`);
-      setLocalOptions(res.data);
-    } catch (err) {
-      console.error("Failed to load options:", err);
-      notify.error("Failed to load voting options");
-    }
-  };
-
-  const filteredOptions = filterOptions
-    ? optionsToRender.filter(filterOptions)
-    : optionsToRender;
-
-  const loadMyVote = async () => {
+  const loadMyVote = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/votes/my`);
       const existingVotes = res.data.filter((v: any) => v.type === voteType);
@@ -74,7 +53,28 @@ export default function GenericVotingForm({
     } catch (err) {
       console.error("Failed to load my vote:", err);
     }
-  };
+  }, [eventId, voteType]);
+
+  const loadOptions = useCallback(async () => {
+    try {
+      const res = await axios.get(`/events/${eventId}/options`);
+      setLocalOptions(res.data);
+    } catch (err) {
+      console.error("Failed to load options:", err);
+      notify.error("Failed to load voting options");
+    }
+  }, [eventId, notify]);
+
+  useEffect(() => {
+    if (!providedOptions) {
+      loadOptions();
+    }
+    loadMyVote();
+  }, [loadMyVote, providedOptions]);
+
+  const filteredOptions = filterOptions
+    ? optionsToRender.filter(filterOptions)
+    : optionsToRender;
 
   const handleToggle = (optionId: string) => {
     if (!isMultiSelect) {

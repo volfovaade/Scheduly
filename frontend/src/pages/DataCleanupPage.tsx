@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "../api/axios";
 import {
   Trash2,
@@ -22,7 +22,7 @@ export default function DataCleanupPage() {
   const [loading, setLoading] = useState(false);
   const notify = useNotification();
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(
@@ -35,11 +35,11 @@ export default function DataCleanupPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [daysThreshold, notify]);
 
   useEffect(() => {
     loadEvents();
-  }, []);
+  }, [loadEvents]);
 
   const handleDeleteSingle = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this specific event?"))

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useNotification } from "../context/NotificationContext";
@@ -33,12 +33,8 @@ export default function EventDetailPage() {
 
   const showPreferenceFormInitially =
     new URLSearchParams(location.search).get("showPreferenceForm") === "true";
-
-  useEffect(() => {
-    loadEvent();
-  }, [eventId]);
-
-  const loadEvent = async () => {
+    
+  const loadEvent = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -71,7 +67,11 @@ export default function EventDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    loadEvent();
+  }, [loadEvent]);
 
   const handleCloseEvent = async () => {
     if (!window.confirm("Are you sure you want to close the event?")) return;

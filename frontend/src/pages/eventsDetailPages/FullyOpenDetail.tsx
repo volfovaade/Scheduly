@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNotification } from "../../context/NotificationContext";
 import { Calendar, MapPin } from "lucide-react";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
@@ -45,10 +45,6 @@ export default function FullyOpenDetail({
   } | null>(null);
   const [organizerChoice, setOrganizerChoice] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, [eventId]);
-
   const getDaysInTimeRange = () => {
     const from = new Date(event.timeRangeFrom);
     const to = new Date(event.timeRangeTo);
@@ -69,7 +65,7 @@ export default function FullyOpenDetail({
       console.error("Failed to check for tie:", err);
     }
   };
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [participantsRes, prefsRes, summaryRes] =
         await Promise.all([
@@ -86,7 +82,11 @@ export default function FullyOpenDetail({
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [eventId, event.isMultiDay]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleFinalize = async () => {
     if (!window.confirm("Finalize and generate place+time options?")) return;

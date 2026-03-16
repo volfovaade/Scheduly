@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Calendar,
   MapPin,
@@ -132,11 +132,37 @@ export default function CreateEventDialog({
     }
   };
 
+    const handleReset = useCallback(() => {
+    setStep(1);
+    setIsMultiDay(false);
+    setEventType(null);
+    setTitle("");
+    setDescription("");
+    setError("");
+    if (isMultiDay) {
+      // multiday: from tomorrow 9:00 till 2 days later 16
+      const from = getDefaultDate(9);
+      const to = new Date(from);
+      to.setDate(from.getDate() + 2);
+      to.setHours(16, 0, 0, 0);
+      setRangeFrom(from);
+      setRangeTo(to);
+    } else {
+      setRangeFrom(getDefaultDate(9));
+      setRangeTo(getDefaultDate(16));
+    }
+    setFixedPlace("");
+    setFixedAddress("");
+    setFixedTimeFrom(getDefaultDate(9));
+    setFixedTimeTo(getDefaultDate(16));
+  }, [setRangeFrom, setRangeTo, setFixedPlace, setFixedAddress, setFixedTimeFrom, setFixedTimeTo]);
+
+
   useEffect(() => {
     if (isOpen) {
       handleReset();
     }
-  }, [isOpen]);
+  }, [isOpen, handleReset]);
 
   const getMinDateTime = () => {
     const tomorrow = new Date();
@@ -186,31 +212,6 @@ export default function CreateEventDialog({
     const pad = (n: number) => n.toString().padStart(2, "0");
 
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  };
-
-  const handleReset = () => {
-    setStep(1);
-    setIsMultiDay(false);
-    setEventType(null);
-    setTitle("");
-    setDescription("");
-    setError("");
-    if (isMultiDay) {
-      // multiday: from tomorrow 9:00 till 2 days later 16
-      const from = getDefaultDate(9);
-      const to = new Date(from);
-      to.setDate(from.getDate() + 2);
-      to.setHours(16, 0, 0, 0);
-      setRangeFrom(from);
-      setRangeTo(to);
-    } else {
-      setRangeFrom(getDefaultDate(9));
-      setRangeTo(getDefaultDate(16));
-    }
-    setFixedPlace("");
-    setFixedAddress("");
-    setFixedTimeFrom(getDefaultDate(9));
-    setFixedTimeTo(getDefaultDate(16));
   };
 
   const handleSubmit = () => {
