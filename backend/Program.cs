@@ -131,11 +131,13 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
-
+app.UseRouting();
 app.UseCors();  // enable CORS for all incoming requests
 
 app.UseAuthentication();  // enable authentication and authorization middleware
 app.UseAuthorization();
 app.MapControllers();  // map controllers to endpoints
+
+app.MapGet("/health", () => Results.Ok("healthy"));
 
 app.Run();
