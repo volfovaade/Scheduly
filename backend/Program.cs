@@ -21,28 +21,19 @@ var googleApiKey = Environment.GetEnvironmentVariable("GOOGLE_API_KEY")
                   ?? throw new InvalidOperationException("Google API Key not configured");
 
 // build connection string from environment variables or use default
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string connectionString;
 
-if (databaseUrl != null)
-{
-    // DigitalOcean provides: postgresql://user:password@host:port/dbname
-    var uri = new Uri(databaseUrl);
-    var userInfo = uri.UserInfo.Split(':');
-    connectionString = $"Host={uri.Host};Port={uri.Port};" +
-                       $"Database={uri.AbsolutePath.TrimStart('/')};" +
-                       $"Username={userInfo[0]};Password={userInfo[1]};" +
-                       $"SSL Mode=Require;Trust Server Certificate=true";
-}
-else
-{
-    var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "db";
-    var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
-    var dbName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "planner";
-    var dbUser = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres";
-    var dbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
-    connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
-}
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "db";
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+var dbName = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "planner";
+var dbUser = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres";
+var dbPassword = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres";
+
+// pozor - app ještì není vytvoøena tady, použij env promìnnou:
+var isProduction = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production";
+var ssl = isProduction ? ";SSL Mode=Require;Trust Server Certificate=true" : "";
+
+var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}{ssl}";
+
 
 // Add controllers and configure JSON serialization
 // JsonStringEnumConverter => serialize enums as strings (e.g. "cafe") instead of numeric values
