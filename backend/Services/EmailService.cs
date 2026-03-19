@@ -36,11 +36,11 @@ namespace backend.Services
             using var client = new SmtpClient();
 
             // Ignoruj SSL chyby pouze v development prostøedí
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-            {
-                client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-            }
-
+            //if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            //{
+            //    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+            //}
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
             // Port 465 = SSL, port 587 = STARTTLS
             var socketOptions = _port == 465
                 ? SecureSocketOptions.SslOnConnect
@@ -48,7 +48,15 @@ namespace backend.Services
 
             await client.ConnectAsync(_host, _port, socketOptions);
             await client.AuthenticateAsync(_user, _password);
-            await client.SendAsync(message);
+             
+            try
+            {
+                await client.SendAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Email failed: {ex.Message}");
+            }
             await client.DisconnectAsync(true);
         }
         private string BaseTemplate(string title, string color, string content)

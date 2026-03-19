@@ -5,7 +5,6 @@ import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
 import ErrorNotification from "../components/ErrorNotification";
 import Event from "../types/event";
-import EventMode from "../types/eventMode";
 
 // Import of components for different event modes
 import SingleOptionDetail from "./eventsDetailPages/SingleOptionDetail";
@@ -15,6 +14,14 @@ import FixedTimeOpenPlaceDetail from "./eventsDetailPages/FixedTimeOpenPlaceDeta
 import FixedPlaceOpenTimeDetail from "./eventsDetailPages/FixedPlaceOpenTimeDetail";
 import FullyOpenDetail from "./eventsDetailPages/FullyOpenDetail";
 
+type EventMode =
+  | "SingleOption"
+  | "CollaborativeOptions"
+  | "OrganizerOptions"
+  | "FixedTimeOpenPlace"
+  | "FixedPlaceOpenTime"
+  | "FullyOpen";
+  
 export default function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -33,7 +40,7 @@ export default function EventDetailPage() {
 
   const showPreferenceFormInitially =
     new URLSearchParams(location.search).get("showPreferenceForm") === "true";
-    
+
   const loadEvent = useCallback(async () => {
     try {
       setLoading(true);

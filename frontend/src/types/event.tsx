@@ -1,5 +1,12 @@
-import EventMode from "./eventMode";
-import EventPhase from "./eventPhase";
+type EventMode =
+  | "SingleOption"
+  | "CollaborativeOptions"
+  | "OrganizerOptions"
+  | "FixedTimeOpenPlace"
+  | "FixedPlaceOpenTime"
+  | "FullyOpen";
+
+type EventPhase = "Proposal" | "FinalVoting" | "Closed";
 
 interface Event {
   id: string;
