@@ -73,7 +73,7 @@ export default function FixedPlaceOpenTimeDetail({
     try {
       await axios.post(
         `/events/${eventId}/finalizeFixedPlaceOpenTime`,
-        { duration: duration },  
+        duration  
       );
       onReload();
       notify.info("Best time found! Event is now closed.");
