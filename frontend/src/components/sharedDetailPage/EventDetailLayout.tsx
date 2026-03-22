@@ -21,7 +21,7 @@ export default function EventDetailLayout({ children, commentSection }: Props) {
             <div
               className="sticky flex flex-col"
               style={{
-                top: "4rem",                        // height of TopBaru (64px)
+                top: "6rem",                       
                 maxHeight: "calc(100vh - 5rem)",    // 100vh - TopBar - small padding
               }}
             >
