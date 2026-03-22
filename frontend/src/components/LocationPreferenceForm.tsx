@@ -1,6 +1,6 @@
 // components/LocationPreferenceForm.tsx
 import { useState, useEffect } from "react";
-import { MapPin, X, Locate, Plus } from "lucide-react";
+import { MapPin, X, Locate } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
