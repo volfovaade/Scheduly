@@ -148,7 +148,7 @@ namespace backend.Controllers
         }
         // POST: api/events/{eventId}/finalizeFixedPlaceOpenTime
         [HttpPost("{eventId}/finalizeFixedPlaceOpenTime")]
-        public async Task<IActionResult> FinalizeFixedPlaceOpenTime(Guid eventId, [FromBody] int duration)
+        public async Task<IActionResult> FinalizeFixedPlaceOpenTime(Guid eventId, [FromBody] FinalizeOpenTimeDto dto)
         {
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
@@ -162,7 +162,7 @@ namespace backend.Controllers
 
             try
             {
-                var bestTime = await _eventService.FinalizeFixedPlaceOpenTime(ev, duration);
+                var bestTime = await _eventService.FinalizeFixedPlaceOpenTime(ev, dto.Duration);
 
                 return Ok(new { bestTime, place = ev.FixedPlaceName });
             }
