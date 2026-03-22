@@ -132,30 +132,20 @@ export default function CreateEventDialog({
     }
   };
 
-    const handleReset = useCallback(() => {
+  const handleReset = useCallback(() => {
     setStep(1);
     setIsMultiDay(false);
     setEventType(null);
     setTitle("");
     setDescription("");
     setError("");
-    if (isMultiDay) {
-      // multiday: from tomorrow 9:00 till 2 days later 16
-      const from = getDefaultDate(9);
-      const to = new Date(from);
-      to.setDate(from.getDate() + 2);
-      to.setHours(16, 0, 0, 0);
-      setRangeFrom(from);
-      setRangeTo(to);
-    } else {
-      setRangeFrom(getDefaultDate(9));
-      setRangeTo(getDefaultDate(16));
-    }
+    setRangeFrom(getDefaultDate(9));
+    setRangeTo(getDefaultDate(16));
     setFixedPlace("");
     setFixedAddress("");
     setFixedTimeFrom(getDefaultDate(9));
     setFixedTimeTo(getDefaultDate(16));
-  }, []);
+  },[]);
 
 
   useEffect(() => {
@@ -339,6 +329,7 @@ export default function CreateEventDialog({
                     const from = getDefaultDate(9);
                     const to = new Date(from);
                     to.setDate(from.getDate() + 2);
+                    to.setHours(16, 0, 0, 0);
                     setRangeFrom(from);
                     setRangeTo(to);
                     setStep(2);
