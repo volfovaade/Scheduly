@@ -72,12 +72,18 @@ export default function FixedPlaceOpenTimeDetail({
     setFinalizing(true);
     try {
       await axios.post(
-        `/events/${eventId}/finalizeFixedPlaceOpenTime?duration=${duration}`,
+        `/events/${eventId}/finalizeFixedPlaceOpenTime`,
+        { duration: duration },  
       );
       onReload();
       notify.info("Best time found! Event is now closed.");
     } catch (err: any) {
-      notify.error(err.response?.data || "Failed to finalize");
+      const data = err.response?.data;
+      const message =
+        typeof data === "string"
+          ? data
+          : (data?.title ?? data?.detail ?? "Failed to finalize");
+      notify.error(message);
     } finally {
       setFinalizing(false);
     }
