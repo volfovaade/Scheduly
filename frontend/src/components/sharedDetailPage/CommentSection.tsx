@@ -146,8 +146,6 @@ export default function CommentSection({ eventId }: Props) {
       {/* Comments List - Scrollable */}
       <div
         ref={commentsContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
-        style={{ maxHeight: "calc(100vh - 400px)" }}
       >
         {loading ? (
           <div className="text-center py-8">
