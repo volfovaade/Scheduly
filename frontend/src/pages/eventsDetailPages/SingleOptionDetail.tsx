@@ -10,13 +10,9 @@ import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 interface Props {
   event: Event;
   eventId: string;
-  onClose: () => void;
-  onDelete: () => void;
-  onReload: () => void;
-  showPreferenceFormInitially: boolean;
 }
 
-export default function SingleOptionDetail({ event, eventId, onClose }: Props) {
+export default function SingleOptionDetail({ event, eventId }: Props) {
   const [participants, setParticipants] = useState([]);
 
   const loadData = useCallback(async () => {
@@ -114,15 +110,6 @@ export default function SingleOptionDetail({ event, eventId, onClose }: Props) {
                 </div>
               </div>
             </div>
-
-            {event.currentUserIsOrganizer && (
-              <button
-                onClick={onClose}
-                className="mt-4 ml-4 bg-green-600 text-white px-6 py-3 rounded-lg"
-              >
-                Close
-              </button>
-            )}
           </>
         )}
 

@@ -12,8 +12,6 @@ import TimeHeatmap from "../../components/sharedDetailPage/TimeHeatmap";
 interface Props {
   event: any;
   eventId: string;
-  onClose: () => void;
-  onDelete: () => void;
   onReload: () => void;
   showPreferenceFormInitially: boolean;
 }
@@ -21,7 +19,6 @@ interface Props {
 export default function FixedPlaceOpenTimeDetail({
   event,
   eventId,
-  onClose,
   onReload,
   showPreferenceFormInitially,
 }: Props) {

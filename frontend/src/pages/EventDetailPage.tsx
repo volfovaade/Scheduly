@@ -154,7 +154,6 @@ export default function EventDetailPage() {
     const commonProps = {
       event,
       eventId: eventId!,
-      onClose: handleCloseEvent,
       onDelete: handleDeleteEvent,
       onReload: loadEvent,
       showPreferenceFormInitially,
@@ -276,12 +275,37 @@ export default function EventDetailPage() {
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
-            >
-              ← Back to Dashboard
-            </button>
+            {/* right header side */}
+            <div className="flex flex-col items-end gap-3">
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 whitespace-nowrap"
+              >
+                ← Back to Dashboard
+              </button>
+
+              {event.currentUserIsOrganizer && event.phase === "Proposal" && (
+                <button
+                  onClick={handleCloseEvent}
+                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700
+                            text-white text-sm rounded-lg font-medium
+                            hover:from-green-700 hover:to-green-800 transition-all shadow-sm whitespace-nowrap"
+                >
+                Close Voting
+                </button>
+              )}
+
+              {event.currentUserIsOrganizer && event.phase === "FinalVoting" && (
+                <button
+                  onClick={handleCloseEvent}
+                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700
+                            text-white text-sm rounded-lg font-medium
+                            hover:from-green-700 hover:to-green-800 transition-all shadow-sm whitespace-nowrap"
+                >
+                Close Event
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

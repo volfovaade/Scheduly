@@ -11,18 +11,11 @@ import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayo
 interface Props {
   event: any;
   eventId: string;
-  onClose: () => void;
-  onDelete: () => void;
-  onReload: () => void;
-  showPreferenceFormInitially: boolean;
 }
 
 export default function CollaborativeOptionsDetail({
   event,
   eventId,
-  onClose,
-  onDelete,
-  onReload,
 }: Props) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [options, setOptions] = useState([]);
@@ -79,14 +72,6 @@ export default function CollaborativeOptionsDetail({
         {event.phase === "Proposal" && (
           <>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-              {event.currentUserIsOrganizer && (
-                <button
-                  onClick={onClose}
-                  className="w-auto px-6 bg-gradient-to-r from-green-700 to-green-600 text-white py-4 rounded-lg font-semibold mb-6"
-                >
-                  Close Voting
-                </button>
-              )}
             </div>
             <AddOptionForm
               isOpen={showAddForm}

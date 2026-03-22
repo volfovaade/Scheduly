@@ -16,14 +16,12 @@ import TimeHeatmap from "../../components/sharedDetailPage/TimeHeatmap";
 type Props = {
   event: any;
   eventId: string;
-  onClose: () => void;
   showPreferenceFormInitially: boolean;
 };
 
 export default function FullyOpenDetail({
   event,
   eventId,
-  onClose,
   showPreferenceFormInitially,
 }: Props) {
   const notify = useNotification();
@@ -311,14 +309,6 @@ export default function FullyOpenDetail({
               voteType="Final"
               filterOptions={(opt: VoteOption) => opt.source === "Generated"}
             />
-          )}
-          {event.phase === "FinalVoting" && event.currentUserIsOrganizer && (
-            <button
-              onClick={onClose}
-              className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium"
-            >
-              Close Event
-            </button>
           )}
           {event.phase === "Closed" && event.finalPlaceName && (
             <FinalResult event={event} />
