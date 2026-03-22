@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "../../api/axios";
 import { useNotification } from "../../context/NotificationContext";
+import { Trash2 } from "lucide-react";
 
 export interface VoteOption {
   id: string;
@@ -21,6 +22,7 @@ interface GenericVotingFormProps {
   voteType: string; // "Final" or "Preference"
   filterOptions?: (opt: VoteOption) => boolean;
   providedOptions?: VoteOption[];
+  onDeleteOption?: (optionId: string) => void;
 }
 
 export default function GenericVotingForm({
@@ -29,6 +31,7 @@ export default function GenericVotingForm({
   voteType,
   filterOptions,
   providedOptions,
+  onDeleteOption
 }: GenericVotingFormProps) {
   const notify = useNotification();
 
@@ -173,6 +176,20 @@ export default function GenericVotingForm({
                   className="w-4 h-4 dark:[color-scheme:dark]"
                 />
               </label>
+              {onDeleteOption && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm("Remove this option?")) {
+                      onDeleteOption(opt.id);
+                    }
+                  }}
+                  className="mt-2 flex items-center gap-1 text-xs text-red-500 hover:text-red-700 transition-colors"
+                >
+                  <Trash2 size={13} />
+                  Remove
+                </button>
+              )}
             </li>
           );
         })}

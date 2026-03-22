@@ -59,6 +59,15 @@ export default function CollaborativeOptionsDetail({
       }
     }
   };
+  const handleDeleteOption = async (optionId: string) => {
+    try {
+      await axios.delete(`/events/${eventId}/options/${optionId}`);
+      notify.info("Option removed.");
+      await loadData();
+    } catch {
+      notify.error("Failed to remove option.");
+    }
+  };
 
   return (
     <EventDetailLayout commentSection={<CommentSection eventId={eventId} />}>
@@ -99,6 +108,7 @@ export default function CollaborativeOptionsDetail({
               title="Option Preference Voting"
               voteType="Preference"
               providedOptions={options}
+              onDeleteOption={event.currentUserIsOrganizer ? handleDeleteOption : undefined}
             />
 
             {options.length === 0 && (
