@@ -11,6 +11,7 @@ import EventDetailPage from "./pages/EventDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import SuspiciousActivityPage from "./pages/SuspiciousActivityPage";
 import DataCleanupPage from "./pages/DataCleanupPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -31,6 +32,8 @@ function App() {
             element={<SuspiciousActivityPage />}
           />
           <Route path="/admin/cleanup" element={<DataCleanupPage />} />
+          {/* catch-all — must be last */}
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
