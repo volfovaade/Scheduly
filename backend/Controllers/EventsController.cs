@@ -168,6 +168,14 @@ namespace backend.Controllers
             }
             catch (Exception err)
             {
+                var fullMessage = err.Message;
+                var inner = err.InnerException;
+                while (inner != null)
+                {
+                    fullMessage += $" | Inner: {inner.Message}";
+                    inner = inner.InnerException;
+                }
+                return BadRequest(fullMessage);
                 return BadRequest(err.Message);
             }
         }
