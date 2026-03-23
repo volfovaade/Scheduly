@@ -9,6 +9,7 @@ import {
   Trash2,
   AlertTriangle,
   Shield,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import Logo from "../assets/badge.png";
@@ -26,6 +27,7 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
     { icon: Home, label: "Home & Join", href: "/" },
     { icon: Calendar, label: "My events", href: "/dashboard" },
     { icon: Settings, label: "Settings", href: "/settings" },
+    { icon: BookOpen, label: "How to use", href: "/how-to-use" },
   ];
   const adminMenuItems = [
     { icon: Trash2, label: "Clean up data", href: "/admin/cleanup" },

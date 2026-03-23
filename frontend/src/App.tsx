@@ -12,6 +12,7 @@ import SettingsPage from "./pages/SettingsPage";
 import SuspiciousActivityPage from "./pages/SuspiciousActivityPage";
 import DataCleanupPage from "./pages/DataCleanupPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import HowToUsePage from "./pages/HowToUsePage";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:eventId" element={<EventDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/how-to-use" element={<HowToUsePage />} />
           <Route
             path="/admin/suspicious"
             element={<SuspiciousActivityPage />}
