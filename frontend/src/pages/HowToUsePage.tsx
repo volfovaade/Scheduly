@@ -101,7 +101,6 @@ export default function HowToUsePage() {
 
       <div className="space-y-3">
 
-        {/* Getting started */}
         <Section
           title="Getting started"
           icon={<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
@@ -208,15 +207,15 @@ export default function HowToUsePage() {
         >
           <div className="space-y-4">
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">📅 Time range</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Time range</p>
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 A window of time within which the event should take place. For example,{" "}
-                <em>Monday 9:00 — Friday 22:00</em>. Participants submit their available slots
+                <em>Monday 9:00 — Friday 22:00</em> or Monday 4th - Sunday 10th. Participants submit their available slots
                 within this range, and the app finds the best overlap.
               </p>
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">🕐 Fixed time</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">Fixed time</p>
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 The exact start and end of the event is already known. For example,{" "}
                 <em>Saturday 14:00 — 18:00</em>. No time voting needed — the app only helps find the best place.
@@ -249,7 +248,7 @@ export default function HowToUsePage() {
                 Final voting
               </span>
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                The organizer generates options based on preferences (or manually adds them). Participants vote for their favourite. Only applies to event types with a voting step.
+                The organizer generates options based on preferences. Participants vote for their favourite. Only applies to event types with a voting step.
               </p>
             </div>
             <div className="flex items-start gap-3">
@@ -261,9 +260,6 @@ export default function HowToUsePage() {
               </p>
             </div>
           </div>
-          <InfoBox color="bg-pink-50 dark:bg-pink-900/20 text-pink-800 dark:text-pink-300">
-            <strong>Fixed place + open time</strong> and <strong>Simple events</strong> skip the Final voting phase — they close directly after the organizer finalizes.
-          </InfoBox>
         </Section>
 
         <Section
@@ -272,11 +268,11 @@ export default function HowToUsePage() {
         >
           <div className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white mb-1">⏰ Time preferences</p>
+              <p className="font-semibold text-gray-900 dark:text-white mb-1">Time preferences</p>
               <p>Select one or more time slots when you're available within the event's time range. The app aggregates everyone's slots and finds the hour or day with the most overlap.</p>
             </div>
             <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
-              <p className="font-semibold text-gray-900 dark:text-white mb-1">📍 Location preferences</p>
+              <p className="font-semibold text-gray-900 dark:text-white mb-1">Location preferences</p>
               <p>Choose your preferred type of place (café, restaurant, park...), set a price level and minimum rating, and pin your preferred location on the map. The app averages everyone's input and queries Google Places for the best matches.</p>
             </div>
           </div>
