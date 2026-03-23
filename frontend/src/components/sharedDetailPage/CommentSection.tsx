@@ -135,7 +135,7 @@ export default function CommentSection({ eventId }: Props) {
   };
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700">
-      {/* Header - Fixed */}
+
       <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <MessageCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -143,7 +143,6 @@ export default function CommentSection({ eventId }: Props) {
         </h3>
       </div>
 
-      {/* Comments List - Scrollable */}
       <div
         ref={commentsContainerRef}
       >
@@ -167,7 +166,7 @@ export default function CommentSection({ eventId }: Props) {
                 key={comment.id}
                 className="flex gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-800 rounded-full flex items-center justify-center text-white font-bold text-sm">
                   {comment.userName.charAt(0).toUpperCase()}
                 </div>
 
@@ -253,7 +252,6 @@ export default function CommentSection({ eventId }: Props) {
         )}
       </div>
 
-      {/* Comment Form - Fixed at Bottom */}
       <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
