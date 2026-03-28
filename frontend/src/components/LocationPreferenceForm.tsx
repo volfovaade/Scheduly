@@ -1,6 +1,20 @@
 // components/LocationPreferenceForm.tsx
 import { useState, useEffect } from "react";
-import { MapPin, X } from "lucide-react";
+import { 
+  MapPin,
+  X, 
+  Coffee, 
+  Utensils, 
+  Beer, 
+  BedSingle, 
+  Tent, 
+  Trees, 
+  Library, 
+  Clapperboard, 
+  ShoppingBag, 
+  Dumbbell, 
+  Star
+} from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -43,17 +57,17 @@ type PlaceType =
 
 type PriceLevel = 0 | 1 | 2 | 3 | 4;
 
-const PLACE_TYPES: { id: PlaceType; label: string; emoji: string }[] = [
-  { id: "Cafe", label: "Café", emoji: "☕" },
-  { id: "Restaurant", label: "Restaurant", emoji: "🍽️" },
-  { id: "Bar", label: "Bar", emoji: "🍺" },
-  { id: "Hotel", label: "Hotel", emoji: "🏨" },
-  { id: "Camping", label: "Camping", emoji: "⛺" },
-  { id: "Parc", label: "Park", emoji: "🌳" },
-  { id: "Museum", label: "Museum", emoji: "🏛️" },
-  { id: "Cinema", label: "Cinema", emoji: "🎬" },
-  { id: "ShoppingMall", label: "Shopping", emoji: "🛍️" },
-  { id: "SportsCenter", label: "Sports", emoji: "🏋️" },
+const PLACE_TYPES: { id: PlaceType; label: string; icon: React.ElementType }[] = [
+  { id: "Cafe", label: "Café", icon: Coffee },
+  { id: "Restaurant", label: "Restaurant", icon: Utensils },
+  { id: "Bar", label: "Bar", icon: Beer },
+  { id: "Hotel", label: "Hotel", icon: BedSingle },
+  { id: "Camping", label: "Camping", icon: Tent },
+  { id: "Parc", label: "Park", icon: Trees },
+  { id: "Museum", label: "Museum", icon: Library }, // Nebo 'Landmark'
+  { id: "Cinema", label: "Cinema", icon: Clapperboard },
+  { id: "ShoppingMall", label: "Shopping", icon: ShoppingBag },
+  { id: "SportsCenter", label: "Sports", icon: Dumbbell },
 ];
 
 const PRICE_LABELS = ["Any", "Budget", "Moderate", "Upscale", "Luxury"];
@@ -137,21 +151,21 @@ export default function LocationPreferenceForm({
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
               Place type
             </p>
-            <div className="grid grid-cols-5 gap-2">
-              {PLACE_TYPES.map(({ id, label, emoji }) => (
-                <button
-                  key={id}
-                  onClick={() => setPlaceType(id)}
-                  className={`p-2 rounded-lg border text-center transition-all ${
-                    placeType === id
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                      : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
-                  }`}
-                >
-                  <div className="text-xl mb-0.5">{emoji}</div>
-                  <p className="text-xs text-gray-700 dark:text-gray-300">{label}</p>
-                </button>
-              ))}
+            <div className="grid grid-cols-5 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              {PLACE_TYPES.map((type) => {
+                const IconComponent = type.icon;
+
+                return (
+                  <button key={type.id} className="flex items-center justify-center sm:justify-start gap-2 p-3 border rounded-lg">
+                    <IconComponent size={20} className="shrink-0" />
+                    
+                    {/* For mobiles label hidden */}
+                    <span className="hidden sm:inline font-medium">
+                      {type.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -180,14 +194,21 @@ export default function LocationPreferenceForm({
             </div>
           </div>
 
-          {/* Min rating slider */}
+          {/* minimum rating slider */}
           <div>
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
               Minimum rating:{" "}
-              <span className="font-bold text-blue-600">
-                {minRating > 0 ? `${minRating} ⭐` : "Any"}
+              <span className="font-bold text-blue-600 flex items-center gap-1">
+                {minRating > 0 ? (
+                  <>
+                    {minRating} <Star size={14} fill="currentColor" className="-mt-0.5" />
+                  </>
+                ) : (
+                  "Any"
+                )}
               </span>
             </p>
+            
             <input
               type="range"
               min={0}
@@ -195,15 +216,18 @@ export default function LocationPreferenceForm({
               step={0.5}
               value={minRating}
               onChange={(e) => setMinRating(Number(e.target.value))}
-              className="w-full accent-blue-600"
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600 dark:bg-gray-700"
             />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
+
+            <div className="flex justify-between text-xs text-gray-400 mt-1 px-1">
               <span>Any</span>
               <span>1.0</span>
               <span>2.0</span>
               <span>3.0</span>
               <span>4.0</span>
-              <span>5.0 ⭐</span>
+              <span className="flex items-center gap-0.5">
+                5.0 <Star size={10} fill="currentColor" />
+              </span>
             </div>
           </div>
 
@@ -236,8 +260,11 @@ export default function LocationPreferenceForm({
                 />
               </MapContainer>
 
-              <div className="absolute bottom-2 left-2 bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded text-xs text-gray-600 dark:text-gray-300 shadow">
-                📍 {latitude.toFixed(4)}, {longitude.toFixed(4)}
+              <div className="absolute bottom-2 left-2 bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded text-xs text-gray-600 dark:text-gray-300 shadow flex items-center gap-1">
+                <MapPin size={12} className="text-red-500 dark:text-red-400 shrink-0" />
+                <span>
+                  {latitude.toFixed(4)}, {longitude.toFixed(4)}
+                </span>
               </div>
             </div>
           </div>

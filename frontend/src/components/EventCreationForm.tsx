@@ -440,29 +440,25 @@ export default function CreateEventDialog({
               {selectedType.requiresTimeRange && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {isMultiDay
-                      ? "Time range (min. 24 hours) *"
-                      : "Time range (min. 1 hour)"}
+                    {isMultiDay ? "Time range (min. 24 hours) *" : "Time range (min. 1 hour)"}
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input
                       type="datetime-local"
                       min={getMinDateTime()}
                       value={formatDateTime(rangeFrom)}
                       onChange={(e) => setRangeFrom(new Date(e.target.value))}
                       className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
                         rounded-lg focus:ring-1"
                     />
                     <input
                       type="datetime-local"
-                      min={
-                        rangeFrom ? formatDateTime(rangeFrom) : getMinDateTime()
-                      }
+                      min={rangeFrom ? formatDateTime(rangeFrom) : getMinDateTime()}
                       value={formatDateTime(rangeTo)}
                       onChange={(e) => setRangeTo(new Date(e.target.value))}
                       className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
+                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
                         rounded-lg focus:ring-1"
                     />
                   </div>
@@ -501,50 +497,32 @@ export default function CreateEventDialog({
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Fixed event time *
                   </label>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        From
-                      </label>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">From</label>
                       <input
                         type="datetime-local"
                         min={getMinDateTime()}
                         value={formatDateTime(fixedTimeFrom)}
-                        onChange={(e) =>
-                          setFixedTimeFrom(new Date(e.target.value))
-                        }
+                        onChange={(e) => setFixedTimeFrom(new Date(e.target.value))}
                         className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
-                        rounded-lg focus:ring-1"
+                          dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
+                          rounded-lg focus:ring-1"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-500 mb-1 block">
-                        To
-                      </label>
+                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">To</label>
                       <input
                         type="datetime-local"
-                        min={
-                          fixedTimeFrom
-                            ? formatDateTime(fixedTimeFrom)
-                            : getMinDateTime()
-                        }
-                        max={
-                          !isMultiDay && fixedTimeFrom
-                            ? formatDateTime(
-                                new Date(
-                                  fixedTimeFrom.getTime() + 24 * 60 * 60 * 1000,
-                                ),
-                              )
-                            : undefined
-                        }
+                        min={fixedTimeFrom ? formatDateTime(fixedTimeFrom) : getMinDateTime()}
+                        max={!isMultiDay && fixedTimeFrom
+                          ? formatDateTime(new Date(fixedTimeFrom.getTime() + 24 * 60 * 60 * 1000))
+                          : undefined}
                         value={formatDateTime(fixedTimeTo)}
-                        onChange={(e) =>
-                          setFixedTimeTo(new Date(e.target.value))
-                        }
+                        onChange={(e) => setFixedTimeTo(new Date(e.target.value))}
                         className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark] dark:placeholder-gray-400
-                        rounded-lg focus:ring-1"
+                          dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
+                          rounded-lg focus:ring-1"
                       />
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Clock, X, Plus, Trash2 } from "lucide-react";
+import { Clock, X, Plus, Trash2, ArrowRight } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
 import { toLocalDateTimeString } from "../utils/dateUtils";
@@ -280,7 +280,7 @@ export default function TimePreferenceForm({
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
-                {" → "}
+                <ArrowRight className="mx-1 text-gray-400" />
                 {new Date(timeRangeTo).toLocaleString(undefined, {
                   month: "short",
                   day: "numeric",
@@ -303,51 +303,46 @@ export default function TimePreferenceForm({
               {(() => {
                 const slotErrors = getSlotErrors();
                 return timeSlots.map((slot) => (
-                  <div key={slot.id} className="space-y-1">
-                    <div className="flex gap-2 items-center">
+                  <div key={slot.id} className="space-y-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="datetime-local"
                         min={toLocalDateTimeString(new Date(timeRangeFrom))}
                         max={toLocalDateTimeString(new Date(timeRangeTo))}
                         value={toLocalDateTimeString(slot.from)}
-                        onChange={(e) =>
-                          updateTimeSlot(slot.id, "from", e.target.value)
-                        }
-                        className={`flex-1 border rounded-lg px-3 py-2
+                        onChange={(e) => updateTimeSlot(slot.id, "from", e.target.value)}
+                        className={`flex-1 border rounded-lg px-3 py-2 text-sm
                           dark:bg-gray-700 dark:border-gray-600 dark:text-white
                           [color-scheme:light] dark:[color-scheme:dark]
-                          ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`
-                        }
+                          ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
                       />
-                      <span className="text-gray-400">→</span>
-                      <input
-                        type="datetime-local"
-                        min={toLocalDateTimeString(slot.from)}
-                        max={toLocalDateTimeString(
-                          new Date(
-                            Math.min(
+                      <span className="hidden sm:flex items-center text-gray-400">
+                        <ArrowRight className="w-4 h-4" />
+                      </span>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="datetime-local"
+                          min={toLocalDateTimeString(slot.from)}
+                          max={toLocalDateTimeString(
+                            new Date(Math.min(
                               slot.from.getTime() + 24 * 60 * 60 * 1000,
                               new Date(timeRangeTo).getTime(),
-                            ),
-                          ),
-                        )}
-                        value={toLocalDateTimeString(slot.to)}
-                        onChange={(e) =>
-                          updateTimeSlot(slot.id, "to", e.target.value)
-                        }
-                        className={`flex-1 border rounded-lg px-3 py-2
-                          dark:bg-gray-700 dark:border-gray-600 dark:text-white
-                          [color-scheme:light] dark:[color-scheme:dark]
-                          ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`
-                        }/>
-                      <button onClick={() => removeTimeSlot(slot.id)}>
-                        <Trash2 className="w-5 h-5 text-red-600" />
-                      </button>
+                            ))
+                          )}
+                          value={toLocalDateTimeString(slot.to)}
+                          onChange={(e) => updateTimeSlot(slot.id, "to", e.target.value)}
+                          className={`flex-1 border rounded-lg px-3 py-2 text-sm
+                            dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                            [color-scheme:light] dark:[color-scheme:dark]
+                            ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`}
+                        />
+                        <button onClick={() => removeTimeSlot(slot.id)} className="flex-shrink-0">
+                          <Trash2 className="w-5 h-5 text-red-600" />
+                        </button>
+                      </div>
                     </div>
                     {slotErrors[slot.id] && (
-                      <p className="text-red-500 text-sm ml-1">
-                        {slotErrors[slot.id]}
-                      </p>
+                      <p className="text-red-500 text-sm">{slotErrors[slot.id]}</p>
                     )}
                   </div>
                 ));

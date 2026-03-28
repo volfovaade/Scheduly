@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { MapPin, Clock, Calendar } from "lucide-react";
+import { MapPin, Clock, Calendar, CheckCircle2, TriangleAlert } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { useNotification } from "../../context/NotificationContext";
@@ -113,8 +113,9 @@ export default function FixedPlaceOpenTimeDetail({
                     {event.fixedPlaceName}
                   </p>
                   {event.fixedAddress && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      📍 {event.fixedAddress}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-1.5">
+                      <MapPin size={14} className="shrink-0 text-gray-400 dark:text-gray-500" />
+                      <span>{event.fixedAddress}</span>
                     </p>
                   )}
                 </div>
@@ -132,15 +133,17 @@ export default function FixedPlaceOpenTimeDetail({
 
                 {hasSubmitted ? (
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg mb-4">
-                    <p className="text-green-800 dark:text-green-300 font-medium">
-                      ✓ You've submitted your time preferences
-                    </p>
+                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                      <CheckCircle2 size={18} className="shrink-0" />
+                      <span className="text-sm">You've submitted your time preferences</span>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg mb-4">
-                    <p className="text-yellow-800 dark:text-yellow-300">
-                      ⚠️ You haven't submitted your preferences yet
-                    </p>
+                    <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                      <TriangleAlert size={18} className="shrink-0" />
+                      <span className="text-sm">You haven't submitted your time preferences yet</span>
+                    </div>
                   </div>
                 )}
 

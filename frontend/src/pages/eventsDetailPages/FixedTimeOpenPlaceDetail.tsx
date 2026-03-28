@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin, Clock, CalendarCheck2, TriangleAlert, CheckCircle2, Scale } from "lucide-react";
 import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { useNotification } from "../../context/NotificationContext";
@@ -119,7 +119,7 @@ export default function FixedTimeOpenPlaceDetail({
                 </h3>
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    📅 Event will take place at:
+                    <CalendarCheck2 size={18} /> Event will take place at:
                   </p>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {event.fixedTimeFrom &&
@@ -155,15 +155,17 @@ export default function FixedTimeOpenPlaceDetail({
 
                 {hasSubmitted ? (
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg mb-4">
-                    <p className="text-green-800 dark:text-green-300 font-medium">
-                      ✓ You've submitted your location preference
-                    </p>
+                    <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                      <CheckCircle2 size={18} className="shrink-0" />
+                      <span className="text-sm">You've submitted your location preference</span>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg mb-4">
-                    <p className="text-yellow-800 dark:text-yellow-300">
-                      ⚠️ You haven't submitted your preference yet
-                    </p>
+                    <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
+                      <TriangleAlert size={18} className="shrink-0" />
+                      <span className="text-sm">You haven't submitted your location preference yet</span>
+                    </div>
                   </div>
                 )}
 
@@ -191,10 +193,10 @@ export default function FixedTimeOpenPlaceDetail({
                     {/* Tie-breaker UI */}
                     {tieData?.hasTie && (
                       <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
-                        <p className="text-yellow-800 dark:text-yellow-300 font-medium mb-3">
-                          ⚖️ There's a tie! Please choose which place type to
-                          use:
-                        </p>
+                        <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300 font-medium mb-3">
+                          <Scale size={20} className="shrink-0" />
+                          <p>There's a tie! Please choose which place type to use:</p>
+                        </div>
                         <div className="flex flex-wrap gap-2">
                           {tieData.tiedTypes.map((type) => (
                             <button
