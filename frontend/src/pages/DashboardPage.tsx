@@ -5,6 +5,7 @@ import EventCreationForm from "../components/EventCreationForm";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import EventCard from "../components/EventCard";
+import { Search } from "lucide-react";
 
 type EventMode =
   | "SingleOption"
@@ -32,6 +33,18 @@ export default function DashboardPage() {
   const notify = useNotification();
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Add filtered lists before return
+  const filteredOrganized = organized.filter((e) =>
+    e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    e.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredParticipating = participating.filter((e) =>
+    e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    e.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -179,12 +192,28 @@ export default function DashboardPage() {
         <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50">
           My Events
         </h2>
-        <button
-          className="bg-gradient-to-r from-pink-600 to-pink-800 text-white px-6 py-3 rounded-lg hover:from-pink-700 hover:to-pink-900 font-medium transition-all shadow-lg hover:shadow-xl"
-          onClick={() => setShowDialog(true)}
-        >
-          + Add Event
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search events..."
+              className="pl-9 pr-4 py-2 w-52 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm
+                        text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
+                        focus:outline-none focus:ring-2 focus:ring-pink-500 transition"
+            />
+          </div>
+          <button
+            className="bg-gradient-to-r from-pink-600 to-pink-800 text-white px-6 py-3 rounded-lg
+                      hover:from-pink-700 hover:to-pink-900 font-medium transition-all shadow-lg hover:shadow-xl"
+            onClick={() => setShowDialog(true)}
+          >
+            + Add Event
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-900 dark:text-gray-50">
@@ -193,17 +222,17 @@ export default function DashboardPage() {
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <span className="text-2xl">👥</span> Participating
             <span className="text-sm font-normal text-gray-500">
-              ({participating.length})
+              ({filteredParticipating.length})
             </span>
           </h3>
-          {participating.length === 0 ? (
+          {filteredParticipating.length === 0 ? (
             <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-gray-500 dark:text-gray-200">
               <p>You're not participating in any events yet.</p>
               <p className="text-sm mt-2">Join an event using a code!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {participating.map((e) => (
+              {filteredParticipating.map((e) => (
                 <EventCard
                   key={e.id}
                   id={e.id}
@@ -225,17 +254,17 @@ export default function DashboardPage() {
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <span className="text-2xl">🎯</span> Organizing
             <span className="text-sm font-normal text-gray-500">
-              ({organized.length})
+              ({filteredOrganized.length})
             </span>
           </h3>
-          {organized.length === 0 ? (
+          {filteredOrganized.length === 0 ? (
             <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg text-center text-gray-500 dark:text-gray-200">
               <p>You haven't created any events yet.</p>
               <p className="text-sm mt-2">Click "Add Event" to get started!</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {organized.map((e) => (
+              {filteredOrganized.map((e) => (
                 <EventCard
                   key={e.id}
                   id={e.id}
