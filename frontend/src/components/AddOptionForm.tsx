@@ -1,6 +1,6 @@
 // components/AddOptionForm.tsx
 import { useState, useRef } from "react";
-import { MapPin, Clock, X } from "lucide-react";
+import { MapPin, Clock, X, ArrowRight } from "lucide-react";
 import Option from "../types/option";
 import Event from "../types/event";
 import { formatLocalDateTime } from "../utils/dateUtils";
@@ -193,7 +193,7 @@ export default function AddOptionForm({
               </div>
             )}
 
-            <div className="flex gap-2 items-center">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="datetime-local"
                 value={formatDateTime(timeFrom)}
@@ -201,10 +201,10 @@ export default function AddOptionForm({
                 min={event.timeRangeFrom ? formatDateTime(new Date(event.timeRangeFrom)) : undefined}
                 max={event.timeRangeTo ? formatDateTime(new Date(event.timeRangeTo)) : undefined}
                 className="flex-1 border border-gray-300 dark:border-gray-600
-                           dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2
-                           [color-scheme:light] dark:[color-scheme:dark]"
+                          dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2
+                          [color-scheme:light] dark:[color-scheme:dark]"
               />
-              <span className="text-gray-400">→</span>
+              <span className="hidden sm:flex items-center text-gray-400 text-sm"><ArrowRight /></span>
               <input
                 type="datetime-local"
                 value={formatDateTime(timeTo)}
@@ -212,8 +212,8 @@ export default function AddOptionForm({
                 min={timeFrom ? formatDateTime(timeFrom) : undefined}
                 max={event.timeRangeTo ? formatDateTime(new Date(event.timeRangeTo)) : undefined}
                 className="flex-1 border border-gray-300 dark:border-gray-600
-                           dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2
-                           [color-scheme:light] dark:[color-scheme:dark]"
+                          dark:bg-gray-700 dark:text-white rounded-lg px-3 py-2
+                          [color-scheme:light] dark:[color-scheme:dark]"
               />
             </div>
             <p className="text-xs text-gray-400 mt-1">

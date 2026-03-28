@@ -142,7 +142,7 @@ export default function FullyOpenDetail({
 
                 <button
                   onClick={() => setShowTimePreferenceForm(true)}
-                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
                 >
                   {hasTimePref ? "Edit" : "Add"} Time Preferences
                 </button>
@@ -176,7 +176,7 @@ export default function FullyOpenDetail({
 
                 <button
                   onClick={() => setShowLocationPreferenceForm(true)}
-                  className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
+                  className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
                 >
                   {hasLocationPref ? "Edit" : "Add"} Location Preference
                 </button>

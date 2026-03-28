@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Clock, X, Plus, Trash2, ArrowRight } from "lucide-react";
+import { Clock, X, Plus, Trash2, ArrowRight, ArrowDown } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
 import { toLocalDateTimeString } from "../utils/dateUtils";
@@ -270,26 +270,35 @@ export default function TimePreferenceForm({
             </div>
           ) : (
             <>
-              <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-600">
-                <span className="font-medium text-gray-700 dark:text-gray-300">
-                  Allowed range:{" "}
-                </span>
-                {new Date(timeRangeFrom).toLocaleString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-                <ArrowRight className="mx-1 text-gray-400" />
-                {new Date(timeRangeTo).toLocaleString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-                <span className="ml-2 text-xs text-gray-400">
-                  (Single day =&gt; max 24h per slot)
-                </span>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg px-4 py-3 border border-gray-200 dark:border-gray-600">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                  Allowed range
+                </p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-sm font-medium text-gray-800 dark:text-gray-200">
+                  <span>
+                    {new Date(timeRangeFrom).toLocaleString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-gray-400 hidden sm:block" />
+                  <ArrowDown className="w-4 h-4 text-gray-400 sm:hidden" />
+                  <span>
+                    {new Date(timeRangeTo).toLocaleString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                {!isMultiDay && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    Max 24h per slot
+                  </p>
+                )}
               </div>
 
               <button

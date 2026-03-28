@@ -438,29 +438,31 @@ export default function CreateEventDialog({
               </div>
 
               {selectedType.requiresTimeRange && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {isMultiDay ? "Time range (min. 24 hours) *" : "Time range (min. 1 hour)"}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {isMultiDay ? "Time range (min. 24 hours) *" : "Time range (min. 1 hour) *"}
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="datetime-local"
-                      min={getMinDateTime()}
-                      value={formatDateTime(rangeFrom)}
-                      onChange={(e) => setRangeFrom(new Date(e.target.value))}
-                      className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
-                        rounded-lg focus:ring-1"
-                    />
-                    <input
-                      type="datetime-local"
-                      min={rangeFrom ? formatDateTime(rangeFrom) : getMinDateTime()}
-                      value={formatDateTime(rangeTo)}
-                      onChange={(e) => setRangeTo(new Date(e.target.value))}
-                      className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                        dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
-                        rounded-lg focus:ring-1"
-                    />
+                  <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+                    <div className="w-full">
+                      <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block sm:hidden">From</label>
+                      <input
+                        type="datetime-local"
+                        min={getMinDateTime()}
+                        value={formatDateTime(rangeFrom)}
+                        onChange={(e) => setRangeFrom(new Date(e.target.value))}
+                        className="w-full min-w-0 px-4 py-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white [color-scheme:light] dark:[color-scheme:dark] focus:ring-1 focus:ring-pink-500 outline-none"
+                      />
+                    </div>
+                    <div className="w-full">
+                      <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block sm:hidden">To</label>
+                      <input
+                        type="datetime-local"
+                        min={rangeFrom ? formatDateTime(rangeFrom) : getMinDateTime()}
+                        value={formatDateTime(rangeTo)}
+                        onChange={(e) => setRangeTo(new Date(e.target.value))}
+                        className="w-full min-w-0 px-4 py-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white [color-scheme:light] dark:[color-scheme:dark] focus:ring-1 focus:ring-pink-500 outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -493,25 +495,23 @@ export default function CreateEventDialog({
               )}
 
               {selectedType.requiresFixedTime && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Fixed event time *
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">From</label>
+                  <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+                    <div className="w-full min-w-0">
+                      <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">From</label>
                       <input
                         type="datetime-local"
                         min={getMinDateTime()}
                         value={formatDateTime(fixedTimeFrom)}
                         onChange={(e) => setFixedTimeFrom(new Date(e.target.value))}
-                        className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                          dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
-                          rounded-lg focus:ring-1"
+                        className="w-full min-w-0 px-4 py-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white [color-scheme:light] dark:[color-scheme:dark] focus:ring-1 focus:ring-pink-500 outline-none"
                       />
                     </div>
-                    <div>
-                      <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">To</label>
+                    <div className="w-full min-w-0">
+                      <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">To</label>
                       <input
                         type="datetime-local"
                         min={fixedTimeFrom ? formatDateTime(fixedTimeFrom) : getMinDateTime()}
@@ -520,9 +520,7 @@ export default function CreateEventDialog({
                           : undefined}
                         value={formatDateTime(fixedTimeTo)}
                         onChange={(e) => setFixedTimeTo(new Date(e.target.value))}
-                        className="w-full px-4 py-3 border border-gray-300 [color-scheme:light]
-                          dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:[color-scheme:dark]
-                          rounded-lg focus:ring-1"
+                        className="w-full min-w-0 px-4 py-3 border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white [color-scheme:light] dark:[color-scheme:dark] focus:ring-1 focus:ring-pink-500 outline-none"
                       />
                     </div>
                   </div>
