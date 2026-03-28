@@ -135,7 +135,7 @@ export default function CommentSection({ eventId }: Props) {
   };
   return (
     <div className="flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700"
-        style={{ height: "calc(100vh - 13rem)" }}  {/* stejná výška jako sticky v EventDetailLayout */}
+        style={{ height: "calc(100vh - 13rem)" }}
     >
       {/* header fixed */}
       <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
