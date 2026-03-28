@@ -188,27 +188,28 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50">
           My Events
         </h2>
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search events..."
-              className="pl-9 pr-4 py-2 w-52 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm
+              className="pl-9 pr-4 py-2 w-full sm:w-48 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm
                         text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
                         focus:outline-none focus:ring-2 focus:ring-pink-500 transition"
             />
           </div>
           <button
-            className="bg-gradient-to-r from-pink-600 to-pink-800 text-white px-6 py-3 rounded-lg
-                      hover:from-pink-700 hover:to-pink-900 font-medium transition-all shadow-lg hover:shadow-xl"
+            className="bg-gradient-to-r from-pink-600 to-pink-800 text-white px-4 py-2 sm:px-6 sm:py-3
+                      rounded-lg hover:from-pink-700 hover:to-pink-900 font-medium transition-all
+                      shadow-lg hover:shadow-xl whitespace-nowrap text-sm sm:text-base"
             onClick={() => setShowDialog(true)}
           >
             + Add Event

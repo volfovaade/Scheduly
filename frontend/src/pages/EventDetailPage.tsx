@@ -193,120 +193,111 @@ export default function EventDetailPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* event header... common for all types */}
       <div className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-600">
-        <div className="px-6 py-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {event.title}
-              </h1>
-              <div className="relative mt-3 group">
-                {isEditingDescription ? (
-                  <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm transition-all">
-                    <textarea
-                      value={editedDescription}
-                      onChange={(e) => setEditedDescription(e.target.value)}
-                      rows={3}
-                      className="w-full resize-none bg-transparent focus:outline-none text-gray-800 dark:text-gray-100"
-                      placeholder="Enter event description..."
-                    />
+        <div className="px-4 sm:px-6 py-4">
+          
+          {/* Top row — back button + action buttons */}
+          <div className="flex justify-between items-center mb-3">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 whitespace-nowrap"
+            >
+              ← Back
+            </button>
 
-                    <div className="flex justify-end gap-2 mt-3">
-                      <button
-                        onClick={handleSaveDescription}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
-                      >
-                        <Check size={16} />
-                        Save
-                      </button>
-
-                      <button
-                        onClick={() => setIsEditingDescription(false)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition"
-                      >
-                        <X size={16} />
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    {event.description ? (
-                      <p className="text-gray-600 dark:text-gray-300 pr-8">
-                        {event.description}
-                      </p>
-                    ) : (
-                      <p className="text-gray-400 italic pr-8">
-                        No description provided.
-                      </p>
-                    )}
-
-                    {event.currentUserIsOrganizer && (
-                      <button
-                        onClick={() => {
-                          setEditedDescription(event.description || "");
-                          setIsEditingDescription(true);
-                        }}
-                        className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition text-gray-500 hover:text-blue-600"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-4 mt-3 text-sm">
-                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
-                  Code: {event.code}
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-full ${
-                    event.phase === "Closed"
-                      ? "bg-gray-100 text-gray-700"
-                      : event.phase === "FinalVoting"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {event.phase}
-                </span>
-                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
-                  {getModeLabel(event.mode)}
-                </span>
-              </div>
-            </div>
-            {/* right header side */}
-            <div className="flex flex-col items-end gap-3">
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 whitespace-nowrap"
-              >
-                ← Back to Dashboard
-              </button>
-
-              {event.currentUserIsOrganizer && event.phase === "Proposal" && 
-                event.mode !== "FixedTimeOpenPlace" && event.mode !== "FullyOpen" && event.mode !== "FixedPlaceOpenTime" && (
+            <div className="flex gap-2">
+              {event.currentUserIsOrganizer && event.phase === "Proposal" &&
+                !["FixedTimeOpenPlace", "FullyOpen", "FixedPlaceOpenTime"].includes(event.mode) && (
                 <button
                   onClick={handleCloseEvent}
-                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700
+                  className="px-3 py-1.5 bg-gradient-to-r from-green-600 to-green-700
                             text-white text-sm rounded-lg font-medium
                             hover:from-green-700 hover:to-green-800 transition-all shadow-sm whitespace-nowrap"
                 >
-                Close Voting
+                  Close Voting
                 </button>
               )}
-
               {event.currentUserIsOrganizer && event.phase === "FinalVoting" && (
                 <button
                   onClick={handleCloseEvent}
-                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-700
+                  className="px-3 py-1.5 bg-gradient-to-r from-green-600 to-green-700
                             text-white text-sm rounded-lg font-medium
                             hover:from-green-700 hover:to-green-800 transition-all shadow-sm whitespace-nowrap"
                 >
-                Close Event
+                  Close Event
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Title + description */}
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            {event.title}
+          </h1>
+
+          <div className="relative mt-2 group">
+            {isEditingDescription ? (
+              <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm transition-all">
+                <textarea
+                  value={editedDescription}
+                  onChange={(e) => setEditedDescription(e.target.value)}
+                  rows={3}
+                  className="w-full resize-none bg-transparent focus:outline-none text-gray-800 dark:text-gray-100"
+                  placeholder="Enter event description..."
+                />
+                <div className="flex justify-end gap-2 mt-3">
+                  <button
+                    onClick={handleSaveDescription}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
+                  >
+                    <Check size={16} /> Save
+                  </button>
+                  <button
+                    onClick={() => setIsEditingDescription(false)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-300 hover:bg-gray-400 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg transition"
+                  >
+                    <X size={16} /> Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                {event.description ? (
+                  <p className="text-gray-600 dark:text-gray-300 pr-8">{event.description}</p>
+                ) : (
+                  <p className="text-gray-400 italic pr-8">No description provided.</p>
+                )}
+                {event.currentUserIsOrganizer && (
+                  <button
+                    onClick={() => {
+                      setEditedDescription(event.description || "");
+                      setIsEditingDescription(true);
+                    }}
+                    className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition text-gray-500 hover:text-blue-600"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Badges */}
+          <div className="flex flex-wrap gap-2 mt-3 text-sm">
+            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+              Code: {event.code}
+            </span>
+            <span className={`px-3 py-1 rounded-full ${
+              event.phase === "Closed"
+                ? "bg-gray-100 text-gray-700"
+                : event.phase === "FinalVoting"
+                  ? "bg-yellow-100 text-yellow-700"
+                  : "bg-green-100 text-green-700"
+            }`}>
+              {event.phase}
+            </span>
+            <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
+              {getModeLabel(event.mode)}
+            </span>
           </div>
         </div>
       </div>
