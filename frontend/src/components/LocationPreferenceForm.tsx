@@ -1,6 +1,6 @@
 // components/LocationPreferenceForm.tsx
 import { useState, useEffect } from "react";
-import { MapPin, X, Locate } from "lucide-react";
+import { MapPin, X } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -73,7 +73,6 @@ export default function LocationPreferenceForm({
   const [longitude, setLongitude] = useState<number>(14.4378);
   const [zoom] = useState(13);
   const [loading, setLoading] = useState(false);
-  const [locating, setLocating] = useState(false);
   const [priceLevel, setPriceLevel] = useState<PriceLevel>(0);
   const [minRating, setMinRating] = useState<number>(0);
 
@@ -94,25 +93,6 @@ export default function LocationPreferenceForm({
     };
     loadPreference();
   }, [eventId]);
-
-  const handleGetCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      notify.warning("Geolocation is not supported by your browser");
-      return;
-    }
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLatitude(position.coords.latitude);
-        setLongitude(position.coords.longitude);
-        setLocating(false);
-      },
-      () => {
-        notify.error("Could not get your location");
-        setLocating(false);
-      }
-    );
-  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -236,15 +216,6 @@ export default function LocationPreferenceForm({
                   (click on map to set)
                 </span>
               </p>
-              <button
-                onClick={handleGetCurrentLocation}
-                disabled={locating}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700
-                           text-white rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
-              >
-                <Locate className="w-3.5 h-3.5" />
-                {locating ? "Locating..." : "Use my location"}
-              </button>
             </div>
 
             <div className="relative w-full h-72 rounded-xl border border-gray-300 dark:border-gray-600 overflow-hidden">
