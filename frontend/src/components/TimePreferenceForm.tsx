@@ -232,33 +232,36 @@ export default function TimePreferenceForm({
 
       <div
         ref={scrollContainerRef}
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
+        className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto"
       >
-        <div className="p-6 border-b flex justify-between">
-          <h2 className="text-xl font-semibold flex gap-2 items-center">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 className="text-xl font-semibold flex gap-2 items-center text-gray-900 dark:text-white">
             <Clock className="w-5 h-5" />
             {isMultiDay ? "Select Days" : "Select Times"}
           </h2>
-
-          <button onClick={onClose}>
-            <X />
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-6">
-          {error && <div className="text-red-600">{error}</div>}
-
+          {error && (
+            <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+              {error}
+            </div>
+          )}
           {isMultiDay ? (
             <div className="space-y-2">
               {getDaysInRange().map((day) => {
                 const checked = days.includes(day);
 
                 return (
-                  <label key={day} className="flex gap-3">
+                  <label key={day} className="flex gap-3 items-center text-sm text-gray-700 dark:text-gray-300">
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleDay(day)}
+                      className="accent-blue-600"
                     />
                     {new Date(day).toLocaleDateString()}
                   </label>
@@ -291,9 +294,9 @@ export default function TimePreferenceForm({
 
               <button
                 onClick={addTimeSlot}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
+                className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
               >
-                <Plus className="w-4 h-4 inline mr-1" />
+                <Plus className="w-4 h-4 mr-1" />
                 Add Slot
               </button>
 
@@ -328,8 +331,11 @@ export default function TimePreferenceForm({
                         onChange={(e) =>
                           updateTimeSlot(slot.id, "to", e.target.value)
                         }
-                        className={`border rounded px-2 py-1 ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300"}`}
-                      />
+                        className={`flex-1 border rounded-lg px-3 py-2
+                          dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                          [color-scheme:light] dark:[color-scheme:dark]
+                          ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`
+                        }/>
                       <button onClick={() => removeTimeSlot(slot.id)}>
                         <Trash2 className="w-5 h-5 text-red-600" />
                       </button>
@@ -345,17 +351,16 @@ export default function TimePreferenceForm({
             </>
           )}
 
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={onClose}
-              className="flex-1 bg-gray-200 py-2 rounded"
+              className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
-
             <button
               onClick={handleSubmit}
-              className="flex-1 bg-blue-600 text-white py-2 rounded"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
             >
               {loading ? "Saving..." : "Save"}
             </button>
