@@ -5,7 +5,7 @@ import EventCreationForm from "../components/EventCreationForm";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import EventCard from "../components/EventCard";
-import { Search } from "lucide-react";
+import { Search, Target, Users } from "lucide-react";
 
 type EventMode =
   | "SingleOption"
@@ -221,7 +221,7 @@ export default function DashboardPage() {
         {/* Participating */}
         <div>
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <span className="text-2xl">👥</span> Participating
+            <Users className="text-blue-500" size={24} /> Participating
             <span className="text-sm font-normal text-gray-500">
               ({filteredParticipating.length})
             </span>
@@ -253,7 +253,7 @@ export default function DashboardPage() {
         {/* Organizing */}
         <div>
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <span className="text-2xl">🎯</span> Organizing
+            <Target className="text-pink-500" size={24} /> Organizing
             <span className="text-sm font-normal text-gray-500">
               ({filteredOrganized.length})
             </span>

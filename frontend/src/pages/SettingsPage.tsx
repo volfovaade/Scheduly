@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Mail, Lock, BarChart2, Save, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { User, Mail, Lock, BarChart2, Save, Eye, EyeOff, CheckCircle2, CheckCircle, Target, Users } from "lucide-react";
 import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
@@ -115,21 +115,21 @@ export default function SettingsPage() {
                   value: stats.organizedTotal,
                   sub: `${stats.organizedActive} active`,
                   color: "from-pink-500 to-pink-700",
-                  icon: "🎯",
+                  icon: <Target size={24} />,
               },
               {
                   label: "Events joined",
                   value: stats.participatingTotal,
                   sub: `${stats.participatingActive} active`,
                   color: "from-blue-500 to-blue-700",
-                  icon: "👥",
+                  icon: <Users size={24} />,
               },
               {
                   label: "Completed events",
                   value: stats.closedEvents,
                   sub: "across all events",
                   color: "from-green-500 to-green-700",
-                  icon: "✅",
+                  icon: <CheckCircle2 size={24} />,
               },
           ]
         : [];
@@ -146,7 +146,6 @@ export default function SettingsPage() {
                 Settings
             </h2>
 
-            {/* Tab nav */}
             <div className="flex gap-2 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
                 {navItems.map((item) => (
                     <button
@@ -164,7 +163,6 @@ export default function SettingsPage() {
                 ))}
             </div>
 
-            {/* Profile section */}
             {activeSection === "profile" && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -221,7 +219,6 @@ export default function SettingsPage() {
                 </div>
             )}
 
-            {/* Password section */}
             {activeSection === "password" && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -315,7 +312,6 @@ export default function SettingsPage() {
                 </div>
             )}
 
-            {/* Stats section */}
             {activeSection === "stats" && (
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
