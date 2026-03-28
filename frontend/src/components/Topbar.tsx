@@ -1,4 +1,4 @@
-import { Search, Menu, Sun, Moon } from "lucide-react";
+import { Menu, Sun, Moon } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 
 type Props = {
