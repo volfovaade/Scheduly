@@ -16,13 +16,22 @@ export default function RegisterPage() {
 
   const register = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (form.password.length < 6) {
+      notify.error("Password must be at least 6 characters.");
+      return;
+    }
     setLoading(true);
     try {
       const res = await axios.post("/auth/register", form);
       await login(res.data.token, res.data.userId);
       navigate("/dashboard");
-    } catch {
-      notify.error("Registration failed.");
+    } catch (err: any){
+      const message = err.response?.data;
+      if (typeof message === "string" && message.toLowerCase().includes("already exists")) {
+        notify.error("This email address is already registered.");
+      } else {
+        notify.error("Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -76,12 +85,24 @@ export default function RegisterPage() {
           required
           disabled={loading}
           placeholder="Min. 6 characters"
-          className="w-full mb-6 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500"
-        />
+          className={`w-full mb-1 px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 ${
+            form.password.length > 0 && form.password.length < 6
+              ? "border-red-400 dark:border-red-500"
+              : "border-gray-300 dark:border-gray-600"
+            }`}
+          />
+          {form.password.length > 0 && form.password.length < 6 && (
+            <p className="text-xs text-red-500 mb-4">
+              Password must be at least 6 characters ({form.password.length}/6)
+            </p>
+          )}
+          {(form.password.length === 0 || form.password.length >= 6) && (
+            <div className="mb-6" />
+          )}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || form.password.length < 6}
           className="w-full bg-pink-700 hover:bg-pink-800 text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
         >
           {loading ? (
