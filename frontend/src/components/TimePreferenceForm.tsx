@@ -313,7 +313,11 @@ export default function TimePreferenceForm({
                         onChange={(e) =>
                           updateTimeSlot(slot.id, "from", e.target.value)
                         }
-                        className={`border rounded px-2 py-1 ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300"}`}
+                        className={`flex-1 border rounded-lg px-3 py-2
+                          dark:bg-gray-700 dark:border-gray-600 dark:text-white
+                          [color-scheme:light] dark:[color-scheme:dark]
+                          ${slotErrors[slot.id] ? "border-red-500" : "border-gray-300 dark:border-gray-600"}`
+                        }
                       />
                       <span className="text-gray-400">→</span>
                       <input
