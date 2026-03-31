@@ -154,12 +154,19 @@ export default function LocationPreferenceForm({
             <div className="grid grid-cols-5 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {PLACE_TYPES.map((type) => {
                 const IconComponent = type.icon;
+                const isSelected = placeType === type.id;
 
                 return (
-                  <button key={type.id} className="flex items-center justify-center sm:justify-start gap-2 p-3 border rounded-lg">
+                  <button
+                    key={type.id}
+                    onClick={() => setPlaceType(type.id)}
+                    className={`flex items-center justify-center sm:justify-start gap-2 p-3 border rounded-lg transition-all ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-blue-300 dark:hover:border-blue-500"
+                    }`}
+                  >
                     <IconComponent size={20} className="shrink-0" />
-                    
-                    {/* For mobiles label hidden */}
                     <span className="hidden sm:inline font-medium">
                       {type.label}
                     </span>
