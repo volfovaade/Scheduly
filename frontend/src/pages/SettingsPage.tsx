@@ -40,6 +40,20 @@ export default function SettingsPage() {
     const [activeSection, setActiveSection] = useState<Section>("profile");
 
     useEffect(() => {
+        if (user) {
+            // reset fields to saved values
+            setName(user.name);
+            setEmail(user.email);
+            // reset fields to empty
+            setCurrentPassword("");
+            setNewPassword("");
+            setConfirmPassword("");
+            setShowCurrent(false);
+            setShowNew(false);
+        }
+    }, [activeSection, user]);
+
+    useEffect(() => {
         if (!isAuthenticated) {
             navigate("/login");
             return;
@@ -67,6 +81,19 @@ export default function SettingsPage() {
 
     const handleSaveProfile = async () => {
         if (!user) return;
+        if (name.trim().length < 2) {
+            notify.error("Name must be at least 2 characters.");
+            return;
+        }
+        if (name.trim().length > 20) {
+            notify.error("Name cannot exceed 20 characters.");
+            return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email) || email.length < 5 || email.length > 50) {
+            notify.error("Please enter a valid email address.");
+            return;
+        }
         setSavingProfile(true);
         try {
             const res = await axios.put(`users/${user.id}`, { name, email });
