@@ -1,20 +1,22 @@
+import { MoveLeft, Home, Ghost } from "lucide-react";
 import { useNavigate } from "react-router-dom";
  
 export default function NotFoundPage() {
   const navigate = useNavigate();
- 
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center px-6">
       <div className="text-center max-w-md">
-        {/* Big 404 */}
-        <div className="mb-6">
+
+        <div className="mb-6 flex flex-col items-center">
+          <div className="p-4 bg-pink-100 dark:bg-pink-900/30 rounded-full mb-4 animate-bounce">
+            <Ghost size={48} className="text-pink-600 dark:text-pink-400" />
+          </div>
           <span className="text-9xl font-bold bg-gradient-to-r from-pink-600 to-pink-800 bg-clip-text text-transparent">
             404
           </span>
         </div>
 
-        <div className="text-6xl mb-6">🗓️</div>
- 
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
           Page not found
         </h1>
@@ -22,23 +24,23 @@ export default function NotFoundPage() {
           Oops! The page you're looking for doesn't exist or has been moved.
           Make sure the URL is correct.
         </p>
- 
-        {/* actions */}
+
+        {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-pink-600 to-pink-800 text-white px-6 py-3 rounded-lg
-                       hover:from-pink-700 hover:to-pink-900 font-medium transition-all shadow-lg"
+            className="flex items-center justify-center gap-2 bg-gradient-to-r from-pink-600 to-pink-800 text-white px-6 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium"
           >
-            Go to home page
+            <Home size={18} />
+            Back to Home
           </button>
+          
           <button
-            onClick={() => navigate(-1)}
-            className="px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600
-                       text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800
-                       font-medium transition-all"
+            onClick={() => window.history.back()}
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
-            Go back
+            <MoveLeft size={18} />
+            Go Back
           </button>
         </div>
       </div>
