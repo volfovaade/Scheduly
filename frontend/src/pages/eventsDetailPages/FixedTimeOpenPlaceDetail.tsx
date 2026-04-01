@@ -4,10 +4,10 @@ import { FinalResult } from "../../components/sharedDetailPage/FinalResult";
 import { ParticipantsList } from "../../components/sharedDetailPage/ParticipantsList";
 import { useNotification } from "../../context/NotificationContext";
 import LocationPreferenceForm from "../../components/LocationPreferenceForm";
-import FinalVotingForm from "../../components/FinalVotingForm";
 import CommentSection from "../../components/sharedDetailPage/CommentSection";
 import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayout";
 import axios from "../../api/axios";
+import GenericVotingForm, { VoteOption } from "src/components/sharedDetailPage/GenericVotingForm";
 
 interface Props {
   event: any;
@@ -255,7 +255,11 @@ export default function FixedTimeOpenPlaceDetail({
 
           {event.phase === "FinalVoting" && (
             <>
-              <FinalVotingForm eventId={eventId} />
+              <GenericVotingForm 
+                eventId={eventId} 
+                title="Final Voting - Select Your Preferred Option"
+                voteType="Final"
+                filterOptions={(opt: VoteOption) => opt.source === "Generated"} />
             </>
           )}
 

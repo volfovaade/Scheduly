@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "../../api/axios";
 import { useNotification } from "../../context/NotificationContext";
-import { Trash2 } from "lucide-react";
+import { Trash2, MapPin, Calendar, Users, ExternalLink } from "lucide-react";
 
 export interface VoteOption {
   id: string;
@@ -95,6 +95,14 @@ export default function GenericVotingForm({
     }
   };
 
+  // helper method to generate google maps url
+  const getMapsUrl = (opt: VoteOption) => {
+    if (opt.latitude && opt.longitude) {
+      return `https://www.google.com/maps/search/?api=1&query=${opt.latitude},${opt.longitude}`;
+    }
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(opt.address)}`;
+  };
+
   const handleVote = async () => {
     if (selected.length === 0)
       return notify.warning("Please select an one option.");
@@ -137,67 +145,75 @@ export default function GenericVotingForm({
           return (
             <li
               key={opt.id}
-              className={`border p-4 rounded shadow transition-all ${
+              className={`border p-4 rounded-xl shadow-sm transition-all ${
                 isSelected
-                  ? "border-blue-500 dark:border-blue-300 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-50"
+                  ? "border-blue-500 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/20"
+                  : "border-gray-200 dark:border-gray-700 dark:bg-gray-800"
               }`}
             >
-              <label className="flex ml-4 mr-4 items-center gap-8 cursor-pointer">
-                <div className="flex-1">
-                  <p className="font-semibold text-lg dark:text-gray-50">
-                    {opt.placeName}
-                  </p>
-                  <p className="text-sm text-gray-600 mb-2 dark:text-gray-200">
-                    {opt.address}
-                  </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-100">
-                    📅{" "}
-                    {new Date(opt.timeFrom).toLocaleString("en-US", {
-                      dateStyle: "long",
-                      timeStyle: "short",
-                    })}
-                    {" – "}
-                    {new Date(opt.timeTo).toLocaleString("en-US", {
-                      dateStyle: "long",
-                      timeStyle: "short",
-                    })}
-                  </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-50 mt-2">
-                    👥 Votes: {opt.voteCount || 0}
-                  </p>
-                </div>
+              <div className="flex items-start gap-4">
                 <input
                   type={!isMultiSelect ? "radio" : "checkbox"}
                   name={`vote-${voteType}`}
-                  value={opt.id}
                   checked={isSelected}
                   onChange={() => handleToggle(opt.id)}
-                  className="w-4 h-4 dark:[color-scheme:dark]"
+                  className="mt-1.5 w-5 h-5 cursor-pointer accent-blue-600 dark:[color-scheme:dark]"
                 />
-              </label>
-              {onDeleteOption && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm("Remove this option?")) {
-                      onDeleteOption(opt.id);
-                    }
-                  }}
-                  className="mt-2 flex items-center gap-1 text-xs text-red-500 hover:text-red-700 transition-colors"
-                >
-                  <Trash2 size={13} />
-                  Remove
-                </button>
-              )}
+                
+                <div className="flex-1">
+                  <p className="font-bold text-lg dark:text-white leading-tight mb-1">
+                    {opt.placeName}
+                  </p>
+
+                  <a
+                    href={getMapsUrl(opt)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mb-3"
+                  >
+                    <MapPin size={14} className="shrink-0" />
+                    <span className="underline decoration-gray-300 group-hover:decoration-blue-500">
+                      {opt.address}
+                    </span>
+                    <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </a>
+
+                  <div className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200 mb-2">
+                    <Calendar size={14} className="mt-0.5 shrink-0 text-gray-400" />
+                    <span>
+                      {new Date(opt.timeFrom).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                      <span className="mx-1 text-gray-400">–</span>
+                      {new Date(opt.timeTo).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    <Users size={14} />
+                    <span>{opt.voteCount || 0} {opt.voteCount === 1 ? 'vote' : 'votes'}</span>
+                  </div>
+
+                  {onDeleteOption && (
+                    <button
+                      onClick={(e) => {
+                        if (window.confirm("Remove this option?")) onDeleteOption(opt.id);
+                      }}
+                      className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider"
+                    >
+                      <Trash2 size={13} />
+                      Remove Option
+                    </button>
+                  )}
+                </div>
+              </div>
             </li>
           );
         })}
       </ul>
+
       <button
         onClick={handleVote}
         disabled={selected.length === 0 || loading}
-        className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+        className="mt-6 w-full sm:w-auto bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed transition-all shadow-md active:scale-95"
       >
         {loading ? "Submitting..." : "Submit Vote"}
       </button>
