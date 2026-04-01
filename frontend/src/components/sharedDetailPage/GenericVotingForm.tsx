@@ -97,10 +97,12 @@ export default function GenericVotingForm({
 
   // helper method to generate google maps url
   const getMapsUrl = (opt: VoteOption) => {
-    if (opt.latitude && opt.longitude) {
+    if (opt.address) {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(opt.address)}`;
+    } else if (opt.latitude && opt.longitude) {
       return `https://www.google.com/maps/search/?api=1&query=${opt.latitude},${opt.longitude}`;
     }
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(opt.address)}`;
+    return "#";
   };
 
   const handleVote = async () => {
