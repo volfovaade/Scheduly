@@ -16,8 +16,8 @@ namespace backend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Title = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     OwnerId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Mode = table.Column<int>(type: "integer", nullable: false),
@@ -26,8 +26,8 @@ namespace backend.Migrations
                     Constraint = table.Column<int>(type: "integer", nullable: false),
                     TimeRangeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     TimeRangeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    FixedPlaceName = table.Column<string>(type: "text", nullable: true),
-                    FixedAddress = table.Column<string>(type: "text", nullable: true),
+                    FixedPlaceName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    FixedAddress = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     FixedLatitude = table.Column<double>(type: "double precision", nullable: true),
                     FixedLongitude = table.Column<double>(type: "double precision", nullable: true),
                     FixedTimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
@@ -36,8 +36,8 @@ namespace backend.Migrations
                     AllowParticipantOptions = table.Column<bool>(type: "boolean", nullable: false),
                     MaxOptionsPerUser = table.Column<int>(type: "integer", nullable: false),
                     GeneratedOptionsCount = table.Column<int>(type: "integer", nullable: false),
-                    FinalPlaceName = table.Column<string>(type: "text", nullable: true),
-                    FinalAddress = table.Column<string>(type: "text", nullable: true),
+                    FinalPlaceName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    FinalAddress = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     FinalTimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
                     FinalTimeTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
@@ -52,8 +52,8 @@ namespace backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     EventId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PlaceName = table.Column<string>(type: "text", nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: false),
+                    PlaceName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Location_Lat = table.Column<double>(type: "double precision", nullable: false),
                     Location_Lng = table.Column<double>(type: "double precision", nullable: false),
                     TimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -69,7 +69,7 @@ namespace backend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    Name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -84,8 +84,8 @@ namespace backend.Migrations
                     EventId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: true),
                     Source = table.Column<int>(type: "integer", nullable: false),
-                    PlaceName = table.Column<string>(type: "text", nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: true),
+                    PlaceName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Latitude = table.Column<double>(type: "double precision", nullable: true),
                     Longitude = table.Column<double>(type: "double precision", nullable: true),
                     TimeFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -108,8 +108,8 @@ namespace backend.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Email = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     RoleId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
@@ -131,7 +131,7 @@ namespace backend.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     EventId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Content = table.Column<string>(type: "text", nullable: false),
+                    Content = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
                 },
@@ -184,7 +184,7 @@ namespace backend.Migrations
                 {
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     EventId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Role = table.Column<string>(type: "text", nullable: false)
+                    Role = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -212,7 +212,9 @@ namespace backend.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Type = table.Column<int>(type: "integer", nullable: false),
                     Latitude = table.Column<double>(type: "double precision", nullable: false),
-                    Longitude = table.Column<double>(type: "double precision", nullable: false)
+                    Longitude = table.Column<double>(type: "double precision", nullable: false),
+                    PreferredPriceLevel = table.Column<int>(type: "integer", nullable: false),
+                    MinRating = table.Column<double>(type: "double precision", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -225,6 +227,27 @@ namespace backend.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_LocationPreferences_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PasswordResetTokens",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Token = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    ExpiresAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
+                    Used = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PasswordResetTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -352,6 +375,11 @@ namespace backend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetTokens_UserId",
+                table: "PasswordResetTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeIntervals_TimePreferenceId",
                 table: "TimeIntervals",
                 column: "TimePreferenceId");
@@ -399,6 +427,9 @@ namespace backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "LocationPreferences");
+
+            migrationBuilder.DropTable(
+                name: "PasswordResetTokens");
 
             migrationBuilder.DropTable(
                 name: "TimeIntervals");

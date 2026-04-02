@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     public enum OptionSource
@@ -16,11 +18,18 @@ namespace backend.Models
         public Guid EventId { get; set; }
         public Guid? CreatedByUserId { get; set; }
         public OptionSource Source { get; set; }
+        [Required]
+        [StringLength(200)]
         public required string PlaceName { get; set; }
+        [StringLength(500)]
         public string? Address { get; set; }
+        [Range(-90, 90)]
         public double? Latitude { get; set; }
+        [Range(-180, 180)]
         public double? Longitude { get; set; }
+        [Required]
         public required DateTimeOffset TimeFrom { get; set; }
+        [Required]
         public required DateTimeOffset TimeTo { get; set; }
         public bool IsSelected { get; set; } = false; // Final choice
         // navigation

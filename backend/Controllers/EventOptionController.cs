@@ -29,6 +29,14 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> AddOption(Guid eventId, OptionCreateDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (dto.PlaceName.Length > 200)
+                return BadRequest("Place name is too long (max 200).");
+
+            if (dto.Address?.Length > 500)
+                return BadRequest("Address is too long (max 500).");
+
             var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
 
             if (ev == null) return NotFound("Event not found");

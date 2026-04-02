@@ -63,6 +63,8 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<CommentDto>> CreateComment(Guid eventId, [FromBody] CommentCreateDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
@@ -108,6 +110,8 @@ namespace backend.Controllers
         [HttpPut("{commentId}")]
         public async Task<IActionResult> UpdateComment(Guid eventId, Guid commentId, [FromBody] CommentUpdateDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 

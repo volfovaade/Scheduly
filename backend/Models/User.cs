@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 namespace backend.Models
 {
@@ -9,9 +10,16 @@ namespace backend.Models
     public class User
     {
         public Guid Id { get; set; }
+        [Required]
+        [StringLength(20, MinimumLength = 2)]
         public required string Name { get; set; }
+        [Required]
+        [EmailAddress]
+        [StringLength(50)]
         public required string Email { get; set; }
+        [Required]
         public required string PasswordHash { get; set; }   // BCrypt hashed password
+        [Required]
         public required Role Role { get; set; }  // user's system role
 
         /// <summary>

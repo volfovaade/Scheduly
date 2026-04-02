@@ -51,6 +51,8 @@ namespace backend.Controllers
         [Authorize]
         public async Task<IActionResult> UpdateUser(Guid id, UpdateUserDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
                 return Unauthorized();
@@ -61,10 +63,19 @@ namespace backend.Controllers
             if (user == null) return NotFound();
 
             if (!string.IsNullOrEmpty(dto.Name))
-                user.Name = dto.Name;
+            {
+                var trimmedName = dto.Name.Trim();
+                if (trimmedName.Length < 2 || trimmedName.Length > 20)
+                    return BadRequest("Name must be between 2 and 20 characters.");
+                user.Name = trimmedName;
+            }
 
             if (!string.IsNullOrEmpty(dto.Email))
             {
+                var emailChecker = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+                if (!emailChecker.IsValid(dto.Email) || dto.Email.Length > 50)
+                    return BadRequest("Invalid email format or length.");
+
                 var existing = await _userRepo.GetByEmailAsync(dto.Email);
                 if (existing != null && existing.Id != id)
                     return BadRequest("Email already in use.");

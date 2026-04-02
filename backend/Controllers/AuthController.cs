@@ -39,6 +39,8 @@ namespace backend.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             bool alreadyTaken = await _userRepo.Contains(request.Email);
             if (alreadyTaken)
                 return BadRequest("User already exists");
@@ -70,6 +72,7 @@ namespace backend.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponse>> Login(LoginRequest request)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var user = await _userRepo.GetUserWithRole(request.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
                 return Unauthorized("Invalid credentials");

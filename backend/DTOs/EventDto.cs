@@ -1,14 +1,18 @@
 using backend.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace backend.DTOs
 {
     public class EventDto
     {
         public Guid Id { get; set; }
+        [StringLength(100)]
         public string Title { get; set; } = null!;
+        [StringLength(2000)]
         public string Description { get; set; } = string.Empty;
         public EventMode Mode { get; set; } = EventMode.Fixed;
         public bool IsMultiDay { get; set; }
+        [StringLength(8)]
         public string Code { get; set; } = null!;
         public ConstraintType Constraint { get; set; }
 

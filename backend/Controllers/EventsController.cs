@@ -73,6 +73,9 @@ namespace backend.Controllers
         [HttpPut("{eventId}/description")]
         public async Task<IActionResult> UpdateEvent(Guid eventId, [FromBody] EventUpdateDto dto)
         {
+            if (dto.Description?.Length > 2000)
+                return BadRequest("Description exceeds 2000 characters.");
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
             var ev = await _eventRepo.GetByIdWithParticipantsAsync(eventId);
@@ -176,7 +179,6 @@ namespace backend.Controllers
                     inner = inner.InnerException;
                 }
                 return BadRequest(fullMessage);
-                return BadRequest(err.Message);
             }
         }
 
@@ -266,6 +268,17 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<ActionResult<EventDto>> Create([FromBody] EventCreateDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            if (dto.Title.Length < 3 || dto.Title.Length > 100)
+                return BadRequest("Title must be between 3 and 100 characters.");
+
+            if (dto.Description?.Length > 2000)
+                return BadRequest("Description is too long.");
+
+            if (!string.IsNullOrEmpty(dto.FixedPlaceName) && dto.FixedPlaceName.Length > 200)
+                return BadRequest("Fixed place name is too long.");
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
                 return Unauthorized();

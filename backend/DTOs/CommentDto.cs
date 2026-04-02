@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.DTOs
 {
     public class CommentDto
@@ -15,11 +17,13 @@ namespace backend.DTOs
     }
     public class CommentCreateDto
     {
+        [Required, StringLength(2000, MinimumLength = 1)]
         public required string Content { get; set; }
     }
 
     public class CommentUpdateDto
     {
+        [Required, StringLength(2000, MinimumLength = 1)]
         public required string Content { get; set; }
     }
 }

@@ -59,6 +59,8 @@ namespace backend.Controllers
         [HttpDelete("events/cleanup")]
         public async Task<IActionResult> CleanupOldEvents([FromQuery] int daysOld = 365)
         {
+            if (daysOld < 0) return BadRequest("Days cannot be negative");
+
             var thresholdDate = DateTimeOffset.UtcNow.AddDays(-daysOld);
             var oldEvents = await _eventRepo.GetOldEventsAsync(thresholdDate);
             await _eventRepo.DeleteAsync(oldEvents);

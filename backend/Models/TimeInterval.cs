@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     /// <summary>
@@ -9,10 +11,12 @@ namespace backend.Models
         public Guid Id { get; set; }
 
         // key to TimePreference
+        [Required]
         public Guid TimePreferenceId { get; set; }
         public TimePreference TimePreference { get; set; } = null!;
-
+        [Required]
         public DateTimeOffset From { get; set; }
+        [Required]
         public DateTimeOffset To { get; set; }
     }
 }

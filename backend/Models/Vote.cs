@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     public enum VoteType
@@ -19,8 +21,9 @@ namespace backend.Models
         public Guid OptionId { get; set; }
         public EventOption Option { get; set; } = null!;
 
-
+        [Required]
         public VoteType Type { get; set; }
+        [Range(-1, 10)]
         public int Score { get; set; }  // voting score (higher = more preferred)
         public DateTimeOffset VotedAt { get; set; } = DateTimeOffset.UtcNow;  // zatím nepoužíváno
 

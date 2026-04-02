@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     /// <summary>
@@ -32,10 +34,14 @@ namespace backend.Models
         public Event Event { get; set; } = null!;
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
+        [Required]
         public PlaceType Type { get; set; }
+        [Range(-90, 90)]
         public double Latitude { get; set; }
+        [Range(-180, 180)]
         public double Longitude { get; set; }
         public PriceLevel PreferredPriceLevel { get; set; } = PriceLevel.Any;
+        [Range(0, 5)]
         public double MinRating { get; set; } = 0.0;  // 0-5
     }
 }

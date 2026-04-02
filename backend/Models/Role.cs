@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     /// <summary>
@@ -23,6 +25,8 @@ namespace backend.Models
     public class Role
     {
         public Guid Id { get; set; }
+        [Required]
+        [StringLength(20)]
         public string Name { get; set; } = Roles.User; // default to regular user role
     }
 }

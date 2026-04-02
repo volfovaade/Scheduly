@@ -31,6 +31,8 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitVotes(Guid eventId, VoteRequestDto voteDto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             // gets the id of current logged user from JWT token
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {

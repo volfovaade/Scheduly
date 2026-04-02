@@ -77,6 +77,8 @@ namespace backend.Controllers
         [HttpPost("location")]
         public async Task<IActionResult> SubmitLocationPreference(Guid eventId, [FromBody] LocationPreferenceDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
@@ -85,6 +87,9 @@ namespace backend.Controllers
 
             if (ev.Mode != EventMode.FullyOpen)
                 return BadRequest("This endpoint is only for fully open events");
+
+            if (dto.Latitude < -90 || dto.Latitude > 90 || dto.Longitude < -180 || dto.Longitude > 180)
+                return BadRequest("Invalid GPS coordinates.");
 
             // Delete existing preference
             var existing = await _locationPrefRepo.GetAsync(eventId, userId);

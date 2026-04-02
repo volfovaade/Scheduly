@@ -28,6 +28,9 @@ namespace backend.Controllers
         [HttpPost("{code}")]
         public async Task<IActionResult> JoinEvent(string code)
         {
+            if (string.IsNullOrWhiteSpace(code) || code.Length > 8)
+                return BadRequest("Invalid event code format.");
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 

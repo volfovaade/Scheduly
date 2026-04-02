@@ -12,7 +12,7 @@ using backend.Database;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260222130307_InitialCreate")]
+    [Migration("20260402154129_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -33,7 +33,8 @@ namespace backend.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -103,13 +104,16 @@ namespace backend.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
                     b.Property<string>("FinalAddress")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("FinalPlaceName")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTimeOffset?>("FinalTimeFrom")
                         .HasColumnType("timestamp with time zone");
@@ -118,7 +122,8 @@ namespace backend.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FixedAddress")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<double?>("FixedLatitude")
                         .HasColumnType("double precision");
@@ -127,7 +132,8 @@ namespace backend.Migrations
                         .HasColumnType("double precision");
 
                     b.Property<string>("FixedPlaceName")
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTimeOffset?>("FixedTimeFrom")
                         .HasColumnType("timestamp with time zone");
@@ -161,7 +167,8 @@ namespace backend.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
@@ -178,7 +185,8 @@ namespace backend.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Address")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
@@ -197,7 +205,8 @@ namespace backend.Migrations
 
                     b.Property<string>("PlaceName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("Source")
                         .HasColumnType("integer");
@@ -225,7 +234,8 @@ namespace backend.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("UserId", "EventId");
 
@@ -242,14 +252,16 @@ namespace backend.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("PlaceName")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<DateTimeOffset>("TimeFrom")
                         .HasColumnType("timestamp with time zone");
@@ -277,6 +289,12 @@ namespace backend.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("double precision");
 
+                    b.Property<double>("MinRating")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("PreferredPriceLevel")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -292,6 +310,33 @@ namespace backend.Migrations
                     b.ToTable("LocationPreferences");
                 });
 
+            modelBuilder.Entity("backend.Models.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("backend.Models.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -300,7 +345,8 @@ namespace backend.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
 
@@ -358,11 +404,13 @@ namespace backend.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -514,6 +562,17 @@ namespace backend.Migrations
                         .IsRequired();
 
                     b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Models.PasswordResetToken", b =>
+                {
+                    b.HasOne("backend.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });

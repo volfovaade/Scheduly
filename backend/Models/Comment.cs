@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     /// <summary>
@@ -11,6 +13,8 @@ namespace backend.Models
         public Event Event { get; set; } = null!;
         public Guid UserId { get; set; }
         public User User { get; set; } = null!;
+        [Required]
+        [StringLength(2000, MinimumLength = 1)]
         public string Content { get; set; } = string.Empty;
         public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset? UpdatedAt { get; set; }

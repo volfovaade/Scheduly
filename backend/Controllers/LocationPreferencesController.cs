@@ -47,6 +47,8 @@ namespace backend.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitLocationPreference(Guid eventId, [FromBody] LocationPreferenceDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 

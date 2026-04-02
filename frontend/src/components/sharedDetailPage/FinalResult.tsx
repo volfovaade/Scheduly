@@ -52,7 +52,7 @@ export const FinalResult = ({ event }: { event: any }) => (
 
     <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-100 dark:border-gray-900">
       <p className="text-yellow-800 dark:text-yellow-100 font-semibold text-center flex items-center justify-center gap-2">
-        <span>📅</span> Don't forget to add this to your calendar!
+        Don't forget to add this to your calendar!
       </p>
     </div>
   </div>
