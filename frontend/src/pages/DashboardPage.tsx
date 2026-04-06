@@ -5,7 +5,7 @@ import EventCreationForm from "../components/EventCreationForm";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 import EventCard from "../components/EventCard";
-import { Search, Target, Users } from "lucide-react";
+import { Search, Target, Users, Info, X } from "lucide-react";
 
 type EventMode =
   | "SingleOption"
@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const { user, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showInfo, setShowInfo] = useState(false);
 
   // Add filtered lists before return
   const filteredOrganized = organized.filter((e) =>
@@ -189,9 +190,18 @@ export default function DashboardPage() {
   return (
     <div className="p-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50">
-          My Events
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-50">
+            My Events
+          </h2>
+          <button
+            onClick={() => setShowInfo(true)}
+            className="text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+            title="How does it work?"
+          >
+            <Info className="w-5 h-5" />
+          </button>
+        </div>
         <div className="flex items-center gap-3">
           {/* Search */}
           <div className="relative flex-1 sm:flex-none">
@@ -287,6 +297,58 @@ export default function DashboardPage() {
         onClose={() => setShowDialog(false)}
         onCreate={handleAddEvent}
       />
+      {showInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowInfo(false)} />
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                How to use My Events
+              </h3>
+              <button
+                onClick={() => setShowInfo(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-start gap-3">
+                <span className="w-7 h-7 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+                <p>Create a new event by clicking <strong className="text-gray-900 dark:text-white">+ Add Event</strong> and choose the type that suits your needs.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="w-7 h-7 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+                <p>Share the <strong className="text-gray-900 dark:text-white">6-character code</strong> shown on each event card with your friends or colleagues.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="w-7 h-7 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+                <p>Participants enter the code on the home page to join. You can also copy it directly using the copy icon on the event card.</p>
+              </div>
+              <div className="flex items-start gap-3">
+                <span className="w-7 h-7 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">4</span>
+                <p>Once everyone submits their preferences, close voting and let the app find the best time and place.</p>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <button
+                onClick={() => { setShowInfo(false); navigate("/how-to-use"); }}
+                className="text-sm text-pink-600 dark:text-pink-400 hover:underline font-medium"
+              >
+                Full guide →
+              </button>
+              <button
+                onClick={() => setShowInfo(false)}
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}    
     </div>
   );
 }
