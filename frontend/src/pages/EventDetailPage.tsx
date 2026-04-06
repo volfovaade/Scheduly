@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Pencil, Check, X } from "lucide-react";
+import { Pencil, Check, X, Info, Copy } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useNotification } from "../context/NotificationContext";
 import axios from "../api/axios";
@@ -40,6 +40,8 @@ export default function EventDetailPage() {
 
   const showPreferenceFormInitially =
     new URLSearchParams(location.search).get("showPreferenceForm") === "true";
+  const [showShareInfo, setShowShareInfo] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const loadEvent = useCallback(async () => {
     try {
@@ -282,9 +284,16 @@ export default function EventDetailPage() {
           </div>
 
           {/* Badges */}
-          <div className="flex flex-wrap gap-2 mt-3 text-sm">
-            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+          <div className="flex flex-wrap gap-2 mt-3 text-sm items-center">
+            <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-1.5">
               Code: {event.code}
+              <button
+                onClick={() => setShowShareInfo(true)}
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+                title="How to share"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
             </span>
             <span className={`px-3 py-1 rounded-full ${
               event.phase === "Closed"
@@ -299,6 +308,69 @@ export default function EventDetailPage() {
               {getModeLabel(event.mode)}
             </span>
           </div>
+
+          {/* Share info modal */}
+          {showShareInfo && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/40" onClick={() => setShowShareInfo(false)} />
+              <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm p-6">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Invite participants
+                  </h3>
+                  <button
+                    onClick={() => setShowShareInfo(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                  <p>Share this event code with anyone you want to invite:</p>
+
+                  {/* Code display with copy */}
+                  <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 border border-gray-200 dark:border-gray-600">
+                    <span className="text-2xl font-mono font-bold tracking-widest text-gray-900 dark:text-white flex-1 text-center">
+                      {event.code}
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(event.code);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 transition-colors"
+                    >
+                      {copied
+                        ? <Check className="w-4 h-4 text-green-500" />
+                        : <Copy className="w-4 h-4" />
+                      }
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Participants enter this code on the home page to join the event.
+                  </p>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+                  <button
+                    onClick={() => { setShowShareInfo(false); navigate("/how-to-use"); }}
+                    className="text-sm text-pink-600 dark:text-pink-400 hover:underline font-medium"
+                  >
+                    Full guide →
+                  </button>
+                  <button
+                    onClick={() => setShowShareInfo(false)}
+                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
