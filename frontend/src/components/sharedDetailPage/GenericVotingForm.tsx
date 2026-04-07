@@ -150,7 +150,8 @@ export default function GenericVotingForm({
       });
 
       notify.info("Votes submitted successfully");
-      await Promise.all([loadOptions(), loadMyVote()]);
+      await loadMyVote();
+      await loadOptions();
     } catch (err) {
       console.error("Vote error:", err);
       notify.error("Failed to submit vote");
