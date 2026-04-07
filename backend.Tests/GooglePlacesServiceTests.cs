@@ -1,14 +1,10 @@
 using backend.Models;
-using backend.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Moq;
 using Moq.Protected;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Xunit.Abstractions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using backend.Services;
 
 namespace backend.Tests
 {
@@ -18,7 +14,7 @@ namespace backend.Tests
         {
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             handlerMock
-                .Protected()   //!!!! I do not have any protected classes but in case
+                .Protected()
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
@@ -31,84 +27,255 @@ namespace backend.Tests
 
             return new HttpClient(handlerMock.Object);
         }
-        //private IConfiguration CreateConfiguration(string apiKey = "test_api_key")
-        //{
-        //    var mockConfig = new Mock<IConfiguration>();
-        //    mockConfig.Setup(c => c[It.Is<string>(s => s == "GoogleApiKey")])
-        //              .Returns(apiKey);
-        //    return mockConfig.Object;
-        //}
 
+        private string BuildSampleJson(int count)
+        {
+            var results = Enumerable.Range(1, count).Select(i =>
+                new GooglePlaceResult
+                {
+                    Name = $"Place {i}",
+                    Vicinity = $"Address {i}",
+                    Rating = 4.0 + (i * 0.1),
+                    Geometry = new Geometry { Location = new Location { Lat = i, Lng = i } }
+                }).ToList();
+
+            return JsonSerializer.Serialize(new GooglePlaceResponse { Results = results });
+        }
+
+        // ---------------------------------------------------------------
+        // 1. Returns top 3 results even when API returns more
+        // ---------------------------------------------------------------
         [Fact]
         public async Task SearchPlacesAsync_ReturnsTop3Results()
         {
-            // Arrange
-            var sampleJson = JsonSerializer.Serialize(new GooglePlaceResponse
-            {
-                Results = new List<GooglePlaceResult>
-            {
-                new GooglePlaceResult { Name = "Place 1", Vicinity = "Address 1", Geometry = new Geometry { Location = new Location { Lat = 1, Lng = 1 } } },
-                new GooglePlaceResult { Name = "Place 2", Vicinity = "Address 2", Geometry = new Geometry { Location = new Location { Lat = 2, Lng = 2 } } },
-                new GooglePlaceResult { Name = "Place 3", Vicinity = "Address 3", Geometry = new Geometry { Location = new Location { Lat = 3, Lng = 3 } } },
-                new GooglePlaceResult { Name = "Place 4", Vicinity = "Address 4", Geometry = new Geometry { Location = new Location { Lat = 4, Lng = 4 } } }
-            }
-            });
-
-            var httpClient = CreateHttpClientWithResponse(sampleJson);
-            //var config = CreateConfiguration();
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(4));
             var service = new GooglePlacesService(httpClient);
-
             var eventId = Guid.NewGuid();
-            var fromTime = DateTimeOffset.UtcNow;
-            var toTime = DateTimeOffset.UtcNow.AddHours(2);
+            var from = DateTimeOffset.UtcNow;
+            var to = from.AddHours(2);
 
-            // Act
-            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, eventId, fromTime, toTime);
+            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, eventId, from, to);
 
-            // Assert
             Assert.NotNull(result);
             Assert.Equal(3, result.Count);
+        }
+
+        // ---------------------------------------------------------------
+        // 2. Returned options have correct EventId, TimeFrom, TimeTo
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_ResultsHaveCorrectEventMetadata()
+        {
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(2));
+            var service = new GooglePlacesService(httpClient);
+            var eventId = Guid.NewGuid();
+            var from = DateTimeOffset.UtcNow;
+            var to = from.AddHours(3);
+
+            var result = await service.SearchPlacesAsync("restaurant", 50.0, 14.0, eventId, from, to);
+
             Assert.All(result, r =>
             {
                 Assert.Equal(eventId, r.EventId);
-                Assert.Equal(fromTime, r.TimeFrom);
-                Assert.Equal(toTime, r.TimeTo);
-                Assert.False(string.IsNullOrEmpty(r.PlaceName));
-                Assert.False(string.IsNullOrEmpty(r.Address));
-                Assert.NotNull(r.Address);
+                Assert.Equal(from, r.TimeFrom);
+                Assert.Equal(to, r.TimeTo);
             });
-            Assert.Equal("Place 1", result[0].PlaceName);
-            Assert.Equal("Place 3", result[2].PlaceName); // order preserved from API
         }
 
+        // ---------------------------------------------------------------
+        // 3. Returned options have non-empty names and addresses
+        // ---------------------------------------------------------------
         [Fact]
-        public async Task SearchPlacesAsync_WhenHttpFails_ReturnsEmptyList()
+        public async Task SearchPlacesAsync_ResultsHaveNonEmptyPlaceNameAndAddress()
         {
-            // Arrange
-            var httpClient = CreateHttpClientWithResponse("{}", HttpStatusCode.BadRequest);
-            //var config = CreateConfiguration();
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(3));
             var service = new GooglePlacesService(httpClient);
 
-            // Act
-            var result = await service.SearchPlacesAsync("restaurant", 50.0, 14.0, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1));
+            var result = await service.SearchPlacesAsync("bar", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
 
-            // Assert
+            Assert.All(result, r =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(r.PlaceName));
+                Assert.False(string.IsNullOrWhiteSpace(r.Address));
+            });
+        }
+
+        // ---------------------------------------------------------------
+        // 4. Order is preserved from API response
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_PreservesOrderFromApi()
+        {
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(4));
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
+            Assert.Equal("Place 1", result[0].PlaceName);
+            Assert.Equal("Place 2", result[1].PlaceName);
+            Assert.Equal("Place 3", result[2].PlaceName);
+        }
+
+        // ---------------------------------------------------------------
+        // 5. Each result has a unique generated Id
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_EachResultHasUniqueId()
+        {
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(3));
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("museum", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
+            var ids = result.Select(r => r.Id).ToList();
+            Assert.Equal(ids.Count, ids.Distinct().Count());
+        }
+
+        // ---------------------------------------------------------------
+        // 6. Source is set to Generated
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_ResultsHaveGeneratedSource()
+        {
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(2));
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("hotel", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
+            Assert.All(result, r => Assert.Equal(OptionSource.Generated, r.Source));
+        }
+
+        // ---------------------------------------------------------------
+        // 7. Returns fewer than 3 when API returns fewer results
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_ReturnsFewerThan3WhenApiReturnsLess()
+        {
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(2));
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
+            Assert.Equal(2, result.Count);
+        }
+
+        // ---------------------------------------------------------------
+        // 8. Returns empty list when API returns empty results array
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_WhenApiReturnsEmptyResults_ReturnsEmptyList()
+        {
+            var emptyJson = JsonSerializer.Serialize(new GooglePlaceResponse { Results = new List<GooglePlaceResult>() });
+            var httpClient = CreateHttpClientWithResponse(emptyJson);
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("parc", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
             Assert.NotNull(result);
             Assert.Empty(result);
         }
 
+        // ---------------------------------------------------------------
+        // 9. Returns empty list on HTTP failure (400)
+        // ---------------------------------------------------------------
         [Fact]
-        public async Task SearchPlacesAsync_WhenJsonIsMalformed_ReturnsEmptyList()
+        public async Task SearchPlacesAsync_WhenHttpFails_ReturnsEmptyList()
         {
-            // Arrange
-            var malformedJson = "{ invalid json";
-            var httpClient = CreateHttpClientWithResponse(malformedJson);
-            //var config = CreateConfiguration();
+            var httpClient = CreateHttpClientWithResponse("{}", HttpStatusCode.BadRequest);
             var service = new GooglePlacesService(httpClient);
 
-            // Act & Assert
+            var result = await service.SearchPlacesAsync("restaurant", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1));
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        // ---------------------------------------------------------------
+        // 10. Returns empty list on HTTP 500 Internal Server Error
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_WhenServerError_ReturnsEmptyList()
+        {
+            var httpClient = CreateHttpClientWithResponse("{}", HttpStatusCode.InternalServerError);
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("bar", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1));
+
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        // ---------------------------------------------------------------
+        // 11. Throws JsonException on malformed JSON
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_WhenJsonIsMalformed_ThrowsJsonException()
+        {
+            var httpClient = CreateHttpClientWithResponse("{ invalid json");
+            var service = new GooglePlacesService(httpClient);
+
             await Assert.ThrowsAsync<JsonException>(() =>
-                service.SearchPlacesAsync("parc", 50.0, 14.0, Guid.NewGuid(), DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1)));
+                service.SearchPlacesAsync("parc", 50.0, 14.0, Guid.NewGuid(),
+                    DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(1)));
+        }
+
+        // ---------------------------------------------------------------
+        // 12. Coordinates are correctly mapped from API response
+        // ---------------------------------------------------------------
+        [Fact]
+        public async Task SearchPlacesAsync_CoordinatesAreMappedCorrectly()
+        {
+            var json = JsonSerializer.Serialize(new GooglePlaceResponse
+            {
+                Results = new List<GooglePlaceResult>
+                {
+                    new GooglePlaceResult
+                    {
+                        Name = "Test Place",
+                        Vicinity = "Test Address",
+                        Geometry = new Geometry { Location = new Location { Lat = 50.0875, Lng = 14.4213 } }
+                    }
+                }
+            });
+
+            var httpClient = CreateHttpClientWithResponse(json);
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync("cafe", 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
+            Assert.Single(result);
+            Assert.Equal(50.0875, result[0].Latitude);
+            Assert.Equal(14.4213, result[0].Longitude);
+        }
+
+        // ---------------------------------------------------------------
+        // 13. Works correctly with different place types
+        // ---------------------------------------------------------------
+        [Theory]
+        [InlineData("cafe")]
+        [InlineData("restaurant")]
+        [InlineData("bar")]
+        [InlineData("museum")]
+        [InlineData("gym")]
+        public async Task SearchPlacesAsync_WorksWithDifferentPlaceTypes(string placeType)
+        {
+            var httpClient = CreateHttpClientWithResponse(BuildSampleJson(3));
+            var service = new GooglePlacesService(httpClient);
+
+            var result = await service.SearchPlacesAsync(placeType, 50.0, 14.0, Guid.NewGuid(),
+                DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddHours(2));
+
+            Assert.NotNull(result);
+            Assert.Equal(3, result.Count);
         }
     }
 }
