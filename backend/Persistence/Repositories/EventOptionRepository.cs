@@ -21,6 +21,13 @@ namespace backend.Persistence.Repositories
                 .Where(o => o.EventId == eventId)
                 .ToListAsync();
         }
+        public async Task<List<EventOption>> GetOptionsWithVotesAsync(Guid eventId)
+        {
+            return await _context.EventOptions
+                .Include(o => o.Votes)
+                .Where(o => o.EventId == eventId)
+                .ToListAsync();
+        }
         public async Task<bool> HasEventOption(Guid eventId, Guid optionId)
         {
             return await _context.EventOptions

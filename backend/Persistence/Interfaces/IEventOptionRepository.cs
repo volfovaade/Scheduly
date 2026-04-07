@@ -7,6 +7,7 @@ namespace backend.Persistence.Interfaces
         Task AddOptionsAsync(List<EventOption> options);
         Task AddOptionAsync(EventOption option);
         Task<List<EventOption>> GetOptionsAsync(Guid eventId);
+        Task<List<EventOption>> GetOptionsWithVotesAsync(Guid eventId);
         Task<bool> HasEventOption(Guid eventId, Guid optionId);
         Task<EventOption?> GetOptionWithVotesAsync(Guid eventId, Guid optionId);
         Task DeleteAsync(EventOption option);

@@ -97,8 +97,8 @@ namespace backend.Controllers
         [HttpGet("summary")]
         public async Task<IActionResult> GetVoteSummary(Guid eventId)
         {
-            var summary = (await _eventOptionRepo.GetOptionsAsync(eventId))
-                .Select(o => new
+            var options = await _eventOptionRepo.GetOptionsWithVotesAsync(eventId);
+            var summary = options.Select(o => new
                 {
                     o.Id,
                     o.PlaceName,
