@@ -36,7 +36,7 @@ export default function GenericVotingForm({
   const notify = useNotification();
 
   const [localOptions, setLocalOptions] = useState<VoteOption[]>([]);
-  const optionsToRender = providedOptions || localOptions;
+  const optionsToRender = localOptions;
 
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,10 @@ export default function GenericVotingForm({
   const loadMyVote = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/votes/my`);
-      const existingVotes = res.data.filter((v: any) => v.type === voteType);
+      const existingVotes = res.data.filter((v: any) => 
+        v.type?.toLowerCase() === voteType.toLowerCase() ||
+        v.Type?.toLowerCase() === voteType.toLowerCase()
+      );
 
       if (existingVotes.length > 0) {
         setSelected(existingVotes.map((v: any) => v.optionId));
@@ -60,20 +63,48 @@ export default function GenericVotingForm({
 
   const loadOptions = useCallback(async () => {
     try {
-      const res = await axios.get(`/events/${eventId}/options`);
-      setLocalOptions(res.data);
+      const [optionsRes, summaryRes] = await Promise.all([
+        providedOptions ? Promise.resolve(null) : axios.get(`/events/${eventId}/options`),
+        axios.get(`/events/${eventId}/votes/summary`),
+      ]);
+
+      const summary = summaryRes.data;
+
+      if (!providedOptions && optionsRes) {
+        // merge options with vote counts from summary
+        const withCounts = optionsRes.data.map((opt: VoteOption) => {
+          const s = summary.find((s: any) => s.id === opt.id);
+          return {
+            ...opt,
+            voteCount: voteType === "Final"
+              ? (s?.finalVotes ?? 0)
+              : (s?.preferenceVotes ?? 0),
+          };
+        });
+        setLocalOptions(withCounts);
+      } else if (providedOptions) {
+        // merge provided options with vote counts
+        const withCounts = providedOptions.map((opt) => {
+          const s = summary.find((s: any) => s.id === opt.id);
+          return {
+            ...opt,
+            voteCount: voteType === "Final"
+              ? (s?.finalVotes ?? 0)
+              : (s?.preferenceVotes ?? 0),
+          };
+        });
+        setLocalOptions(withCounts);
+      }
     } catch (err) {
       console.error("Failed to load options:", err);
       notify.error("Failed to load voting options");
     }
-  }, [eventId, notify]);
+  }, [eventId, notify, voteType, providedOptions]);
 
   useEffect(() => {
-    if (!providedOptions) {
-      loadOptions();
-    }
+    loadOptions();
     loadMyVote();
-  }, [loadMyVote, loadOptions, providedOptions]);
+  }, [loadMyVote, loadOptions]);
 
   const filteredOptions = filterOptions
     ? optionsToRender.filter(filterOptions)
@@ -119,7 +150,7 @@ export default function GenericVotingForm({
       });
 
       notify.info("Votes submitted successfully");
-      await loadOptions();
+      await Promise.all([loadOptions(), loadMyVote()]);
     } catch (err) {
       console.error("Vote error:", err);
       notify.error("Failed to submit vote");
@@ -156,7 +187,7 @@ export default function GenericVotingForm({
               <div className="flex items-start gap-4">
                 <input
                   type={!isMultiSelect ? "radio" : "checkbox"}
-                  name={`vote-${voteType}`}
+                  name={`vote-${voteType}-${opt.id}`}
                   checked={isSelected}
                   onChange={() => handleToggle(opt.id)}
                   className="mt-1.5 w-5 h-5 cursor-pointer accent-blue-600 dark:[color-scheme:dark]"
