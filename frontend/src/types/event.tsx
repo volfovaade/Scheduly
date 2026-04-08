@@ -29,5 +29,6 @@ interface Event {
   currentUserIsOrganizer: boolean;
   allowParticipantOptions: boolean;
   participants: any[];
+  cancelledReason?: string;
 }
 export default Event;

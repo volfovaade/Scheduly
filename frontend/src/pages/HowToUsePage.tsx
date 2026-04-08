@@ -256,7 +256,7 @@ export default function HowToUsePage() {
                 Closed
               </span>
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                The organizer closes the event. The winning option is shown to all participants and an email notification is sent.
+                Either the organizer closes the event or if not before event's time range starts, it expires automatically. The winning option is shown to all participants and an email notification is sent.
               </p>
             </div>
           </div>

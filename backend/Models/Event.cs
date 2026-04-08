@@ -108,5 +108,6 @@ namespace backend.Models
 
         public DateTimeOffset? FinalTimeFrom { get; set; }
         public DateTimeOffset? FinalTimeTo { get; set; }
+        public string? CancelledReason { get; set; }
     }
 }

@@ -124,6 +124,7 @@ namespace backend.Services
                 FinalTimeTo = ev.FinalTimeTo,
                 Participants = ev.Participants.Select(ToParticipantDto).ToList(),
                 CurrentUserIsOrganizer = ev.Participants.Any(p => p.UserId == currentUserId && p.Role == EventRoles.Organizator),
+                CancelledReason = ev.CancelledReason,
             };
         }
         /// <summary>

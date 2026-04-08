@@ -81,6 +81,7 @@ namespace backend.Services
                 try
                 {
                     ev.Phase = EventPhase.Closed;
+                    ev.CancelledReason = "Event was automatically cancelled because the time range has passed.";
                     await context.SaveChangesAsync();
                     foreach (var p in ev.Participants)
                     {
