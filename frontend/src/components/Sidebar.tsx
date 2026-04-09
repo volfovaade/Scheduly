@@ -59,6 +59,7 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
         className={`
                 fixed left-0 top-0 h-full w-72 bg-white dark:bg-gray-900
                 transform transition-transform duration-300 ease-in-out z-50
+                flex flex-col
                 ${isOpen ? "translate-x-0" : "-translate-x-full"} 
                 lg:translate-x-0
                 shadow-xl dark:shadow-white/10
@@ -86,36 +87,37 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
             </button>
           </div>
         </div>
-        {/* User info with first letter icon */}
-        {isAuthenticated && (
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-3">
-              <div
-                className={`w-10 h-10 bg-gradient-to-br from-pink-600 to-pink-700 rounded-full flex items-center justify-center ${
-                  isAdmin
-                    ? "bg-gradient-to-br from-yellow-500 to-orange-600"
-                    : "bg-gradient-to-br from-pink-600 to-pink-700"
-                }`}
-              >
-                <span className="text-sm font-medium text-white">
-                  {user?.name?.charAt(0) || "U"}
-                </span>
-              </div>
-              <div>
-                <p className="font-medium text-gray-900 dark:text-white">
-                  {user?.name}
-                </p>
-                {isAdmin && (
-                  <span className="text-xs text-yellow-600 dark:text-yellow-400 font-semibold">
-                    Admin
+        
+        {/* Navigation */}
+        <nav className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+          {/* User info with first letter icon */}
+          {isAuthenticated && (
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <div
+                  className={`w-10 h-10 bg-gradient-to-br from-pink-600 to-pink-700 rounded-full flex items-center justify-center ${
+                    isAdmin
+                      ? "bg-gradient-to-br from-yellow-500 to-orange-600"
+                      : "bg-gradient-to-br from-pink-600 to-pink-700"
+                  }`}
+                >
+                  <span className="text-sm font-medium text-white">
+                    {user?.name?.charAt(0) || "U"}
                   </span>
-                )}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {user?.name}
+                  </p>
+                  {isAdmin && (
+                    <span className="text-xs text-yellow-600 dark:text-yellow-400 font-semibold">
+                      Admin
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
+          )}
           <ul className="space-y-2">
             {menuItems.map((item, index) => (
               <li key={index}>
