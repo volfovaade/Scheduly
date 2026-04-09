@@ -42,6 +42,21 @@ namespace backend.Controllers
 
             return Ok(result);
         }
+        // DELETE: api/admin/users/{id}
+        [HttpDelete("users/{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id)
+        {
+            var user = await _userRepo.GetByIdAsync(id);
+            if (user == null) return NotFound("User not found");
+
+            // first delete user events
+            var userEvents = await _eventRepo.GetByOwnerIdAsync(id);
+            await _eventRepo.DeleteAsync(userEvents);
+
+            await _userRepo.DeleteAsync(user);
+
+            return Ok(new { message = "User and all associated data deleted successfully." });
+        }
 
         // GET: api/admin/events/cleanup?daysOld=365
         [HttpGet("events/cleanup")]

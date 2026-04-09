@@ -6,6 +6,7 @@ namespace backend.Persistence.Interfaces
     {
         Task<IEnumerable<Event>> GetAllAsync();
         Task<Event?> GetByIdAsync(Guid id);
+        Task<List<Event>> GetByOwnerIdAsync(Guid ownerId);
         Task<List<Event>> GetOldEventsAsync(DateTimeOffset oldDate);
         Task<Event?> GetByIdWithParticipantsAsync(Guid id); // special method with Include
         Task<List<Event>> GetByUserParticipation(Guid userId);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "../api/axios";
-import { ShieldAlert, UserX, AlertOctagon, Trash2 } from "lucide-react";
+import { ShieldAlert, UserMinus, AlertOctagon } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 
 type SuspiciousUser = {
@@ -30,10 +30,16 @@ export default function SuspiciousActivityPage() {
     loadSuspicious();
   }, [notify]);
 
-  const handleBanUser = (userId: string) => {
-    if (!window.confirm("Do you really want to ban this user?")) return;
-    // zde dodelat banovani uzivatele...
-    notify.info("Feature coming soon: Ban user " + userId);
+  const handleDeleteUser = async (userId: string) => {
+    if (!window.confirm("WARNING: This will permanently DELETE the user and ALL their events. Are you sure?")) return;
+    
+    try {
+      await axios.delete(`/admin/users/${userId}`);
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      notify.success("User and all their data were deleted.");
+    } catch (err) {
+      notify.error("Failed to delete user.");
+    }
   };
 
   return (
@@ -120,16 +126,10 @@ export default function SuspiciousActivityPage() {
 
               <div className="mt-6 flex gap-3">
                 <button
-                  onClick={() => handleBanUser(user.id)}
-                  className="flex-1 bg-gray-900 dark:bg-gray-700 text-white py-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                  onClick={() => handleDeleteUser(user.id)}
+                  className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                 >
-                  <UserX className="w-4 h-4" /> Ban User
-                </button>
-                <button
-                  className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                  title="Delete all user events"
-                >
-                  <Trash2 className="w-5 h-5" />
+                  <UserMinus className="w-4 h-4" /> Delete Account & Data
                 </button>
               </div>
             </div>

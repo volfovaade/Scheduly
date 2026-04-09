@@ -39,6 +39,12 @@ namespace backend.Persistence.Repositories
         {
             return await _context.Events.FindAsync(id);
         }
+        public async Task<List<Event>> GetByOwnerIdAsync(Guid ownerId)
+        {
+            return await _context.Events
+                .Where(e => e.OwnerId == ownerId)
+                .ToListAsync();
+        }
 
         public async Task<Event?> GetByIdWithParticipantsAsync(Guid id)
         {

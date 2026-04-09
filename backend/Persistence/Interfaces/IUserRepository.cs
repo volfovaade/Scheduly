@@ -10,6 +10,7 @@ namespace backend.Persistence.Interfaces
         Task<List<User>> GetSuspiciousUsersAsync();
         Task<bool> Contains(string email);
         Task AddAsync(User user);
+        Task DeleteAsync(User user);
         Task UpdateAsync(User user);
         Task UpdatePassword(string email, string newPassword);
         Task<User?> GetUserWithRole(string email);
