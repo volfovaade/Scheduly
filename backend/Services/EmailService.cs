@@ -81,7 +81,7 @@ namespace backend.Services
                 <p>Hi <strong>{toName}</strong>,</p>
                 <p>Reminder: the preference submission window for <strong>{eventTitle}</strong> 
                 closes on <strong>{deadline:dddd, MMMM d, yyyy}</strong>.</p>
-                <p>Make sure you've shared event code and submitted preferences before the deadline!</p>
+                <p>Make sure you've shared event code and finalize the event before the deadline! If not the event will be cancelled.</p>
                 <a href='{_frontendUrl}' style='display:inline-block;background:#be185d;color:white;
                     padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold'>
                     View event
