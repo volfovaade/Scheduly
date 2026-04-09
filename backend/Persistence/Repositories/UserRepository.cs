@@ -9,7 +9,7 @@ namespace backend.Persistence.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly AppDbContext _context;
-        private readonly int SUSPICIOUS_COUNT = 50;
+        private readonly int SUSPICIOUS_COUNT = 1;
         public UserRepository(AppDbContext context)
         {
             _context = context;
