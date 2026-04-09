@@ -29,7 +29,7 @@ namespace backend.Persistence.Repositories
         public async Task<List<User>> GetSuspiciousUsersAsync()
         {
             return await _context.Users
-                .Where(u => u.Events.Count > SUSPICIOUS_COUNT)
+                .Where(u => _context.Events.Count(e => e.OwnerId == u.Id) > SUSPICIOUS_COUNT)
                 .ToListAsync();
         }
         public async Task<bool> Contains(string email)

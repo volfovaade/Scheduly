@@ -37,7 +37,8 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
       href: "/admin/suspicious",
     },
   ];
-  const authItems = isAuthenticated
+  const isUserLoggedIn = isAuthenticated || isAdmin;
+  const authItems = isUserLoggedIn
     ? [{ icon: LogOut, label: "Log out", action: logout, href: "/" }]
     : [
         { icon: LogIn, label: "Log in", action: null, href: "/login" },

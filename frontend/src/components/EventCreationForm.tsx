@@ -211,6 +211,12 @@ export default function CreateEventDialog({
       return;
     }
 
+    if (title.trim().length < 3 || title.trim().length > 100) {
+      setError("The event name must be at least 3 to 100 characters long");
+      scrollToTop();
+      return;
+    }
+
     if (selectedType?.requiresTimeRange && (!rangeFrom || !rangeTo)) {
       setError("Please fill in the time range");
       scrollToTop();
