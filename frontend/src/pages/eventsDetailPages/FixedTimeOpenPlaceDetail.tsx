@@ -103,6 +103,20 @@ export default function FixedTimeOpenPlaceDetail({
     }
   };
 
+  const formatDuration = (from?: string, to?: string) => {
+    if (!from || !to) return "0h";
+
+    const diffInMs = new Date(to).getTime() - new Date(from).getTime();
+    const totalHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const days = Math.floor(totalHours / 24);
+    const remainingHours = totalHours % 24;
+
+    if (days > 0) {
+      return `${days}d ${remainingHours}h`;
+    }
+    return `${totalHours}h`;
+  };
+
   return (
     <EventDetailLayout commentSection={<CommentSection eventId={eventId} />}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -129,15 +143,7 @@ export default function FixedTimeOpenPlaceDetail({
                       })}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Duration:{" "}
-                    {event.fixedTimeFrom &&
-                      event.fixedTimeTo &&
-                      Math.round(
-                        (new Date(event.fixedTimeTo).getTime() -
-                          new Date(event.fixedTimeFrom).getTime()) /
-                          (1000 * 60 * 60),
-                      )}{" "}
-                    hours
+                    Duration: {formatDuration(event.fixedTimeFrom, event.fixedTimeTo)}
                   </p>
                 </div>
               </div>
