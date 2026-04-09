@@ -204,7 +204,9 @@ export default function CreateEventDialog({
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (!title.trim()) {
       setError("The event name is mandatory");
       scrollToTop();
