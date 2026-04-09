@@ -9,7 +9,7 @@ namespace backend.Persistence.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly AppDbContext _context;
-        private readonly int SUSPICIOUS_COUNT = 4;
+        private readonly int SUSPICIOUS_COUNT = 50;
         public UserRepository(AppDbContext context)
         {
             _context = context;
@@ -29,7 +29,7 @@ namespace backend.Persistence.Repositories
         public async Task<List<User>> GetSuspiciousUsersAsync()
         {
             return await _context.Users
-                .Where(u => _context.Events.Count(e => e.OwnerId == u.Id) > SUSPICIOUS_COUNT)
+                .Where(u => _context.Events.Count(e => e.OwnerId == u.Id) >= SUSPICIOUS_COUNT)
                 .ToListAsync();
         }
         public async Task<bool> Contains(string email)
