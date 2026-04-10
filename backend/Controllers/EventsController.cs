@@ -319,7 +319,7 @@ namespace backend.Controllers
             if (ev == null) return NotFound();
 
             var success = await _eventService.DeleteAsync(id, userId);
-            if (success)
+            if (success && ev.Phase !== EventPhase.Closed)
             {
                 foreach (var p in ev.Participants)
                 {
