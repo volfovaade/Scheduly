@@ -315,7 +315,17 @@ namespace backend.Controllers
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
                 return Unauthorized();
 
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(id);
+            if (ev == null) return NotFound();
+
             var success = await _eventService.DeleteAsync(id, userId);
+            if (success)
+            {
+                foreach (var p in ev.Participants)
+                {
+                    await _emailService.SendEventCancelledAsync(p.User.Email, p.User.Name, ev.Title);
+                }
+            } 
             return success ? NoContent() : Forbid("Only the owner is permitted to delete this event.");
         }
     }

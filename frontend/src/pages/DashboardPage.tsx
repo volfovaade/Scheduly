@@ -143,8 +143,6 @@ export default function DashboardPage() {
       notify.error("Failed to delete event");
       console.error(err);
     }
-    ///// !!!!!!!!!!!!! pri delete bude potreba informovat lidi
-    // ze se akce rusi
   };
   const handleLeaveEvent = async (eventId: string) => {
     if (!window.confirm("Are you sure you want to leave this event?")) return;
