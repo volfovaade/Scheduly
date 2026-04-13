@@ -113,8 +113,8 @@ namespace backend.Services
                     View event
                 </a>";
 
-            await SendAsync(toEmail, toName, $"Reminder: {eventTitle} deadline approaching",
-                BaseTemplate($"Deadline Reminder: {eventTitle}", "#d97706", content));
+            await SendAsync(toEmail, toName, $"Reminder: {eventTitle} final voting phase started",
+                BaseTemplate($"Final Voting Reminder: {eventTitle}", "#1883ff", content));
         }
 
         public async Task SendEventClosedAsync(string toEmail, string toName, string eventTitle, string finalPlace, string finalAddress, DateTimeOffset finalTimeFrom, DateTimeOffset finalTimeTo)
