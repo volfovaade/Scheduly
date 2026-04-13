@@ -116,6 +116,13 @@ namespace backend.Controllers
             try
             {
                 var selectedOptions = await _eventService.FinalizeFullyOpen(eventId, dto.Duration, dto.OrganizerPlaceTypeChoice);
+                if (selectedOptions.Count > 0 && ev.Phase == EventPhase.FinalVoting)
+                {
+                    foreach (var p in ev.Participants)
+                    {
+                        await _emailService.SendFinalVotingReminderAsync(p.User.Email, p.User.Name, ev.Title);
+                    }
+                }
 
                 return Ok(selectedOptions);
 
@@ -142,6 +149,13 @@ namespace backend.Controllers
             try
             {
                 var options = await _eventService.FinalizeFixedTimeOpenPlace(eventId, dto.OrganizerPlaceTypeChoice);
+                if (options.Count > 0 && ev.Phase == EventPhase.FinalVoting)
+                {
+                    foreach (var p in ev.Participants)
+                    {
+                        await _emailService.SendFinalVotingReminderAsync(p.User.Email, p.User.Name, ev.Title);
+                    }
+                }
                 return Ok(options);
             }
             catch (Exception err)

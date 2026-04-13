@@ -102,6 +102,21 @@ namespace backend.Services
                 BaseTemplate($"Event Cancelled: {eventTitle}", "#dc2626", content));
         }
 
+        public async Task SendFinalVotingReminderAsync(string toEmail, string toName, string eventTitle)
+        {
+            var content = $@"
+                <p>Hi <strong>{toName}</strong>,</p>
+                <p>It's time for you to choose your prefered option out of 3 generated possible places for <strong>{eventTitle}</strong>.</p>
+                <p>Open the event detail page and submit your vote before organizer closes the final voting phase.</p>
+                <a href='{_frontendUrl}' style='display:inline-block;background:#be185d;color:white;
+                    padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold'>
+                    View event
+                </a>";
+
+            await SendAsync(toEmail, toName, $"Reminder: {eventTitle} deadline approaching",
+                BaseTemplate($"Deadline Reminder: {eventTitle}", "#d97706", content));
+        }
+
         public async Task SendEventClosedAsync(string toEmail, string toName, string eventTitle, string finalPlace, string finalAddress, DateTimeOffset finalTimeFrom, DateTimeOffset finalTimeTo)
         {
             var content = $@"
