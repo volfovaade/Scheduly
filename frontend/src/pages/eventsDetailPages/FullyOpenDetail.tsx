@@ -64,19 +64,29 @@ export default function FullyOpenDetail({
       ]);
       setParticipants(participantsRes.data);
       setHasLocationPref(!!prefsRes.data.location);
-      setHasTimePref(!!prefsRes.data.time);
+      const timeData = prefsRes.data.time;
+      if (!timeData) {
+          setHasTimePref(false);
+      } else if (event.isMultiDay) {
+        // for multiday check length of array in Dates
+        setHasTimePref(Array.isArray(timeData.dates) && timeData.dates.length > 0);
+      } else {
+        // for single day check TimeIntervals
+        setHasTimePref(Array.isArray(timeData.timeIntervals) && timeData.timeIntervals.length > 0);
+      }
       setSummary(summaryRes.data);
       await checkForTie();
     } catch (err) {
       console.error(err);
     }
-  }, [eventId, checkForTie]);
+  }, [eventId, event.isMultiDay, checkForTie]);
 
   useEffect(() => {
     loadData();
     // open forms initially if redirected from creation
     if (showPreferenceFormInitially) {
-      setShowTimePreferenceForm(true);
+        setShowTimePreferenceForm(true);
+        setShowLocationPreferenceForm(true);
     }
   }, [loadData, showPreferenceFormInitially]);
 
