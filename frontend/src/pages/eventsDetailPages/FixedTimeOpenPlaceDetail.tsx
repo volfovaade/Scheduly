@@ -269,7 +269,7 @@ export default function FixedTimeOpenPlaceDetail({
             </>
           )}
 
-          {event.phase === "Closed" && <FinalResult event={event} />}
+          {event.phase === "Closed" && event.finalPlaceName && <FinalResult event={event} />}
 
           {showPreferenceForm && event.phase === "Proposal" && (
             <LocationPreferenceForm
