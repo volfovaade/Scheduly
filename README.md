@@ -140,7 +140,7 @@ eventplanner/
 The app is deployed using:
 - **[Vercel](https://vercel.com)** — frontend (root directory: `frontend/`)
 - **[DigitalOcean App Platform](https://www.digitalocean.com/products/app-platform)** — backend (source directory: `backend/`)
-- **DigitalOcean Managed PostgreSQL** — database
+- **[DigitalOcean Managed PostgreSQ](https://docs.digitalocean.com/products/databases/postgresql)** — database
 
 ### Important: Dockerfile path differences
 
