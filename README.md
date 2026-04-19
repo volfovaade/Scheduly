@@ -1,4 +1,4 @@
-# ![Logo](frontend/src/assets/badge.png) Scheduly — Group Event Planning App
+# ![Logo](docs/badge.png) Scheduly — Group Event Planning App
 
 Scheduly is a web application for organizing group events. It helps participants coordinate the best time and place to meet by collecting preferences, aggregating them, and automatically generating optimal options using **Google Places API**.
 
