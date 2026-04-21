@@ -369,14 +369,14 @@ namespace backend.Services
             {
                 PlaceType.Cafe => "cafe",
                 PlaceType.Restaurant => "restaurant",
-                PlaceType.Bar => "bar",
+                PlaceType.Bar => "bar|night_club",
                 PlaceType.Hotel => "lodging",
-                PlaceType.Camping => "campground",
-                PlaceType.Parc => "parc",
-                PlaceType.Museum => "museum",
+                PlaceType.Camping => "campground|rv_park",
+                PlaceType.Parc => "park",
+                PlaceType.Museum => "museum|art_gallery",
                 PlaceType.Cinema => "movie_theater",
                 PlaceType.ShoppingMall => "shopping_mall",
-                PlaceType.SportsCenter => "gym",
+                PlaceType.SportsCenter => "gym|stadium",
                 _ => "establishment"
             };
         }
