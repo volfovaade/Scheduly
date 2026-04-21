@@ -172,7 +172,7 @@ export default function SettingsPage() {
                 Settings
             </h2>
 
-            <div className="flex gap-2 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
+            <div className="flex sm:flex-row flex-col gap-2 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-full sm:w-fit">
                 {navItems.map((item) => (
                     <button
                         key={item.id}
