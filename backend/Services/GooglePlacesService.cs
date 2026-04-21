@@ -76,27 +76,21 @@ namespace backend.Services
                 if (!MeetsQualityRequirements(place, minRating))
                     continue;
 
-                // get details and check opening hours
-                var details = await GetPlaceDetailsAsync(place.PlaceId);
-
-                if (details != null && IsOpenDuringEvent(details, fromTime, toTime))
+                validPlaces.Add(new EventOption
                 {
-                    validPlaces.Add(new EventOption
-                    {
-                        Id = Guid.NewGuid(),
-                        EventId = eventId,
-                        Source = OptionSource.Generated,
-                        PlaceName = place.Name,
-                        Address = details.FormattedAddress ?? place.Vicinity,
-                        Latitude = place.Geometry.Location.Lat,
-                        Longitude = place.Geometry.Location.Lng,
-                        TimeFrom = fromTime,
-                        TimeTo = toTime
-                    });
+                    Id = Guid.NewGuid(),
+                    EventId = eventId,
+                    Source = OptionSource.Generated,
+                    PlaceName = place.Name,
+                    Address = place.Vicinity,
+                    Latitude = place.Geometry.Location.Lat,
+                    Longitude = place.Geometry.Location.Lng,
+                    TimeFrom = fromTime,
+                    TimeTo = toTime
+                });
 
-                    if (validPlaces.Count >= 3)
-                        break;
-                }
+                if (validPlaces.Count >= 3)
+                    break;
             }
 
             return validPlaces;
@@ -389,71 +383,6 @@ namespace backend.Services
             }
 
             return true;
-        }
-
-        private async Task<PlaceDetails?> GetPlaceDetailsAsync(string placeId)
-        {
-            var url = $"https://maps.googleapis.com/maps/api/place/details/json" +
-                      $"?place_id={placeId}" +
-                      $"&fields=formatted_address,opening_hours,business_status" +
-                      $"&language=en" +
-                      $"&key={_apiKey}";
-
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-                return null;
-
-            var json = await response.Content.ReadAsStringAsync();
-            var data = JsonSerializer.Deserialize<PlaceDetailsResponse>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-
-            return data?.Result;
-        }
-
-        private bool IsOpenDuringEvent(PlaceDetails details, DateTimeOffset fromTime, DateTimeOffset toTime)
-        {
-            // Pokud nemá otevírací dobu, pravdìpodobnì je to venkovní místo (park) - povolíme
-            if (details.OpeningHours?.Periods == null || !details.OpeningHours.Periods.Any())
-                return true;
-
-            // Kontrola business_status
-            if (details.BusinessStatus != null && details.BusinessStatus != "OPERATIONAL")
-                return false;
-
-            // Zjednodušená kontrola - zkontroluj jestli je otevøeno v den týdne zaèátku akce
-            var dayOfWeek = (int)fromTime.DayOfWeek; // 0 = Sunday
-            var eventStartHour = fromTime.Hour;
-            var eventEndHour = toTime.Hour;
-
-            var periodsForDay = details.OpeningHours.Periods
-                .Where(p => p.Open?.Day == dayOfWeek)
-                .ToList();
-
-            if (!periodsForDay.Any())
-                return false; // Zavøeno v daný den
-
-            // Zkontroluj jestli je alespoò jedna perioda která pokrývá èas akce
-            foreach (var period in periodsForDay)
-            {
-                var openHour = ParseTimeToHour(period.Open?.Time);
-                var closeHour = period.Close != null ? ParseTimeToHour(period.Close.Time) : 24;
-
-                // Akce musí být celá v otevírací dobì
-                if (openHour <= eventStartHour && closeHour >= eventEndHour)
-                    return true;
-            }
-
-            return false;
-        }
-
-        private int ParseTimeToHour(string? time)
-        {
-            if (string.IsNullOrEmpty(time) || time.Length < 2)
-                return 0;
-
-            return int.Parse(time.Substring(0, 2));
         }
 
     }
