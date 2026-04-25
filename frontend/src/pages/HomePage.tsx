@@ -56,7 +56,7 @@ const EVENT_TYPES = [
 ];
 
 export function HomePage({ code, setCode, onJoin, onGoToDashboard }: Props) {
-  const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
 
   return (
     <main className="min-h-[calc(100vh-80px)] w-full">
