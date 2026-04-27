@@ -92,7 +92,7 @@ EMAIL_FROM=your_gmail@gmail.com
 ### 3. Start the development environment
 
 ```bash
-docker compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml up --build -d
 ```
 
 Services will be available at:
