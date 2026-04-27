@@ -2,10 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace backend.Models
 {
-    /// <summary>
-    /// Response models for Google Places API integration.
-    /// These classes match the JSON structure returned by Google Places API.
-    /// </summary>
 
     #region Nearby Search API Models
 

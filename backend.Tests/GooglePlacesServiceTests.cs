@@ -31,7 +31,7 @@ namespace backend.Tests
         private string BuildSampleJson(int count)
         {
             var results = Enumerable.Range(1, count).Select(i =>
-                new GooglePlaceResult
+                new GooglePlace
                 {
                     Name = $"Place {i}",
                     Vicinity = $"Address {i}",
@@ -170,7 +170,7 @@ namespace backend.Tests
         [Fact]
         public async Task SearchPlacesAsync_WhenApiReturnsEmptyResults_ReturnsEmptyList()
         {
-            var emptyJson = JsonSerializer.Serialize(new GooglePlaceResponse { Results = new List<GooglePlaceResult>() });
+            var emptyJson = JsonSerializer.Serialize(new GooglePlaceResponse { Results = new List<GooglePlace>() });
             var httpClient = CreateHttpClientWithResponse(emptyJson);
             var service = new GooglePlacesService(httpClient);
 
@@ -235,9 +235,9 @@ namespace backend.Tests
         {
             var json = JsonSerializer.Serialize(new GooglePlaceResponse
             {
-                Results = new List<GooglePlaceResult>
+                Results = new List<GooglePlace>
                 {
-                    new GooglePlaceResult
+                    new GooglePlace
                     {
                         Name = "Test Place",
                         Vicinity = "Test Address",
