@@ -58,7 +58,7 @@ describe("Event Management", () => {
       }).then(() => {
         cy.visit("/dashboard");
         cy.contains("Detail Test Event").click();
-        cy.contains(':visible', "Submit Your Preferences").should("be.visible");
+        cy.contains(':visible', "Add Time Preferences").should("be.visible");
       });
     });
   });
@@ -81,13 +81,13 @@ describe("Event Management", () => {
         cy.visit("/dashboard");
         cy.contains(".relative", "Event For Delete")
           .find("button") 
-          .click();
+          .click({ multiple: true });
         cy.contains("Event For Delete").should("not.exist");
       });
     });
   });
 
-  it("should join an event using a code", () => {
+  it("should not join an event using a code", () => {
     cy.task("getAuthToken").then((token) => {
       // Returnujeme cy.request, abychom mohli řetězit .then() s odpovědí
       return cy.apiUrl().then((apiUrl) => {

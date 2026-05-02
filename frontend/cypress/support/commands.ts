@@ -1,6 +1,8 @@
 export {};
 Cypress.Commands.add("apiUrl", () => {
-    return cy.env(["apiUrl"]).then(e => e.apiUrl);
+    const apiUrl = Cypress.env("apiUrl");
+    return cy.wrap(apiUrl);
+    //return cy.env(["apiUrl"]).then(e => e.apiUrl);
 });
 
 // API login returns auth data
