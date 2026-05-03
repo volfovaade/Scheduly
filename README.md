@@ -199,6 +199,7 @@ End-to-end tests use **Cypress** (requires the dev environment to be running):
 
 ```bash
 cd frontend
+npm install
 npx cypress open
 ```
 
@@ -216,3 +217,8 @@ docker compose -f docker-compose.dev.yml up --build
 ```bash
 docker compose logs -f backend
 ```
+---
+
+## Copyright
+**© 2026 Adéla Volfová. All rights reserved.**
+This project is part of a bachelor's thesis at the Faculty of Mathematics and Physics, Charles University.
