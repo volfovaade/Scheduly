@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CheckCircle } from "lucide-react";
 import axios from "../api/axios";
 
 export default function ResetPasswordPage() {
@@ -29,7 +30,7 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
         <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 text-center">
-          <div className="text-5xl mb-4">✅</div>
+          <CheckCircle className="w-12 h-12 mx-auto mb-4 text-pink-700 dark:text-pink-400" />
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             Password reset!
           </h2>
