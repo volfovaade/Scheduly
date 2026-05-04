@@ -2,6 +2,13 @@ import { useState } from "react";
 import { MailCheck } from "lucide-react";
 import axios from "../api/axios";
 
+/**
+ * Forgot password page where users can request a password reset link.
+ * Sends a reset link to the provided email if the account exists.
+ * Shows a confirmation message after submission (for security, doesn't confirm if email exists).
+ *
+ * @returns The forgot password form or confirmation message
+ */
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -17,6 +24,7 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  // Show success message after submission
   if (sent)
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">

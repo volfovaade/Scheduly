@@ -3,13 +3,21 @@ import axios from "../api/axios";
 import { ShieldAlert, UserMinus, AlertOctagon } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 
+/** Represents a user flagged for suspicious activity */
 type SuspiciousUser = {
   id: string;
   email: string;
   eventCount: number;
-  reason: string; // for now just one reason, monitoring only excessive event creation
+  reason: string; // Currently for excessive event creation monitoring
 };
 
+/**
+ * Admin page for monitoring suspicious user activity.
+ * Shows users with anomalies like excessive event creation.
+ * Allows admins to delete accounts and all associated data as needed.
+ *
+ * @returns The suspicious activity monitoring dashboard
+ */
 export default function SuspiciousActivityPage() {
   const [users, setUsers] = useState<SuspiciousUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +63,7 @@ export default function SuspiciousActivityPage() {
         </p>
       </div>
 
+      {/* Statistics cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-yellow-100 dark:border-yellow-800">
           <h4 className="text-yellow-800 dark:text-yellow-200 font-semibold">
@@ -66,7 +75,7 @@ export default function SuspiciousActivityPage() {
         </div>
       </div>
 
-      {/* Users Grid */}
+      {/* Users grid */}
       {loading ? (
         <div className="flex justify-center p-10">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-yellow-600"></div>
@@ -90,7 +99,7 @@ export default function SuspiciousActivityPage() {
               key={user.id}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 relative overflow-hidden group hover:shadow-md transition-shadow"
             >
-              {/* Decorative bar */}
+              {/* Decorative left bar */}
               <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
 
               <div className="flex justify-between items-start mb-4">

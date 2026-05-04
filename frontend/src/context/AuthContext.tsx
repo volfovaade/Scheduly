@@ -19,10 +19,24 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Authentication provider component.
+ * Manages user login state and provides auth context to the app.
+ * Handles token-based authentication with session storage.
+ *
+ * @param children - Components to wrap with auth provider
+ * @returns Provider component with auth context
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // začínáme jako true!
+  const [isLoading, setIsLoading] = useState(true);
 
+  /**
+   * Logs in a user by storing their token and fetching their profile.
+   *
+   * @param token - Authentication token from backend
+   * @param userId - User ID from backend
+   */
   const login = async (token: string, userId: string) => {
     sessionStorage.setItem("token", token);
     sessionStorage.setItem("userId", userId);
@@ -52,14 +66,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           sessionStorage.clear();
         }
       }
-      setIsLoading(false); // hotovo — ať už úspěch nebo chyba
+      setIsLoading(false);
     };
     initAuth();
   }, []);
 
   const isAdmin = user?.role === "Admin";
 
-  // Dokud nevíme jestli je user přihlášen, nerenderujeme nic
+  // Show loading spinner while checking auth status
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -77,6 +91,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Hook to access authentication context.
+ * Must be used within an AuthProvider.
+ *
+ * @returns Auth context with user, login, logout functions
+ * @throws Error if used outside AuthProvider
+ */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

@@ -5,6 +5,7 @@ import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 
+/** User statistics from the backend */
 type UserStats = {
     organizedTotal: number;
     organizedActive: number;
@@ -13,19 +14,27 @@ type UserStats = {
     closedEvents: number;
 };
 
+/** Active settings section tabs */
 type Section = "profile" | "password" | "stats";
 
+/**
+ * User settings page with three sections: profile, password, and statistics.
+ * Allows users to update their name/email, change password, and view their activity stats.
+ * Redirects to login if user is not authenticated.
+ *
+ * @returns The settings page with tabbed sections
+ */
 export default function SettingsPage() {
     const { user, isAuthenticated, login } = useAuth();
     const navigate = useNavigate();
     const notify = useNotification();
 
-    // Profile
+    // Profile form state
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [savingProfile, setSavingProfile] = useState(false);
 
-    // Password
+    // Password change form state
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,7 +42,7 @@ export default function SettingsPage() {
     const [showNew, setShowNew] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
 
-    // Stats
+    // Statistics state
     const [stats, setStats] = useState<UserStats | null>(null);
     const [loadingStats, setLoadingStats] = useState(true);
 
@@ -43,6 +52,10 @@ export default function SettingsPage() {
         
     }, [activeSection, user]);
 
+    /**
+     * Reset form fields when user data changes or active section changes.
+     * This ensures clean state when switching tabs.
+     */
     useEffect(() => {
         if (!isAuthenticated) {
             navigate("/login");
@@ -76,6 +89,10 @@ export default function SettingsPage() {
         loadStats();
     }, [user]);
 
+    /**
+     * Saves profile changes (name and email) to the backend.
+     * Includes client-side validation.
+     */
     const handleSaveProfile = async () => {
         if (!user) return;
         const trimmedName = name.trim();
@@ -107,8 +124,13 @@ export default function SettingsPage() {
         }
     };
 
+    /**
+     * Changes the user's password.
+     * Validates that new passwords match and meet minimum length requirements.
+     */
     const handleChangePassword = async () => {
         if (!user) return;
+        
         if (newPassword !== confirmPassword) {
             notify.error("Passwords do not match.");
             return;
@@ -117,6 +139,7 @@ export default function SettingsPage() {
             notify.error("Password must be at least 6 characters.");
             return;
         }
+        
         setSavingPassword(true);
         try {
             await axios.put(`users/${user.id}`, {
@@ -172,6 +195,7 @@ export default function SettingsPage() {
                 Settings
             </h2>
 
+            {/* Tab navigation */}
             <div className="flex sm:flex-row flex-col gap-2 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-full sm:w-fit">
                 {navItems.map((item) => (
                     <button
@@ -189,6 +213,7 @@ export default function SettingsPage() {
                 ))}
             </div>
 
+            {/* Profile section */}
             {activeSection === "profile" && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -245,6 +270,7 @@ export default function SettingsPage() {
                 </div>
             )}
 
+            {/* Password section */}
             {activeSection === "password" && (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 space-y-5">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -252,7 +278,7 @@ export default function SettingsPage() {
                         Change password
                     </h3>
 
-                    {/* Current password */}
+                    {/* Current password input */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Current password
@@ -276,7 +302,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
-                    {/* New password */}
+                    {/* New password input */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             New password
@@ -300,7 +326,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
-                    {/* Confirm password */}
+                    {/* Confirm password input */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                             Confirm new password
@@ -338,6 +364,7 @@ export default function SettingsPage() {
                 </div>
             )}
 
+            {/* Statistics section */}
             {activeSection === "stats" && (
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">

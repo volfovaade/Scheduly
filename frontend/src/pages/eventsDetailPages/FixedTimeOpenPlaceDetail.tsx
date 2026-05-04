@@ -9,18 +9,36 @@ import EventDetailLayout from "../../components/sharedDetailPage/EventDetailLayo
 import axios from "../../api/axios";
 import GenericVotingForm, { VoteOption } from "src/components/sharedDetailPage/GenericVotingForm";
 
-interface Props {
-  event: any;
-  eventId: string;
-  onReload: () => void;
-  showPreferenceFormInitially: boolean;
-}
 type LocationSummary = {
   totalSubmissions: number;
   averageLatitude: number;
   averageLongitude: number;
   typeCounts: { type: string; count: number }[];
 };
+
+interface Props {
+  event: any;
+  eventId: string;
+  onReload: () => void;
+  showPreferenceFormInitially: boolean;
+}
+
+/**
+ * Event detail page for "Fixed Time, Open Place" event mode.
+ * The event time is already decided. Participants share their location preferences.
+ * The app generates 3 best matching places based on preferences.
+ *
+ * Voting phases:
+ * - Proposal: Participants submit location preferences
+ * - FinalVoting: Vote on generated options
+ * - Closed: Display final result
+ *
+ * @param event - Full event object
+ * @param eventId - The event ID for API calls
+ * @param onReload - Callback to reload the component after finalization
+ * @param showPreferenceFormInitially - Auto-open preference form on load (from creation)
+ * @returns The event detail page with fixed time
+ */
 export default function FixedTimeOpenPlaceDetail({
   event,
   eventId,
@@ -47,6 +65,10 @@ export default function FixedTimeOpenPlaceDetail({
   } | null>(null);
   const [organizerChoice, setOrganizerChoice] = useState<string | null>(null);
 
+  /**
+   * Checks if there's a tie in location type preferences.
+   * If there's a tie, the organizer must choose which type to use.
+   */
   const checkForTie = useCallback(async () => {
     try {
       const res = await axios.get(
@@ -80,6 +102,10 @@ export default function FixedTimeOpenPlaceDetail({
     loadData();
   }, [loadData]);
 
+  /**
+   * Finalizes the event and generates 3 best places based on preferences.
+   * Organizer can choose location type (in case of tie).
+   */
   const handleFinalize = async () => {
     if (!window.confirm("Generate 3 best place options from user preferences?"))
       return;
@@ -121,11 +147,13 @@ export default function FixedTimeOpenPlaceDetail({
     <EventDetailLayout commentSection={<CommentSection eventId={eventId} />}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <div className="max-w-7xl mx-auto px-6">
+          {/* Participants list */}
           <ParticipantsList participants={participants} />
 
+          {/* Proposal phase - collecting preferences */}
           {event.phase === "Proposal" && (
             <>
-              {/* Event Info Card */}
+              {/* Event info card - fixed time */}
               <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -259,18 +287,22 @@ export default function FixedTimeOpenPlaceDetail({
             </>
           )}
 
+          {/* Final voting phase - vote on generated options */}
           {event.phase === "FinalVoting" && (
             <>
               <GenericVotingForm 
                 eventId={eventId} 
                 title="Final Voting - Select Your Preferred Option"
                 voteType="Final"
-                filterOptions={(opt: VoteOption) => opt.source === "Generated"} />
+                filterOptions={(opt: VoteOption) => opt.source === "Generated"} 
+              />
             </>
           )}
 
+          {/* Closed phase - show final result */}
           {event.phase === "Closed" && event.finalPlaceName && <FinalResult event={event} />}
 
+          {/* Location preference form modal */}
           {showPreferenceForm && event.phase === "Proposal" && (
             <LocationPreferenceForm
               eventId={eventId}

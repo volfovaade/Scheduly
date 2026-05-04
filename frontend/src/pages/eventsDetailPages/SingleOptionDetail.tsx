@@ -12,9 +12,21 @@ interface Props {
   eventId: string;
 }
 
+/**
+ * Event detail page for "Simple Event" mode.
+ * Organizer has already decided the time and place.
+ * Participants just view and confirm attendance (no voting).
+ *
+ * @param event - Full event object with fixed time and place
+ * @param eventId - The event ID for API calls
+ * @returns The simple event detail page
+ */
 export default function SingleOptionDetail({ event, eventId }: Props) {
   const [participants, setParticipants] = useState([]);
 
+  /**
+   * Loads the participant list from the backend.
+   */
   const loadData = useCallback(async () => {
     try {
       const participantsRes = await axios.get(
@@ -39,19 +51,25 @@ export default function SingleOptionDetail({ event, eventId }: Props) {
       day: "numeric",
       month: "long",
     });
+
+  /**
+   * Formats a time to HH:MM format
+   */
   const formatTime = (date: Date) =>
     date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   return (
     <EventDetailLayout commentSection={<CommentSection eventId={eventId} />}>
       <div className="max-w-7xl mx-auto px-6 dark:bg-gray-900">
-        {/* Participants */}
+        {/* Participants list */}
         <ParticipantsList participants={participants} />
-        {/* Phase-specific content */}
+
+        {/* Proposal phase - show fixed details */}
         {event.phase === "Proposal" && (
           <>
-            {/* Single option given by organizer during the creation*/}
+            {/* Event details card with location and time */}
             <div className="mb-6 grid grid-cols-1 gap-6">
+              {/* Location card */}
               <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                 <MapPin className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
                 <div>
@@ -66,6 +84,8 @@ export default function SingleOptionDetail({ event, eventId }: Props) {
                   </p>
                 </div>
               </div>
+
+              {/* Time card */}
               <div className="flex items-start gap-4 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                 <Clock className="w-6 h-6 mt-1 text-green-600 dark:text-green-400" />
                 <div className="flex flex-col w-full">
@@ -113,6 +133,7 @@ export default function SingleOptionDetail({ event, eventId }: Props) {
           </>
         )}
 
+        {/* Closed phase - show final confirmation */}
         {event.phase === "Closed" && event.finalPlaceName && (
           <FinalResult event={event} />
         )}

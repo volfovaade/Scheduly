@@ -16,6 +16,21 @@ interface Props {
   showPreferenceFormInitially: boolean;
 }
 
+/**
+ * Event detail page for "Fixed Place, Open Time" event mode.
+ * The event location is already decided. Participants submit their available time slots.
+ * The app automatically finds the best time overlap of all participants' availability.
+ *
+ * Voting phases:
+ * - Proposal: Participants submit time preferences
+ * - Closed: Display final result (no final voting phase)
+ *
+ * @param event - Full event object
+ * @param eventId - The event ID for API calls
+ * @param onReload - Callback to reload the component after finalization
+ * @param showPreferenceFormInitially - Auto-open preference form on load (from creation)
+ * @returns The event detail page with fixed place
+ */
 export default function FixedPlaceOpenTimeDetail({
   event,
   eventId,
@@ -56,6 +71,11 @@ export default function FixedPlaceOpenTimeDetail({
     loadData();
   }, [loadData]);
 
+  /**
+   * Calculates the number of days in the event's time range.
+   *
+   * @returns Number of days
+   */
   const getDaysInTimeRange = () => {
     const from = new Date(event.timeRangeFrom);
     const to = new Date(event.timeRangeTo);
@@ -65,6 +85,10 @@ export default function FixedPlaceOpenTimeDetail({
     return diffDays;
   };
 
+  /**
+   * Finalizes the event and finds the best time based on everyone's availability.
+   * The event is automatically closed after finalization.
+   */
   const handleFinalize = async () => {
     if (!window.confirm("Find the best time based on everyone's availability?"))
       return;
@@ -98,11 +122,13 @@ export default function FixedPlaceOpenTimeDetail({
     <EventDetailLayout commentSection={<CommentSection eventId={eventId} />}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <div className="max-w-7xl mx-auto px-6">
+          {/* Participants list */}
           <ParticipantsList participants={participants} />
 
+          {/* Proposal phase - collecting preferences */}
           {event.phase === "Proposal" && (
             <>
-              {/* Event Info Card */}
+              {/* Event info card - fixed place */}
               <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <MapPin className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -120,7 +146,8 @@ export default function FixedPlaceOpenTimeDetail({
                   )}
                 </div>
               </div>
-              {/* Preference Submission */}
+
+              {/* Time preference submission form */}
               <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -155,7 +182,7 @@ export default function FixedPlaceOpenTimeDetail({
                 </button>
               </div>
 
-              {/* Time Summary */}
+              {/* Time preference heatmap showing all participants' preferences */}
               {timeSummary && timeSummary.length > 0 && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
@@ -215,9 +242,11 @@ export default function FixedPlaceOpenTimeDetail({
             </>
           )}
 
+          {/* Closed phase - show final result */}
           {event.phase === "Closed" && event.finalTimeFrom && event.finalTimeTo &&
-              < FinalResult event={event} />}
+              <FinalResult event={event} />}
 
+          {/* Time preference form modal */}
           {showPreferenceForm && event.phase === "Proposal" && (
             <TimePreferenceForm
               eventId={eventId}

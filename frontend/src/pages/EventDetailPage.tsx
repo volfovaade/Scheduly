@@ -14,6 +14,7 @@ import FixedTimeOpenPlaceDetail from "./eventsDetailPages/FixedTimeOpenPlaceDeta
 import FixedPlaceOpenTimeDetail from "./eventsDetailPages/FixedPlaceOpenTimeDetail";
 import FullyOpenDetail from "./eventsDetailPages/FullyOpenDetail";
 
+/** Event type definitions for the different scheduling modes */
 type EventMode =
   | "SingleOption"
   | "CollaborativeOptions"
@@ -21,7 +22,14 @@ type EventMode =
   | "FixedTimeOpenPlace"
   | "FixedPlaceOpenTime"
   | "FullyOpen";
-  
+
+/**
+ * Event detail page that renders the appropriate component based on event mode.
+ * Handles event loading, description editing, deletion, and closing.
+ * Shows sharing info modal for inviting participants.
+ *
+ * @returns The event detail view with mode-specific content
+ */
 export default function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -38,11 +46,16 @@ export default function EventDetailPage() {
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState("");
 
+  // Check if preference form should be shown on load (from query param)
   const showPreferenceFormInitially =
     new URLSearchParams(location.search).get("showPreferenceForm") === "true";
   const [showShareInfo, setShowShareInfo] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  /**
+   * Fetches event data from the backend.
+   * Handles various error cases (not found, unauthorized, network error).
+   */
   const loadEvent = useCallback(async () => {
     try {
       setLoading(true);
@@ -82,6 +95,10 @@ export default function EventDetailPage() {
     loadEvent();
   }, [loadEvent]);
 
+  /**
+   * Closes the event and generates final results based on voting.
+   * If no votes exist, asks user whether to delete instead.
+   */
   const handleCloseEvent = async () => {
     if (!window.confirm("Are you sure you want to close the event?")) return;
 
@@ -109,6 +126,10 @@ export default function EventDetailPage() {
     }
   };
 
+  /**
+   * Deletes the event and returns to dashboard.
+   * Requires user confirmation.
+   */
   const handleDeleteEvent = async () => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
@@ -137,6 +158,10 @@ export default function EventDetailPage() {
 
   if (!event) return null;
 
+  /**
+   * Updates the event description on the backend.
+   * Shows success or error message accordingly.
+   */
   const handleSaveDescription = async () => {
     try {
       await axios.put(`/events/${eventId}/description`, {
@@ -151,7 +176,10 @@ export default function EventDetailPage() {
     }
   };
 
-  // Render appropriate component based on event mode
+  /**
+   * Renders the appropriate event detail component based on event mode.
+   * Each mode has different logic for voting and preference submission.
+   */
   const renderEventDetail = () => {
     const commonProps = {
       event,
@@ -193,7 +221,7 @@ export default function EventDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* event header... common for all types */}
+      {/* Event header — common for all types */}
       <div className="bg-white dark:bg-gray-900 shadow-sm border-b dark:border-gray-600">
         <div className="px-4 sm:px-6 py-4">
           
@@ -236,6 +264,7 @@ export default function EventDetailPage() {
             {event.title}
           </h1>
 
+          {/* Description editing UI */}
           <div className="relative mt-2 group">
             {isEditingDescription ? (
               <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm transition-all">
@@ -283,7 +312,7 @@ export default function EventDetailPage() {
             )}
           </div>
 
-          {/* Badges */}
+          {/* Event metadata badges */}
           <div className="flex flex-wrap gap-2 mt-3 text-sm items-center">
             <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-1.5">
               Code: {event.code}
@@ -329,7 +358,7 @@ export default function EventDetailPage() {
                 <div className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
                   <p>Share this event code with anyone you want to invite:</p>
 
-                  {/* Code display with copy */}
+                  {/* Code display with copy button */}
                   <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 border border-gray-200 dark:border-gray-600">
                     <span className="text-2xl font-mono font-bold tracking-widest text-gray-900 dark:text-white flex-1 text-center">
                       {event.code}
@@ -373,6 +402,8 @@ export default function EventDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Show cancellation reason if event was cancelled */}
       {event.phase === "Closed" && event.cancelledReason && (
         <div className="bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800">
           <div className="px-4 sm:px-6 py-3 flex items-center gap-2 text-sm text-red-700 dark:text-red-300">
@@ -383,12 +414,19 @@ export default function EventDetailPage() {
           </div>
         </div>
       )}
-      {/* dynamic content based on event mode */}
+
+      {/* Render mode-specific event detail component */}
       {renderEventDetail()}
     </div>
   );
 }
 
+/**
+ * Maps event mode to display label.
+ *
+ * @param mode - The event mode
+ * @returns Human-readable mode name
+ */
 function getModeLabel(mode: EventMode): string {
   const labels: Record<EventMode, string> = {
     SingleOption: "Simple Event",

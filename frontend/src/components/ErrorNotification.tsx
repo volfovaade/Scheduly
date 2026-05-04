@@ -1,17 +1,30 @@
 import { useNavigate } from "react-router-dom";
- 
+
+/** Error types that can be displayed */
 type ErrorType = "not-found" | "network" | "unauthorized" | "unknown";
- 
+
 type Props = {
   error: {
     type: ErrorType;
     message: string;
   };
 };
- 
+
+/**
+ * Full-page error notification component.
+ * Displays contextual error messages with appropriate icons and recovery options.
+ * Used when event loading fails or access is denied.
+ *
+ * @param error - Object containing error type and message
+ * @returns The error notification display
+ */
 export default function ErrorNotification({ error }: Props) {
   const navigate = useNavigate();
- 
+
+  /**
+   * Icon SVGs for different error types.
+   * Each type has a distinct visual representation.
+   */
   const icons = {
     "not-found": (
       <svg className="mx-auto h-12 w-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

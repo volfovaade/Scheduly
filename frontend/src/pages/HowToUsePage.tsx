@@ -86,9 +86,16 @@ function EventTypeRow({
   );
 }
 
+/**
+ * Comprehensive guide page explaining all features and functionality of Scheduly.
+ * Includes sections on getting started, event types, voting phases, and admin features.
+ *
+ * @returns The how-to guide page with collapsible sections
+ */
 export default function HowToUsePage() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
+      {/* Page header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center">
           <BookOpen className="w-5 h-5 text-pink-700 dark:text-pink-400" />
@@ -101,6 +108,7 @@ export default function HowToUsePage() {
 
       <div className="space-y-3">
 
+        {/* Getting started section */}
         <Section
           title="Getting started"
           icon={<CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />}
@@ -122,6 +130,7 @@ export default function HowToUsePage() {
                 <p className="text-sm text-gray-700 dark:text-gray-300">{text}</p>
               </div>
             ))}
+
           </div>
           <InfoBox color="bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
             <div className="flex items-start gap-2">
@@ -131,6 +140,7 @@ export default function HowToUsePage() {
           </InfoBox>
         </Section>
 
+        {/* Joining an event section */}
         <Section
           title="Joining an event"
           icon={<Share2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
@@ -148,6 +158,7 @@ export default function HowToUsePage() {
           </InfoBox>
         </Section>
 
+        {/* Event types section */}
         <Section
           title="Event types"
           icon={<Settings className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
@@ -201,6 +212,7 @@ export default function HowToUsePage() {
           </div>
         </Section>
 
+        {/* Time range vs fixed time section */}
         <Section
           title="Time range vs. fixed time"
           icon={<Calendar className="w-5 h-5 text-orange-600 dark:text-orange-400" />}
@@ -227,6 +239,7 @@ export default function HowToUsePage() {
           </div>
         </Section>
 
+        {/* Voting phases section */}
         <Section
           title="Voting phases"
           icon={<Vote className="w-5 h-5 text-pink-600 dark:text-pink-400" />}
@@ -262,6 +275,7 @@ export default function HowToUsePage() {
           </div>
         </Section>
 
+        {/* Submitting preferences section */}
         <Section
           title="Submitting preferences"
           icon={<MapPin className="w-5 h-5 text-teal-600 dark:text-teal-400" />}
@@ -278,7 +292,7 @@ export default function HowToUsePage() {
           </div>
         </Section>
 
-        {/* section for admin */}
+        {/* Admin features section */}
         <Section
           title="Admin features"
           icon={<Lock className="w-5 h-5 text-gray-500" />}

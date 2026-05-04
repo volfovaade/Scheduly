@@ -12,6 +12,21 @@ type Props = {
   icon: "delete" | "leave";
 };
 
+/**
+ * Event card component displayed in the dashboard.
+ * Shows event title, code, mode, and action button (delete or leave).
+ * Supports copying the event code to clipboard.
+ *
+ * @param id - Unique event identifier
+ * @param title - Event title
+ * @param code - 6-character event code for sharing
+ * @param mode - Event type/mode label
+ * @param isMultiDay - Whether event spans multiple days
+ * @param onClick - Callback when clicking on the card
+ * @param onAction - Callback for delete/leave button
+ * @param icon - Action button type ('delete' for organizers, 'leave' for participants)
+ * @returns The event card component
+ */
 export default function EventCard({
   id,
   title,
@@ -33,6 +48,7 @@ export default function EventCard({
 
   return (
     <div className="relative border-2 border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:border-gray-400 transition-all bg-white dark:bg-gray-900 shadow-sm hover:shadow-md">
+      {/* Action button (delete or leave) */}
       {onAction && icon && (
         <button
           onClick={(e) => {
@@ -49,9 +65,11 @@ export default function EventCard({
         </button>
       )}
 
+      {/* Clickable card content */}
       <div onClick={onClick} className="cursor-pointer">
         <h4 className="font-semibold text-lg mb-2">{title}</h4>
 
+        {/* Event code with copy button */}
         <div className="flex items-center gap-2 mb-1">
           <p className="text-sm text-gray-600 dark:text-gray-300">
             Code: <span className="font-mono font-medium">{code}</span>
@@ -68,6 +86,7 @@ export default function EventCard({
           </button>
         </div>
 
+        {/* Event mode label */}
         <p className="text-sm text-gray-500">Type: {mode}</p>
       </div>
     </div>

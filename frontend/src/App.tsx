@@ -14,6 +14,15 @@ import DataCleanupPage from "./pages/DataCleanupPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import HowToUsePage from "./pages/HowToUsePage";
 
+/**
+ * Root application component that sets up routing for the entire app.
+ * Uses React Router to handle navigation between pages and maintains
+ * a consistent layout wrapper around all routes.
+ * Note: Comments in this app are mainly AI-generated for documentation purposes, 
+ * but contain my edits for clarity.
+ *
+ * @returns The main app with all routes configured
+ */
 function App() {
   return (
     <BrowserRouter>

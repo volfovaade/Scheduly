@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from "lucide-react";
 
+/** Notification severity type */
 export type NotificationType = "success" | "error" | "warning" | "info";
 
+/** Internal notification structure with auto-generated ID */
 interface Notification {
   id: string;
   type: NotificationType;
@@ -20,6 +22,15 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined,
 );
+
+/**
+ * Notification provider component.
+ * Manages toast notifications throughout the app.
+ * Notifications auto-closed after 5 seconds.
+ *
+ * @param children - Components to wrap with notification provider
+ * @returns Provider component with notification context and toast container
+ */
 export function NotificationProvider({
   children,
 }: {
@@ -27,7 +38,9 @@ export function NotificationProvider({
 }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // hook useCallback prevents unneccessary re-renders
+  /**
+   * Removes a notification from the list.
+   */
   const removeNotification = useCallback((id: string) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
@@ -38,7 +51,7 @@ export function NotificationProvider({
       const id = Math.random().toString(36).substring(1, 10);
       setNotifications((prev) => [...prev, { id, type, message }]);
 
-      // Auto remove after 5 seconds
+      // Auto-remove after 5 seconds
       setTimeout(() => {
         removeNotification(id);
       }, 5000);
@@ -69,6 +82,16 @@ export function NotificationProvider({
     </NotificationContext.Provider>
   );
 }
+
+/**
+ * Individual toast notification component.
+ * Displays with appropriate styling based on notification type.
+ *
+ * @param type - Notification type
+ * @param message - Message to display
+ * @param onClose - Callback to close the notification
+ * @returns The toast component
+ */
 const Toast = ({
   type,
   message,
@@ -107,6 +130,13 @@ const Toast = ({
   );
 };
 
+/**
+ * Hook to access notification context.
+ * Must be used within a NotificationProvider.
+ *
+ * @returns Notification context with notify, success, error, info, warning methods
+ * @throws Error if used outside NotificationProvider
+ */
 export function useNotification() {
   const context = useContext(NotificationContext);
   if (!context) {

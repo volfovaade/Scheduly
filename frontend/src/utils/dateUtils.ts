@@ -1,5 +1,9 @@
 /**
- * Převede Date na string pro datetime-local input (v lokálním čase)
+ * Converts a Date to a string suitable for datetime-local input fields.
+ * Accounts for timezone offset to display the correct local time.
+ *
+ * @param date - The date to convert
+ * @returns String in format YYYY-MM-DDTHH:mm suitable for datetime-local inputs
  */
 export const toLocalDateTimeString = (date: Date): string => {
   const offset = date.getTimezoneOffset() * 60000;
@@ -7,8 +11,12 @@ export const toLocalDateTimeString = (date: Date): string => {
 };
 
 /**
- * Formats the date for display to the user in their local time.
- * E.g., "Monday, March 15, 2:00 PM"
+ * Formats a date for user-friendly display in their local time.
+ * Default format: "Monday, March 15, 2:00 PM"
+ *
+ * @param dateInput - Date string or Date object
+ * @param options - Optional Intl.DateTimeFormatOptions for custom formatting
+ * @returns Formatted date string
  */
 export const formatLocalDateTime = (
   dateInput: string | Date,
@@ -28,8 +36,11 @@ export const formatLocalDateTime = (
 };
 
 /**
- * Formats only the date (without time) in local time
- * E.g., "March 15, 2025"
+ * Formats only the date portion (no time) in local time.
+ * Example format: "March 15, 2025"
+ *
+ * @param dateInput - Date string or Date object
+ * @returns Formatted date string without time
  */
 export const formatLocalDate = (dateInput: string | Date): string => {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
@@ -41,8 +52,11 @@ export const formatLocalDate = (dateInput: string | Date): string => {
 };
 
 /**
- * Formats only the time in local time
- * E.g., "14:00"
+ * Formats only the time portion (no date) in local time.
+ * Example format: "14:00"
+ *
+ * @param dateInput - Date string or Date object
+ * @returns Formatted time string (HH:MM format)
  */
 export const formatLocalTime = (dateInput: string | Date): string => {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;

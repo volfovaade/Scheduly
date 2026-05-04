@@ -2,13 +2,25 @@ import { useState } from "react";
 import { CheckCircle } from "lucide-react";
 import axios from "../api/axios";
 
+/**
+ * Password reset page that users access via email link.
+ * Validates the reset token and allows setting a new password.
+ * Shows an error if the token is invalid or expired.
+ *
+ * @returns The password reset form or success confirmation
+ */
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Extract reset token from URL query parameter
   const token = new URLSearchParams(window.location.search).get("token") || "";
 
+  /**
+   * Submits the new password to the backend using the reset token.
+   * Validates password length before submission.
+   */
   const handleSubmit = async () => {
     if (password.length < 6) {
       setError("Password must be at least 6 characters");
@@ -26,6 +38,7 @@ export default function ResetPasswordPage() {
     }
   };
 
+  // Show success message after password reset
   if (done)
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
@@ -58,6 +71,7 @@ export default function ResetPasswordPage() {
           Choose a password for your account.
         </p>
 
+        {/* Show error if token is invalid */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg">
             <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>

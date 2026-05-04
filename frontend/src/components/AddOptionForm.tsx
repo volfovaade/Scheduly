@@ -13,6 +13,20 @@ interface Props {
   isOpen: boolean;
 }
 
+/**
+ * Form dialog for adding a new place+time option to an event.
+ * Validates that the option's time falls within the event's time range
+ * and meets minimum duration requirements.
+ *
+ * Used in collaborative and organizer proposal event types.
+ *
+ * @param eventId - The event ID for context
+ * @param event - Event data containing time range constraints
+ * @param onSubmit - Callback when option is successfully added
+ * @param onClose - Callback to close the dialog
+ * @param isOpen - Whether the dialog is visible
+ * @returns The add option form dialog
+ */
 export default function AddOptionForm({
   eventId,
   event,
@@ -39,15 +53,31 @@ export default function AddOptionForm({
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
   };
 
+  /**
+   * Validates the proposed time range.
+   * Checks duration, event type constraints, and that it fits within the event's range.
+   *
+   * @param from - Start time
+   * @param to - End time
+   * @returns Error message if invalid, empty string if valid
+   */
   const validateTimeRange = (from: Date | null, to: Date | null): string => {
     if (!from || !to) return "Please fill in both start and end time";
     if (from >= to) return "Start time must be before end time";
+
     const diffInHours = (to.getTime() - from.getTime()) / (1000 * 60 * 60);
+
     if (diffInHours < 0.5) return "Duration must be at least 30 minutes";
+
+    // Multi-day events need at least 24 hours
     if (event.isMultiDay && diffInHours < 24)
       return "Time range must be at least 24 hours for multiple day events";
+
+    // Single-day events can't exceed 24 hours
     if (!event.isMultiDay && diffInHours > 24)
       return "Time range cannot exceed 24 hours for single day events";
+
+    // Check that option falls within event's time range
     if (event.timeRangeFrom && event.timeRangeTo) {
       const eventFrom = new Date(event.timeRangeFrom);
       const eventTo = new Date(event.timeRangeTo);
@@ -73,17 +103,20 @@ export default function AddOptionForm({
       scrollToTop();
       return;
     }
+
     if (!timeFrom || !timeTo) {
       setError("Please fill in both start and end time");
       scrollToTop();
       return;
     }
+
     const validationError = validateTimeRange(timeFrom, timeTo);
     if (validationError) {
       setError(validationError);
       scrollToTop();
       return;
     }
+
     setLoading(true);
     try {
       await onSubmit({
@@ -126,6 +159,7 @@ export default function AddOptionForm({
         </div>
 
         <div className="p-6 space-y-5">
+          {/* Error message display */}
           {error && (
             <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
               {error}

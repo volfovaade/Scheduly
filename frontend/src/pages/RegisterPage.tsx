@@ -4,6 +4,13 @@ import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 
+/**
+ * Registration page where new users can create an account.
+ * Includes validation for name, email, and password before submitting.
+ * On successful registration, logs the user in and redirects to dashboard.
+ *
+ * @returns The registration form UI
+ */
 export default function RegisterPage() {
   const notify = useNotification();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -29,6 +36,7 @@ export default function RegisterPage() {
       notify.error("Password must be at least 6 characters.");
       return;
     }
+    
     setLoading(true);
     try {
       const res = await axios.post("/auth/register", form);
@@ -100,6 +108,7 @@ export default function RegisterPage() {
               : "border-gray-300 dark:border-gray-600"
             }`}
           />
+          {/* Show password strength indicator */}
           {form.password.length > 0 && form.password.length < 6 && (
             <p className="text-xs text-red-500 mb-4">
               Password must be at least 6 characters ({form.password.length}/6)

@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 
+/** Event mode types defining different event creation workflows */
 type EventMode =
   | "SingleOption"
   | "CollaborativeOptions"
@@ -17,6 +18,10 @@ type EventMode =
   | "FixedPlaceOpenTime"
   | "FullyOpen";
 
+/**
+ * Metadata for each event type.
+ * Determines which fields to show and validation rules.
+ */
 interface EventType {
   id: EventMode;
   title: string;
@@ -28,6 +33,10 @@ interface EventType {
   allowsParticipantOptions: boolean;
 }
 
+/**
+ * Available event types with their configurations.
+ * Each type defines what data is required and allowed.
+ */
 const EVENT_TYPES: EventType[] = [
   {
     id: "SingleOption",
@@ -62,7 +71,7 @@ const EVENT_TYPES: EventType[] = [
   {
     id: "FixedTimeOpenPlace",
     title: "Fixed time, finding a place",
-    description: "The time is set, we’ll generate the 3 best locations",
+    description: "The time is set, we'll generate the 3 best locations",
     icon: MapPin,
     requiresTimeRange: false,
     requiresFixedPlace: false,
@@ -72,7 +81,7 @@ const EVENT_TYPES: EventType[] = [
   {
     id: "FixedPlaceOpenTime",
     title: "Fixed place, finding a time",
-    description: "The place is set, we’ll find an overlap of available times",
+    description: "The place is set, we'll find an overlap of available times",
     icon: Clock,
     requiresTimeRange: true,
     requiresFixedPlace: true,
@@ -82,7 +91,7 @@ const EVENT_TYPES: EventType[] = [
   {
     id: "FullyOpen",
     title: "Fully open event",
-    description: "We’ll generate the best places and times from preferences",
+    description: "We'll generate the best places and times from preferences",
     icon: Calendar,
     requiresTimeRange: true,
     requiresFixedPlace: false,
@@ -97,6 +106,20 @@ interface Props {
   onCreate: (event: any) => void;
 }
 
+/**
+ * Multi-step event creation dialog.
+ * Guides users through creating an event with appropriate fields
+ * based on the selected event type.
+ *
+ * Step 1: Choose single-day or multi-day
+ * Step 2: Choose event type
+ * Step 3: Fill in event details based on type
+ *
+ * @param isOpen - Whether the dialog is visible
+ * @param onClose - Callback to close the dialog
+ * @param onCreate - Callback with event data when creation succeeds
+ * @returns The event creation form dialog
+ */
 export default function CreateEventDialog({
   isOpen,
   onClose,
@@ -154,9 +177,15 @@ export default function CreateEventDialog({
     }
   }, [isOpen, handleReset]);
 
+  /**
+   * Gets minimum datetime for input (tomorrow at 00:00).
+   * Used to prevent event creation in the past.
+   *
+   * @returns ISO string for datetime-local input min attribute
+   */
   const getMinDateTime = () => {
     const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1); // minimum is tomorrow
+    tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     return new Date(tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000)
       .toISOString()
@@ -169,6 +198,15 @@ export default function CreateEventDialog({
     return date;
   };
 
+  /**
+   * Validates time ranges based on event duration and type.
+   * Different rules apply to fixed time vs time ranges.
+   *
+   * @param from - Start time
+   * @param to - End time
+   * @param isFixedTime - Whether this is a fixed event time (not a range)
+   * @returns Error message if validation fails, empty string if valid
+   */
   const validateTimeRange = (
     from: Date | null,
     to: Date | null,
@@ -196,6 +234,12 @@ export default function CreateEventDialog({
     return "";
   };
 
+  /**
+   * Formats a Date object to datetime-local input format (YYYY-MM-DDTHH:mm).
+   *
+   * @param date - The date to format
+   * @returns Formatted string or empty string if date is null
+   */
   const formatDateTime = (date: Date | null) => {
     if (!date) return "";
 
@@ -233,6 +277,8 @@ export default function CreateEventDialog({
         return;
       }
     }
+
+    // Validate fixed time if required
     if (selectedType?.requiresFixedTime && fixedTimeFrom && fixedTimeTo) {
       const validationError = validateTimeRange(
         fixedTimeFrom,
@@ -245,12 +291,15 @@ export default function CreateEventDialog({
         return;
       }
     }
+
+    // Validate fixed place if required
     if (selectedType?.requiresFixedPlace && !fixedPlace.trim()) {
       setError("Please fill in the fixed place");
       scrollToTop();
       return;
     }
 
+    // Validate fixed time presence if required
     if (selectedType?.requiresFixedTime && (!fixedTimeFrom || !fixedTimeTo)) {
       setError("Please fill in the fixed time of the event");
       scrollToTop();
@@ -286,7 +335,8 @@ export default function CreateEventDialog({
         ref={scrollContainerRef}
         className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
-        <div className="sticky top-0 bg-gradient-to-r  from-pink-700 to-pink-900 text-white p-6 rounded-t-2xl">
+        {/* Header with step indicator */}
+        <div className="sticky top-0 bg-gradient-to-r from-pink-700 to-pink-900 text-white p-6 rounded-t-2xl">
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold">New event</h2>
@@ -302,12 +352,14 @@ export default function CreateEventDialog({
         </div>
 
         <div className="p-6">
+          {/* Error message display */}
           {error && (
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-700 dark:text-red-300 rounded">
               <p className="font-medium">{error}</p>
             </div>
           )}
 
+          {/* Step 1: Single day vs Multiday */}
           {step === 1 && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-400">
@@ -356,6 +408,7 @@ export default function CreateEventDialog({
             </div>
           )}
 
+          {/* Step 2: Choose event type */}
           {step === 2 && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
@@ -398,6 +451,7 @@ export default function CreateEventDialog({
             </div>
           )}
 
+          {/* Step 3: Fill in event details based on type */}
           {step === 3 && selectedType && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">

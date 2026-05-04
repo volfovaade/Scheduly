@@ -16,6 +16,19 @@ interface Props {
   eventId: string;
 }
 
+/**
+ * Event detail page for "Organizer Proposals" event mode.
+ * Only the organizer can add options (place + time combinations).
+ * All participants vote on their preferred options.
+ *
+ * Voting phases:
+ * - Proposal: Organizer adds options, participants vote on preferences
+ * - Closed: Display final result
+ *
+ * @param event - Full event object with phase and other details
+ * @param eventId - The event ID for API calls
+ * @returns The event detail page with organizer proposals
+ */
 export default function OrganizerOptionsDetail({
   event,
   eventId,
@@ -43,6 +56,12 @@ export default function OrganizerOptionsDetail({
     loadData();
   }, [loadData]);
 
+  /**
+   * Handles adding a new option (place + time combination).
+   * Only the organizer has permission to add options.
+   *
+   * @param optionData - The new option details
+   */
   const handleAddOption = async (optionData: Option) => {
     try {
       await axios.post(`/events/${eventId}/options`, optionData);
@@ -66,6 +85,7 @@ export default function OrganizerOptionsDetail({
         {event.phase === "Proposal" && (
           <>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+              {/* Add option button - only for organizer */}
               {event.currentUserIsOrganizer && (
                 <button
                   onClick={() => setShowAddForm(true)}

@@ -18,16 +18,32 @@ interface Props {
   eventId: string;
 }
 
+/**
+ * Final voting form component for selecting among generated event options.
+ * Displays all available voting options and allows users to vote for their preferred choice.
+ * Stores votes in real-time to the backend.
+ *
+ * Used in the final voting phase of events where multiple options have been generated
+ * based on participant preferences or organizer choices.
+ *
+ * @param eventId - The event ID for API calls
+ * @returns The final voting form component
+ */
 export default function FinalVotingForm({ eventId }: Props) {
   const notify = useNotification();
   const [options, setOptions] = useState<FinalOption[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Loads all generated voting options from the backend.
+   * Filters to show only generated options (source === "Generated").
+   * Includes vote counts for each option to show current voting status.
+   */
   const loadOptions = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/options`);
-      // filter out just generated options
+      // Filter out just generated options
       const generatedOptions = res.data.filter(
         (opt: FinalOption) => opt.source === "Generated",
       );
@@ -37,7 +53,12 @@ export default function FinalVotingForm({ eventId }: Props) {
       notify.error("Failed to load voting options");
     }
   }, [notify, eventId]);
-  // load already sent vote
+
+  /**
+   * Loads the user's already submitted vote (if it exists).
+   * This allows users to see and potentially change their previous vote.
+   * Only loads votes of type "Final" - ignores preference votes.
+   */
   const loadMyVote = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/votes/my`);
@@ -87,6 +108,7 @@ export default function FinalVotingForm({ eventId }: Props) {
     }
   };
 
+  // Empty state - when no voting options are available yet
   if (options.length === 0) {
     return (
       <div className="mt-8 p-6 bg-gray-50 rounded-lg text-center">
@@ -144,6 +166,8 @@ export default function FinalVotingForm({ eventId }: Props) {
           </li>
         ))}
       </ul>
+
+      {/* Submit vote button */}
       <button
         onClick={handleVote}
         disabled={!selected || loading}

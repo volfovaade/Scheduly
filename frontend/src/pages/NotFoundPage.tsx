@@ -1,6 +1,12 @@
 import { MoveLeft, Home, Ghost } from "lucide-react";
 import { useNavigate } from "react-router-dom";
- 
+
+/**
+ * 404 Not Found page displayed when user navigates to a non-existent route.
+ * Provides friendly messaging and navigation options to return.
+ *
+ * @returns The 404 error page
+ */
 export default function NotFoundPage() {
   const navigate = useNavigate();
 
@@ -17,6 +23,7 @@ export default function NotFoundPage() {
           </span>
         </div>
 
+        {/* Error message */}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
           Page not found
         </h1>
@@ -25,7 +32,7 @@ export default function NotFoundPage() {
           Make sure the URL is correct.
         </p>
 
-        {/* Actions */}
+        {/* Navigation buttons */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => navigate("/")}

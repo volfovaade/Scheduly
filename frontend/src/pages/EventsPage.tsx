@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
 import axios from "../api/axios";
 
+/** Represents a basic event summary */
 type Event = {
   id: string;
   title: string;
   description: string;
 };
-/// not being used at this time --- maybe later for admin page
+
+/**
+ * Events listing page (currently not active in the main navigation).
+ * This page fetches and displays all events in the system.
+ * May be used for admin purposes or expanded in the future.
+ *
+ * @returns Events list view
+ */
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
 
+  /**
+   * Fetches all events from the backend when component mounts.
+   */
   useEffect(() => {
     const fetchEvents = async () => {
       try {

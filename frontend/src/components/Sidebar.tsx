@@ -20,15 +20,32 @@ type Props = {
   toggleSidebar: () => void;
 };
 
+/**
+ * Main sidebar navigation component.
+ * Shows different menu items based on authentication and admin status.
+ * Collapses to mobile drawer on smaller screens.
+ *
+ * @param isOpen - Whether sidebar is currently visible
+ * @param toggleSidebar - Callback to toggle sidebar visibility
+ * @returns The sidebar navigation component
+ */
 export function Sidebar({ isOpen, toggleSidebar }: Props) {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
+
+  /**
+   * Main navigation menu items visible to all users.
+   */
   const menuItems = [
     { icon: Home, label: "Home & Join", href: "/" },
     { icon: Calendar, label: "My events", href: "/dashboard" },
     { icon: Settings, label: "Settings", href: "/settings" },
     { icon: BookOpen, label: "How to use", href: "/how-to-use" },
   ];
+
+  /**
+   * Admin-only menu items for system management.
+   */
   const adminMenuItems = [
     { icon: Trash2, label: "Clean up data", href: "/admin/cleanup" },
     {
@@ -37,7 +54,12 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
       href: "/admin/suspicious",
     },
   ];
+
   const isUserLoggedIn = isAuthenticated || isAdmin;
+
+  /**
+   * Auth menu items - different based on login status.
+   */
   const authItems = isUserLoggedIn
     ? [{ icon: LogOut, label: "Log out", action: logout, href: "/" }]
     : [
@@ -47,14 +69,15 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
 
   return (
     <>
-      {/* Backdrop - if window smaller, the main content will be darkened*/}
+      {/* Mobile backdrop - click to close sidebar */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/50 lg:hidden z-40"
           onClick={toggleSidebar}
         />
       )}
-      {/* Sidebar */}
+
+      {/* Main sidebar container */}
       <div
         className={`
                 fixed left-0 top-0 h-full w-72 bg-white dark:bg-gray-900
@@ -66,15 +89,15 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
                 border-r border-gray-200 dark:border-gray-700
             `}
       >
-        {/* Header in sidebar*/}
+        {/* Sidebar header with logo and close button */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between w-full">
-              <div
-               onClick={() => {
-                 navigate("/");
-               }}
-               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
-              >
+            <div
+             onClick={() => {
+               navigate("/");
+             }}
+             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
+            >
               <img
                 src={Logo}
                 alt="Scheduly logo"
@@ -84,6 +107,7 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
                 Scheduly
               </h1>
             </div>
+            {/* Mobile close button */}
             <button
               onClick={toggleSidebar}
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -93,9 +117,9 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
           </div>
         </div>
         
-        {/* Navigation */}
+        {/* Navigation content */}
         <nav className="flex-1 p-4 overflow-y-auto custom-scrollbar">
-          {/* User info with first letter icon */}
+          {/* User profile card (if authenticated) */}
           {isAuthenticated && (
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-3">
@@ -126,6 +150,8 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
               </div>
             </div>
           )}
+
+          {/* Main menu items */}
           <ul className="space-y-2">
             {menuItems.map((item, index) => (
               <li key={index}>
@@ -141,7 +167,8 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
               </li>
             ))}
           </ul>
-          {/* Admin section - visible to admins */}
+
+          {/* Admin section - only visible to admins */}
           {isAdmin && (
             <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center space-x-2 px-4 mb-3">
@@ -168,7 +195,7 @@ export function Sidebar({ isOpen, toggleSidebar }: Props) {
             </div>
           )}
 
-          {/* Authorization section */}
+          {/* Authentication section */}
           <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
             <ul className="space-y-2">
               {authItems.map((item, index) => (

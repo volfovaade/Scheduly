@@ -6,16 +6,28 @@ import { HomePage } from "./HomePage";
 import { useAuth } from "../context/AuthContext";
 import { useNotification } from "../context/NotificationContext";
 
+/**
+ * Main landing page that users see first.
+ * Provides options to join an existing event with a code or navigate to the dashboard.
+ * Handles event joining logic and enforces authentication requirement.
+ *
+ * @returns The home page UI with event join form
+ */
 export default function MainPage() {
   const [code, setCode] = useState("");
   const navigate = useNavigate();
   const notify = useNotification();
   const auth = useAuth();
 
+  /**
+   * Handles joining an event by its code.
+   * Requires user to be authenticated first.
+   * On success, navigates to the event detail page with preference form shown.
+   */
   const handleJoinEvent = async () => {
     try {
       if (!auth.isAuthenticated) {
-        notify.error("Use must be logged in to join an event.");
+        notify.error("User must be logged in to join an event.");
         navigate(`/login`);
         return;
       }
@@ -29,10 +41,11 @@ export default function MainPage() {
             "Failed to join event. Please check the code and try again.",
         );
       } else {
-        notify.error("Invalid or expired code (nebo chyba serveru)");
+        notify.error("Invalid or expired code (or server error)");
       }
     }
   };
+
   return (
     <HomePage
       code={code}

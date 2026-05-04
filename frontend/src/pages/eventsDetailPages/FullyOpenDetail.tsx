@@ -19,6 +19,21 @@ type Props = {
   showPreferenceFormInitially: boolean;
 };
 
+/**
+ * Event detail page for "Fully Open" event mode.
+ * Nothing is decided yet. Participants submit both time and location preferences.
+ * App generates the best place + time combinations for final voting.
+ *
+ * Voting phases:
+ * - Proposal: Participants submit preferences
+ * - FinalVoting: Vote on generated options
+ * - Closed: Shows final result
+ *
+ * @param event - Full event object
+ * @param eventId - The event ID for API calls
+ * @param showPreferenceFormInitially - Auto-open preference forms on load (from creation)
+ * @returns The fully open event detail page
+ */
 export default function FullyOpenDetail({
   event,
   eventId,
@@ -39,12 +54,21 @@ export default function FullyOpenDetail({
   } | null>(null);
   const [organizerChoice, setOrganizerChoice] = useState<string | null>(null);
 
+  /**
+   * Calculates the number of days in the event's time range.
+   *
+   * @returns Number of days
+   */
   const getDaysInTimeRange = () => {
     const from = new Date(event.timeRangeFrom);
     const to = new Date(event.timeRangeTo);
     return Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
   };
 
+  /**
+   * Checks if there's a tie in location type preferences.
+   * If there's a tie, the organizer must choose which type to use.
+   */
   const checkForTie = useCallback(async () => {
     try {
       const res = await axios.get(`/events/${eventId}/locationPreferences/topTypes`);
@@ -68,10 +92,10 @@ export default function FullyOpenDetail({
       if (!timeData) {
           setHasTimePref(false);
       } else if (event.isMultiDay) {
-        // for multiday check length of array in Dates
+        // For multi-day: check if dates array has items
         setHasTimePref(Array.isArray(timeData.dates) && timeData.dates.length > 0);
       } else {
-        // for single day check TimeIntervals
+        // For single day: check if timeIntervals has items
         setHasTimePref(Array.isArray(timeData.timeIntervals) && timeData.timeIntervals.length > 0);
       }
       setSummary(summaryRes.data);
@@ -90,6 +114,10 @@ export default function FullyOpenDetail({
     }
   }, [loadData, showPreferenceFormInitially]);
 
+  /**
+   * Finalizes the event and generates place+time options based on preferences.
+   * Organizer can choose event duration and location type (if there's a tie).
+   */
   const handleFinalize = async () => {
     if (!window.confirm("Finalize and generate place+time options?")) return;
     try {
@@ -110,6 +138,7 @@ export default function FullyOpenDetail({
     }
   };
 
+  // Find the most preferred time slot for display
   const best = summary?.time?.length
     ? summary.time.reduce((prev: any, current: any) =>
         current.count > prev.count ? current : prev,
@@ -158,7 +187,7 @@ export default function FullyOpenDetail({
                 </button>
               </div>
 
-              {/* Location preference card */}
+              {/* Location preference submission card */}
               <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -224,6 +253,7 @@ export default function FullyOpenDetail({
                     from everyone's preferences and start voting.
                   </p>
 
+                  {/* Duration slider for event length */}
                   <label className="block mb-4">
                     <span className="text-gray-700 dark:text-gray-300">
                       Duration: {duration} {event.isMultiDay ? "days" : "hours"}
@@ -238,6 +268,7 @@ export default function FullyOpenDetail({
                     />
                   </label>
 
+                  {/* Tie resolution UI - if there's a tie, organizer must choose location type */}
                   {tieData?.hasTie && (
                     <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
                       <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300 font-medium mb-3">
@@ -295,6 +326,7 @@ export default function FullyOpenDetail({
             />
           )}
 
+          {/* Closed phase - show final result */}
           {event.phase === "Closed" && event.finalPlaceName && (
             <FinalResult event={event} />
           )}

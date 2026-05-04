@@ -7,6 +7,7 @@ import { useNotification } from "../context/NotificationContext";
 import EventCard from "../components/EventCard";
 import { Search, Target, Users, Info, X } from "lucide-react";
 
+/** Event type definitions for the different scheduling modes */
 type EventMode =
   | "SingleOption"
   | "CollaborativeOptions"
@@ -15,6 +16,7 @@ type EventMode =
   | "FixedPlaceOpenTime"
   | "FullyOpen";
 
+/** Represents an event in the system */
 type Event = {
   id: string;
   title: string;
@@ -25,6 +27,13 @@ type Event = {
   isMultiDay: boolean;
 };
 
+/**
+ * Dashboard page showing all user's events—both organized and participating.
+ * Allows users to create new events, search through existing ones, and manage them.
+ * Redirects to login if user is not authenticated.
+ *
+ * @returns The dashboard UI with event lists and creation dialog
+ */
 export default function DashboardPage() {
   const [organized, setOrganized] = useState<Event[]>([]);
   const [participating, setParticipating] = useState<Event[]>([]);
@@ -69,6 +78,12 @@ export default function DashboardPage() {
     loadEvents();
   }, [isAuthenticated, user, navigate]);
 
+  /**
+   * Creates a new event with the provided data.
+   * Adds it to the organized events list and navigates to the event detail page.
+   *
+   * @param data - Event creation form data
+   */
   const handleAddEvent = async (data: any) => {
     try {
       const res = await axios.post("events", {
@@ -94,6 +109,13 @@ export default function DashboardPage() {
     }
   };
 
+  /**
+   * Maps event mode to constraint type for backend storage.
+   * Different modes have different time/place constraints.
+   *
+   * @param mode - The event mode
+   * @returns Constraint type ID
+   */
   const getConstraintType = (mode: EventMode): number => {
     switch (mode) {
       case "CollaborativeOptions":
@@ -110,6 +132,16 @@ export default function DashboardPage() {
         return 0; // None
     }
   };
+
+
+  /**
+   * Navigates to an event detail page with appropriate routing logic.
+   * Some event modes require showing the preference form on load.
+   *
+   * @param id - The event ID
+   * @param mode - The event mode
+   * @param showPreferenceForm - Whether to show preference form on load
+   */
   const navigateToEvent = (
     id: string,
     mode: EventMode,
@@ -133,6 +165,13 @@ export default function DashboardPage() {
         navigate(`/events/${id}`);
     }
   };
+
+  /**
+   * Deletes an event (only available for organizers).
+   * Requires user confirmation before proceeding.
+   *
+   * @param eventId - The event to delete
+   */
   const handleDeleteEvent = async (eventId: string) => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
@@ -144,6 +183,13 @@ export default function DashboardPage() {
       console.error(err);
     }
   };
+
+  /**
+   * Leaves an event (only for participants).
+   * Requires user confirmation before proceeding.
+   *
+   * @param eventId - The event to leave
+   */
   const handleLeaveEvent = async (eventId: string) => {
     if (!window.confirm("Are you sure you want to leave this event?")) return;
 
@@ -173,6 +219,7 @@ export default function DashboardPage() {
     };
     return names[mode] || mode;
   };
+
   // loading component
   if (loading) {
     return (
@@ -201,7 +248,7 @@ export default function DashboardPage() {
           </button>
         </div>
         <div className="flex items-center gap-3">
-          {/* Search */}
+          {/* Search bar to filter events */}
           <div className="relative flex-1 sm:flex-none">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -226,7 +273,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-900 dark:text-gray-50">
-        {/* Participating */}
+        {/* Events the user is participating in */}
         <div>
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Users className="text-blue-500" size={24} /> Participating
@@ -258,7 +305,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Organizing */}
+        {/* Events the user is organizing */}
         <div>
           <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Target className="text-pink-500" size={24} /> Organizing

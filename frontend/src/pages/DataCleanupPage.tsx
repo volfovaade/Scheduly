@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useNotification } from "../context/NotificationContext";
 
+/** Represents an event in the cleanup list */
 type AdminEvent = {
   id: string;
   title: string;
@@ -16,12 +17,22 @@ type AdminEvent = {
   ownerId: string;
 };
 
+/**
+ * Admin page for managing database storage by removing old events.
+ * Allows filtering by age and bulk deletion of outdated events.
+ * Provides confirmation prompts due to irreversible nature of deletions.
+ *
+ * @returns The data cleanup management interface
+ */
 export default function DataCleanupPage() {
   const [events, setEvents] = useState<AdminEvent[]>([]);
   const [daysThreshold, setDaysThreshold] = useState(365);
   const [loading, setLoading] = useState(false);
   const notify = useNotification();
 
+  /**
+   * Fetches events older than the specified threshold from the backend.
+   */
   const loadEvents = useCallback(async () => {
     setLoading(true);
     try {
@@ -83,6 +94,7 @@ export default function DataCleanupPage() {
         </p>
       </div>
 
+      {/* Filter controls */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8">
         <div className="flex flex-col md:flex-row items-end md:items-center gap-4 justify-between">
           <div className="flex-1 w-full">
@@ -108,7 +120,7 @@ export default function DataCleanupPage() {
             </div>
           </div>
 
-          {/* Danger Button */}
+          {/* Bulk delete button (shown only if events exist) */}
           {events.length > 0 && (
             <button
               onClick={handleDeleteAll}
