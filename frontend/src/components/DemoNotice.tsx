@@ -1,4 +1,11 @@
-export function DemoNotice({ children }) {
+// src/components/DemoNotice.tsx
+import { ReactNode } from "react";
+
+interface DemoNoticeProps {
+  children: ReactNode;
+}
+
+export function DemoNotice({ children }: DemoNoticeProps) {
   return (
     <>
       <div
