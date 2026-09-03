@@ -7,6 +7,13 @@ interface DemoNoticeProps {
 
 export function DemoNotice({ children }: DemoNoticeProps) {
   return (
+    <></>
+  );
+}
+
+
+export function DemoNoticeNotConnectedBackendAndDb({ children }: DemoNoticeProps) {
+  return (
     <>
       <div
         role="alert"
