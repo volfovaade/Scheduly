@@ -7,7 +7,9 @@ interface DemoNoticeProps {
 
 export function DemoNotice({ children }: DemoNoticeProps) {
   return (
-    <></>
+    <>
+      {children}
+    </>
   );
 }
 
