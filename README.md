@@ -2,7 +2,7 @@
 
 Scheduly is a web application for organizing group events. It helps participants coordinate the best time and place to meet by collecting preferences, aggregating them, and automatically generating optimal options using **Google Places API**.
 
-Live demo: **[scheduly-silk.vercel.app](https://scheduly.uk)**
+Live demo: **[scheduly.uk](https://scheduly.uk)**
 
 ---
 
